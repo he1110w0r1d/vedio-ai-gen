@@ -107,7 +107,7 @@ export type PromptTemplate = {
 
 export type VideoSeed = {
   assetId: string;
-  usage: 'i2v-first' | 'i2v-last' | 'r2v-character' | 'r2v-style';
+  usage: 'i2v-first' | 'i2v-last' | 'r2v-character' | 'r2v-style' | 'r2v-video';
 };
 
 export type AppStateSnapshot = {

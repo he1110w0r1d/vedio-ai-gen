@@ -57,7 +57,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState(initialState.tasks);
   const [templates, setTemplates] = useState(initialState.promptTemplates);
   const [globalSearch, setGlobalSearch] = useState('');
-  const [selectedAsset, setSelectedAsset] = useState<Asset | undefined>(initialState.assets[0]);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | undefined>(undefined);
   const [videoSeed, setVideoSeed] = useState<VideoSeed | undefined>(initialState.selectedVideoInput);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -162,7 +162,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       sendImageToVideo: (assetId, usage) => {
         setVideoSeed({ assetId, usage });
         setView('video-studio');
-        showToast('图片已带入视频生成工作台', 'success');
+        showToast('素材已带入视频生成工作台', 'success');
       },
       addTask: (task) => {
         setTasks((items) => [task, ...items]);

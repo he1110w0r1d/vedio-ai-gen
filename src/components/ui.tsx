@@ -2,6 +2,7 @@ export { Icon } from './common/Icon';
 export { SectionHeader } from './common/SectionHeader';
 export { EmptyState } from './common/EmptyState';
 export { StatusBadge } from './common/StatusBadge';
+export { SearchInput } from './common/SearchInput';
 import { Icon } from './common/Icon';
 
 export function LoadingBlock({ text = '正在加载 Mock 数据...' }: { text?: string }) {

@@ -50,6 +50,10 @@ export function VideoStudio() {
       setMode('R2V');
       setRefs((item) => ({ ...item, style: seed.assetId }));
     }
+    if (seed.usage === 'r2v-video') {
+      setMode('R2V');
+      setRefs((item) => ({ ...item, video: seed.assetId }));
+    }
   }, [consumeVideoSeed]);
 
   const selectedAssets = useMemo(

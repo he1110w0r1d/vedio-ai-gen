@@ -1,7 +1,7 @@
 import type { ViewId } from '../../types';
 import { Icon } from '../common/Icon';
 
-const nav: { id: ViewId; label: string; icon: string }[] = [
+export const navItems: { id: ViewId; label: string; icon: string }[] = [
   { id: 'dashboard', label: '总览', icon: 'dashboard' },
   { id: 'projects', label: '项目', icon: 'folder_open' },
   { id: 'image-studio', label: '图片生成', icon: 'image' },
@@ -26,7 +26,7 @@ export function Sidebar({ view, onNavigate }: { view: ViewId; onNavigate: (view:
         </div>
       </div>
       <nav className="flex-1 space-y-1">
-        {nav.map((item) => (
+        {navItems.map((item) => (
           <button
             key={item.id}
             onClick={() => onNavigate(item.id)}
