@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>API Asset Studio - 任务中心</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#23005c",
+                        "on-tertiary": "#303030",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#d0bcff",
+                        "inverse-surface": "#e5e1e4",
+                        "on-background": "#e5e1e4",
+                        "primary-fixed": "#74f5ff",
+                        "surface-tint": "#00dbe7",
+                        "primary-fixed-dim": "#00dbe7",
+                        "surface-container": "#201f21",
+                        "inverse-primary": "#00696f",
+                        "tertiary-fixed": "#e4e2e1",
+                        "on-tertiary-fixed": "#1b1c1c",
+                        "error": "#ffb4ab",
+                        "surface-container-highest": "#353437",
+                        "outline-variant": "#3a494b",
+                        "primary": "#e1fdff",
+                        "on-secondary": "#3c0091",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "surface-dim": "#131315",
+                        "surface-container-high": "#2a2a2c",
+                        "on-surface": "#e5e1e4",
+                        "inverse-on-surface": "#313032",
+                        "secondary-container": "#571bc1",
+                        "on-error": "#690005",
+                        "on-tertiary-container": "#605f5f",
+                        "surface-container-lowest": "#0e0e10",
+                        "on-primary-fixed": "#002022",
+                        "on-secondary-fixed-variant": "#5516be",
+                        "primary-container": "#00f2ff",
+                        "on-primary-fixed-variant": "#004f54",
+                        "surface-container-low": "#1c1b1d",
+                        "error-container": "#93000a",
+                        "outline": "#849495",
+                        "surface-variant": "#353437",
+                        "on-primary-container": "#006a71",
+                        "surface": "#131315",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "on-primary": "#00363a",
+                        "secondary-fixed": "#e9ddff",
+                        "on-surface-variant": "#b9cacb",
+                        "tertiary-container": "#dddada",
+                        "background": "#131315",
+                        "surface-bright": "#39393b",
+                        "secondary": "#d0bcff",
+                        "on-secondary-container": "#c4abff",
+                        "tertiary": "#faf7f6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "40px",
+                        "lg": "24px",
+                        "container-max": "1440px",
+                        "gutter": "20px",
+                        "sm": "8px",
+                        "margin": "32px",
+                        "unit": "4px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h3": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h2": ["32px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "h1": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "h3": ["24px", { "lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #000000; color: #e5e1e4; }
+        .glass-card { background-color: #0a0a0c; border: 1px solid #262626; backdrop-filter: blur(12px); }
+        .neon-border:focus-within { border-color: #00dbe7; box-shadow: 0 0 4px rgba(0, 219, 231, 0.5); }
+    </style>
+</head>
+<body class="font-body-md text-body-md antialiased overflow-x-hidden min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full py-lg px-md bg-surface-dim dark:bg-surface-dim font-body-md text-body-md w-[280px] h-screen fixed left-0 top-0 border-r border-outline-variant/30 backdrop-blur-xl transition-all duration-200 ease-in-out z-50">
+<div class="mb-xl flex flex-col gap-sm px-sm">
+<h1 class="font-h3 text-h3 font-bold text-primary-container">API Asset Studio</h1>
+<span class="font-label-caps text-label-caps text-on-surface-variant">高级创作者版</span>
+</div>
+<div class="flex flex-col gap-xs flex-1">
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+<span>控制台</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">folder_open</span>
+<span>项目</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">image</span>
+<span>图像工作室</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">movie</span>
+<span>视频工作室</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">inventory_2</span>
+<span>资产库</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-primary-fixed-dim font-bold bg-primary-container/10 border-r-2 border-primary-fixed-dim hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">task</span>
+<span>任务中心</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">api</span>
+<span>供应商与API</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">description</span>
+<span>提示词模板</span>
+</a>
+</div>
+<div class="mt-auto flex flex-col gap-xs pt-md border-t border-outline-variant/30">
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span>设置</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:pl-[280px] min-h-screen">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-margin h-16 z-40 bg-surface/80 dark:bg-surface/80 font-body-sm text-body-sm docked full-width top-0 border-b border-outline-variant/30 backdrop-blur-xl backdrop-blur-md transition-colors sticky top-0">
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-md neon-border glass-card rounded-lg px-md py-xs">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-variation-settings: 'FILL' 0;">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-on-surface outline-none w-64 placeholder:text-on-surface-variant/50" placeholder="搜索任务..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<a class="text-on-surface-variant hover:text-primary-fixed transition-colors font-body-sm text-body-sm" href="#">项目选择</a>
+<div class="flex items-center gap-md border-l border-outline-variant/30 pl-lg">
+<button class="text-on-surface-variant hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">sensors</span>
+</button>
+<img alt="个人中心" class="w-8 h-8 rounded-full border border-outline-variant cursor-pointer hover:border-primary-fixed transition-colors object-cover" data-alt="A close-up portrait of a professional individual in a dimly lit, futuristic studio setting. The lighting is moody with subtle cyan and violet rim lights reflecting off their features, aligning with a dark-mode tech aesthetic. The mood is serious and focused, conveying a sense of expertise and modern digital productivity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBm22P3F-6mf-GlCZQ23jL25gKlAxR8_D3sC54WjGcE2qUkH7me-xgXt68u07kalxFEMJAWRgl4uliiE3lk55pHALgHtWIwPG0LvI5J_dGk11YN5iphkduvTu-sPtQ6OlAPYbntrVmoIVSc7C4BphL-CN5krabV3TCZWvxMIYHg3E5y6KaYZWOlEgCDxrVfCpuaMwoYr8XH8Z5-mguFVRwyUwvt9Bd0wfuT5HCaFdQhviCchHUDx13v6wpumMRLXhVtUvJJOD7y"/>
+</div>
+</div>
+</header>
+<!-- Canvas Area -->
+<main class="flex-1 p-margin flex flex-col gap-lg max-w-[1440px] mx-auto w-full">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-sm">
+<div>
+<h2 class="font-h2 text-h2 text-on-surface mb-xs">任务中心</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">追踪和管理所有异步生成任务及 API 请求状态。</p>
+</div>
+<div class="flex gap-md">
+<button class="glass-card px-md py-sm rounded-lg flex items-center gap-xs text-primary-fixed hover:bg-primary-fixed/10 transition-colors border-[#262626]">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+<span class="font-body-sm text-body-sm">刷新列表</span>
+</button>
+<button class="bg-primary-container text-on-primary-container px-md py-sm rounded-lg flex items-center gap-xs hover:bg-primary-container/90 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span class="font-body-sm text-body-sm font-semibold">新建任务</span>
+</button>
+</div>
+</div>
+<!-- Status Tabs -->
+<div class="flex gap-sm border-b border-outline-variant/30 pb-xs">
+<button class="px-md py-xs font-body-sm text-body-sm text-primary-fixed-dim border-b-2 border-primary-fixed-dim font-bold">全部 (124)</button>
+<button class="px-md py-xs font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors">排队中 (3)</button>
+<button class="px-md py-xs font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-xs">
+                    生成中 (2)
+                    <span class="w-2 h-2 rounded-full bg-primary-fixed-dim animate-pulse"></span>
+</button>
+<button class="px-md py-xs font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors">已完成 (115)</button>
+<button class="px-md py-xs font-body-sm text-body-sm text-error hover:text-error/80 transition-colors">失败 (4)</button>
+</div>
+<!-- Task List Bento Grid Layout -->
+<div class="grid grid-cols-1 gap-md">
+<!-- Generating Task Card -->
+<div class="glass-card rounded-2xl p-lg flex flex-col gap-md relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 bg-surface-container">
+<div class="h-full bg-primary-fixed-dim" style="width: 65%;"></div>
+</div>
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary-fixed-dim">movie</span>
+</div>
+<div>
+<h3 class="font-h3 text-body-lg font-bold text-on-surface flex items-center gap-sm">
+                                    生成宣传视频_v2.mp4
+                                    <span class="px-2 py-0.5 rounded-full bg-primary-fixed/15 text-primary-fixed font-label-caps text-[10px]">RUNWAY GEN-2</span>
+</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Task ID: #TRK-9823-XV • 视频工作室</p>
+</div>
+</div>
+<div class="flex gap-xs">
+<button class="p-xs text-on-surface-variant hover:text-on-surface transition-colors rounded hover:bg-white/5" title="Copy Parameters">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+<button class="p-xs text-error hover:text-error/80 transition-colors rounded hover:bg-error/10" title="Cancel Task">
+<span class="material-symbols-outlined text-[20px]">cancel</span>
+</button>
+</div>
+</div>
+<div class="flex items-end justify-between mt-sm">
+<div class="flex-1 mr-xl">
+<div class="flex justify-between font-label-caps text-label-caps mb-xs text-on-surface-variant">
+<span class="text-primary-fixed">渲染中... (65%)</span>
+<span>预计剩余: 2m 14s</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-caps text-label-caps text-on-surface-variant block">开始时间</span>
+<span class="font-body-sm text-body-sm text-on-surface">10:24 AM, 今日</span>
+</div>
+</div>
+</div>
+<!-- Failed Task Card -->
+<div class="glass-card rounded-2xl p-lg flex flex-col gap-md border-error/30">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-error/10 flex items-center justify-center border border-error/20">
+<span class="material-symbols-outlined text-error">image</span>
+</div>
+<div>
+<h3 class="font-h3 text-body-lg font-bold text-on-surface flex items-center gap-sm">
+                                    概念插画_赛博朋克.png
+                                    <span class="px-2 py-0.5 rounded-full bg-secondary-container/30 text-secondary-fixed font-label-caps text-[10px]">MIDJOURNEY V6</span>
+</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Task ID: #TRK-9822-MJ • 图像工作室</p>
+</div>
+</div>
+<div class="flex gap-xs">
+<button class="px-sm py-xs border border-outline-variant/50 text-on-surface hover:text-primary-fixed hover:border-primary-fixed transition-colors rounded-lg font-body-sm text-body-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">refresh</span> 重试
+                            </button>
+<button class="p-xs text-on-surface-variant hover:text-on-surface transition-colors rounded hover:bg-white/5" title="Copy Parameters">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="bg-error/5 border border-error/20 rounded-lg p-sm mt-sm flex items-start gap-sm">
+<span class="material-symbols-outlined text-error text-[18px] mt-0.5">error</span>
+<div>
+<span class="font-body-sm text-body-sm font-semibold text-error block">Invalid API Key (Error 401)</span>
+<span class="font-body-sm text-[13px] text-on-surface-variant block mt-1">请在“供应商与API”设置中检查您的 Midjourney 授权凭证。</span>
+</div>
+</div>
+</div>
+<!-- Queuing Task Card -->
+<div class="glass-card rounded-2xl p-lg flex flex-col gap-md opacity-80">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center border border-outline-variant/30">
+<span class="material-symbols-outlined text-on-surface-variant">description</span>
+</div>
+<div>
+<h3 class="font-h3 text-body-lg font-bold text-on-surface flex items-center gap-sm">
+                                    批量生成商品文案 (50项)
+                                    <span class="px-2 py-0.5 rounded-full bg-tertiary-container/10 text-tertiary-fixed-dim font-label-caps text-[10px]">GPT-4 TURBO</span>
+</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Task ID: #TRK-9824-TX • 提示词模板</p>
+</div>
+</div>
+<div class="flex gap-xs">
+<button class="p-xs text-error hover:text-error/80 transition-colors rounded hover:bg-error/10" title="Cancel Task">
+<span class="material-symbols-outlined text-[20px]">cancel</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-sm mt-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">hourglass_empty</span>
+<span class="font-body-sm text-body-sm">排队中 (位置: 3/5)...</span>
+</div>
+</div>
+<!-- Completed Task Card -->
+<div class="glass-card rounded-2xl p-lg flex justify-between items-center opacity-60 hover:opacity-100 transition-opacity">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center border border-outline-variant/30">
+<span class="material-symbols-outlined text-outline">image</span>
+</div>
+<div>
+<h3 class="font-body-md text-body-md text-on-surface">产品主图_光影渲染.png</h3>
+<p class="font-body-sm text-[12px] text-on-surface-variant">10:15 AM • 耗时: 45s</p>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant font-label-caps text-[10px] border border-outline-variant/30">STABLE DIFFUSION</span>
+<span class="material-symbols-outlined text-primary-fixed-dim text-[20px]">check_circle</span>
+<button class="p-xs text-on-surface-variant hover:text-on-surface transition-colors rounded hover:bg-white/5" title="View Result">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Load More -->
+<div class="flex justify-center mt-md">
+<button class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary-fixed transition-colors py-sm px-lg rounded-full border border-outline-variant/30 hover:border-primary-fixed/50 glass-card">
+                    加载更多历史记录
+                </button>
+</div>
+</main>
+</div>
+</body></html>

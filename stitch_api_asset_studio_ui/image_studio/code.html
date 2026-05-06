@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>图片工作室 - API Asset Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#23005c",
+                        "on-tertiary": "#303030",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#d0bcff",
+                        "inverse-surface": "#e5e1e4",
+                        "on-background": "#e5e1e4",
+                        "primary-fixed": "#74f5ff",
+                        "surface-tint": "#00dbe7",
+                        "primary-fixed-dim": "#00dbe7",
+                        "surface-container": "#201f21",
+                        "inverse-primary": "#00696f",
+                        "tertiary-fixed": "#e4e2e1",
+                        "on-tertiary-fixed": "#1b1c1c",
+                        "error": "#ffb4ab",
+                        "surface-container-highest": "#353437",
+                        "outline-variant": "#3a494b",
+                        "primary": "#e1fdff",
+                        "on-secondary": "#3c0091",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "surface-dim": "#131315",
+                        "surface-container-high": "#2a2a2c",
+                        "on-surface": "#e5e1e4",
+                        "inverse-on-surface": "#313032",
+                        "secondary-container": "#571bc1",
+                        "on-error": "#690005",
+                        "on-tertiary-container": "#605f5f",
+                        "surface-container-lowest": "#0e0e10",
+                        "on-primary-fixed": "#002022",
+                        "on-secondary-fixed-variant": "#5516be",
+                        "primary-container": "#00f2ff",
+                        "on-primary-fixed-variant": "#004f54",
+                        "surface-container-low": "#1c1b1d",
+                        "error-container": "#93000a",
+                        "outline": "#849495",
+                        "surface-variant": "#353437",
+                        "on-primary-container": "#006a71",
+                        "surface": "#131315",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "on-primary": "#00363a",
+                        "secondary-fixed": "#e9ddff",
+                        "on-surface-variant": "#b9cacb",
+                        "tertiary-container": "#dddada",
+                        "background": "#131315",
+                        "surface-bright": "#39393b",
+                        "secondary": "#d0bcff",
+                        "on-secondary-container": "#c4abff",
+                        "tertiary": "#faf7f6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "40px",
+                        "lg": "24px",
+                        "container-max": "1440px",
+                        "gutter": "20px",
+                        "sm": "8px",
+                        "margin": "32px",
+                        "unit": "4px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h3": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h2": ["32px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "h1": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "h3": ["24px", { "lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        
+        /* Custom scrollbar for deep dark theme */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.surface-variant');
+            border-radius: theme('borderRadius.full');
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline');
+        }
+
+        /* Input focus glows */
+        .glass-input:focus {
+            outline: none;
+            border-color: theme('colors.primary-fixed');
+            box-shadow: 0 0 0 2px theme('colors.primary-fixed/20');
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-background">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-surface-dim dark:bg-surface-dim font-body-md text-body-md w-[280px] h-screen fixed left-0 top-0 border-r border-outline-variant/30 backdrop-blur-xl flex flex-col h-full py-lg px-md z-50">
+<!-- Header -->
+<div class="mb-xl flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-fixed to-secondary flex items-center justify-center shadow-[0_0_15px_rgba(0,219,231,0.3)]">
+<span class="material-symbols-outlined text-surface-dim" style="font-variation-settings: 'FILL' 1;">generating_tokens</span>
+</div>
+<div>
+<h1 class="font-h3 text-h3 font-bold text-primary-container tracking-tight">API Asset Studio</h1>
+<p class="font-label-caps text-label-caps text-primary-fixed-dim/70 mt-xs">高级创作者版</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<ul class="flex flex-col gap-sm flex-1 overflow-y-auto">
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    控制台
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+                    项目
+                </a>
+</li>
+<!-- Active Tab -->
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-primary-fixed-dim font-bold bg-primary-container/10 border-r-2 border-primary-fixed-dim transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">image</span>
+                    图像工作室
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">movie</span>
+                    视频工作室
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                    资产库
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">task</span>
+                    任务中心
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">api</span>
+                    供应商与API
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">description</span>
+                    提示词模板
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    设置
+                </a>
+</li>
+</ul>
+<!-- User Profile (Bottom) -->
+<div class="mt-auto pt-lg border-t border-outline-variant/30 flex items-center gap-md">
+<img alt="A high-quality, professional headshot of a person set against a dark, minimalist background. The lighting is dramatic and moody, emphasizing a sleek, modern aesthetic suitable for a premium SaaS interface. The image utilizes deep charcoal tones with a subtle rim light, aligning perfectly with the deep black and neon cyan color palette." class="w-10 h-10 rounded-full object-cover border border-outline-variant/50" data-alt="A high-quality, professional headshot of a person set against a dark, minimalist background. The lighting is dramatic and moody, emphasizing a sleek, modern aesthetic suitable for a premium SaaS interface. The image utilizes deep charcoal tones with a subtle rim light, aligning perfectly with the deep black and neon cyan color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuSyz1jqrNVhTXuuiC_VkKBvsmQSrCmB2C95V-j7kjaMw9hAuEeYok36XGrc3FXgKHeahOmHbQJV-2p2KfRvkozxSbCZBZBAnPLzCRQY_InMQRWJr9tCZ51BBWqy56OE3VJcbCEh2So0PMtK7y0pclmNz7iBkQcTOJKg3qG03yQAo3a5B3BhX-fvAD1Qa_gWAJWtIrQ7TSd6jw2LSZ7iSBJiFyMpIc95Va3crrrogYgTvaDpiG3itNTNMbgWqv8K0V51cQnUJG"/>
+<div class="flex-1 overflow-hidden">
+<p class="font-body-sm text-body-sm font-semibold text-on-surface truncate">Creator01</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant truncate mt-xs">Pro Plan</p>
+</div>
+<button class="text-on-surface-variant hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</nav>
+<!-- TopNavBar (Shared Component) -->
+<header class="bg-surface/80 dark:bg-surface/80 font-body-sm text-body-sm docked full-width top-0 border-b border-outline-variant/30 backdrop-blur-xl backdrop-blur-md transition-colors flex justify-between items-center w-full pl-[312px] pr-margin h-16 z-40 fixed">
+<!-- Search / Project Select -->
+<div class="flex items-center gap-md">
+<button class="flex items-center gap-sm px-md py-xs rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/50 transition-colors">
+<span class="material-symbols-outlined text-primary-fixed-dim">folder</span>
+<span class="text-on-surface font-semibold">Cyberpunk 2077 Assets</span>
+<span class="material-symbols-outlined text-on-surface-variant">arrow_drop_down</span>
+</button>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-md">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors relative">
+<span class="material-symbols-outlined">sensors</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary-fixed-dim shadow-[0_0_8px_rgba(0,219,231,0.8)]"></span>
+</button>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="flex-1 ml-[280px] mt-16 flex h-[calc(100vh-64px)] bg-background">
+<!-- Left Panel: Controls -->
+<aside class="w-[320px] h-full bg-surface-dim border-r border-outline-variant/30 flex flex-col overflow-y-auto">
+<div class="p-lg flex flex-col gap-xl">
+<!-- Model Selection -->
+<section class="flex flex-col gap-sm">
+<h3 class="font-body-md text-body-md font-semibold text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">psychology</span>
+                        模型配置
+                    </h3>
+<div class="flex flex-col gap-md mt-sm">
+<!-- Provider -->
+<div>
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-xs block">供应商</label>
+<div class="relative">
+<select class="w-full bg-surface-container border border-outline-variant/50 rounded-lg px-md py-sm text-on-surface appearance-none focus:outline-none focus:border-primary-fixed focus:ring-1 focus:ring-primary-fixed/20 transition-all font-body-sm text-body-sm">
+<option>Midjourney API</option>
+<option>Stable Diffusion XL</option>
+<option>DALL-E 3</option>
+</select>
+<span class="material-symbols-outlined absolute right-md top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Model -->
+<div>
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-xs block">版本/模型</label>
+<div class="relative">
+<select class="w-full bg-surface-container border border-outline-variant/50 rounded-lg px-md py-sm text-on-surface appearance-none focus:outline-none focus:border-primary-fixed focus:ring-1 focus:ring-primary-fixed/20 transition-all font-body-sm text-body-sm">
+<option>v6.0 - Alpha</option>
+<option>v5.2 - Standard</option>
+<option>Niji 6 - Anime</option>
+</select>
+<span class="material-symbols-outlined absolute right-md top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Prompt Input -->
+<section class="flex flex-col gap-sm">
+<div class="flex justify-between items-center">
+<h3 class="font-body-md text-body-md font-semibold text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">edit_note</span>
+                            提示词
+                        </h3>
+<button class="text-primary-fixed-dim hover:text-primary transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">magic_button</span>
+<span class="font-label-caps text-label-caps">优化</span>
+</button>
+</div>
+<div class="relative">
+<textarea class="w-full h-[120px] bg-surface-container border border-outline-variant/50 rounded-lg p-md text-on-surface resize-none focus:outline-none focus:border-primary-fixed focus:ring-1 focus:ring-primary-fixed/20 transition-all font-body-sm text-body-sm glass-input" placeholder="描述你想要生成的画面内容..."></textarea>
+<div class="absolute bottom-sm right-sm flex gap-xs">
+<button class="w-6 h-6 rounded bg-surface hover:bg-surface-bright flex items-center justify-center text-on-surface-variant border border-outline-variant/30" title="从模板加载">
+<span class="material-symbols-outlined text-[14px]">bookmark</span>
+</button>
+<button class="w-6 h-6 rounded bg-surface hover:bg-surface-bright flex items-center justify-center text-on-surface-variant border border-outline-variant/30" title="清空">
+<span class="material-symbols-outlined text-[14px]">clear</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Generation Actions -->
+<div class="mt-auto pt-lg border-t border-outline-variant/30 sticky bottom-0 bg-surface-dim/95 backdrop-blur">
+<div class="flex items-center justify-between mb-md">
+<div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[16px]">payments</span>
+                            预估消耗: 4 credits
+                        </div>
+</div>
+<button class="w-full h-12 rounded-lg bg-gradient-to-r from-primary-fixed-dim to-secondary-container text-white font-body-md text-body-md font-bold flex items-center justify-center gap-sm hover:shadow-[0_0_20px_rgba(0,219,231,0.4)] transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                        生成图像
+                    </button>
+</div>
+</div>
+</aside>
+<!-- Center Panel: Result Grid -->
+<section class="flex-1 h-full bg-[#000000] p-lg overflow-y-auto flex flex-col">
+<div class="flex justify-between items-center mb-lg">
+<h2 class="font-h3 text-h3 font-bold text-on-surface">生成结果</h2>
+<div class="flex gap-sm">
+<button class="px-md py-sm rounded-lg border border-outline-variant/50 text-on-surface-variant hover:text-primary-fixed hover:border-primary-fixed/50 transition-colors font-body-sm text-body-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        过滤
+                    </button>
+<button class="px-md py-sm rounded-lg border border-outline-variant/50 text-on-surface-variant hover:text-primary-fixed hover:border-primary-fixed/50 transition-colors font-body-sm text-body-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">grid_view</span>
+                        视图
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout for Results -->
+<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md auto-rows-[240px]">
+<!-- Result Card 1 (Active/Selected) -->
+<div class="relative group rounded-2xl overflow-hidden border-2 border-primary-fixed-dim shadow-[0_0_15px_rgba(0,219,231,0.15)] cursor-pointer row-span-2">
+<img alt="A highly detailed cinematic shot of a futuristic cyberpunk cityscape at night. Neon cyan and deep purple lights reflect off wet dark surfaces, creating a moody, high-tech atmosphere. The scene is rendered with photorealistic clarity, perfectly matching the dark UI and modern creator aesthetic." class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A highly detailed cinematic shot of a futuristic cyberpunk cityscape at night. Neon cyan and deep purple lights reflect off wet dark surfaces, creating a moody, high-tech atmosphere. The scene is rendered with photorealistic clarity, perfectly matching the dark UI and modern creator aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCh-Octh8FhvDoCK95DFzGUtrdMhP_QhZIykOHz1xRA9vmY3mF-aUA_1YDSE-kiJWAvcfJq7-qo7GCxH1dFvEn0HZ4jOOBZIiMxOoYiiAlKN-8jJU53_oJoDpeY-3Q8AYABiw4FiydPX3N62qIDKfdhjNQroYPFAXb6ofRmYcU_p2At3JV15-BgvnfnOgAyPQ0NPtJ9wQ58J5PuGi0lhMiZOjBCJP-A2b55il4l1-ZDK76tWaqJhokZktQjoLbjXYciicJPw5XL"/>
+<!-- Hover Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0c]/90 via-transparent to-transparent opacity-100 flex flex-col justify-end p-md">
+<div class="flex justify-between items-center">
+<span class="px-2 py-1 rounded-full bg-primary-fixed/20 border border-primary-fixed/50 text-primary-fixed font-label-caps text-[10px] backdrop-blur-md">V6.0</span>
+<div class="flex gap-xs">
+<button class="w-8 h-8 rounded-full bg-surface-dim/80 backdrop-blur border border-outline-variant/50 flex items-center justify-center text-primary-fixed hover:bg-primary-fixed/20 transition-colors">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-surface-dim/80 backdrop-blur border border-outline-variant/50 flex items-center justify-center text-on-surface hover:text-primary-fixed hover:border-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Result Card 2 -->
+<div class="relative group rounded-2xl overflow-hidden border border-[#262626] hover:border-outline-variant transition-colors cursor-pointer">
+<img alt="Abstract digital art featuring fluid, glowing geometric shapes floating in a vast, dark expanse. The color palette focuses on deep charcoals and vibrant neon cyan accents, conveying a sense of effortless computational power. The composition is minimal yet complex, suitable for high-end SaaS platform assets." class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Abstract digital art featuring fluid, glowing geometric shapes floating in a vast, dark expanse. The color palette focuses on deep charcoals and vibrant neon cyan accents, conveying a sense of effortless computational power. The composition is minimal yet complex, suitable for high-end SaaS platform assets." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8wXRDqPVYtDQV2OxklCjeaE6FhDZ9UW6vdTY0L440ggvCBWyAvoABBfoJpHRag5_3DCsAxKaPoMgO9YSfULtL3GZzK7Bjr1iZ0hlRFBZHN2WUJ9ZB65RKzZTy-AHOxPYzyg0KnSygAS6j2UiSj75d6oaiDXKaaeA1P7A3igHmN9zxpahnrDHk0n9MzBevO67pm4OT5ISYgaEI2v5ox-QXuPoB-aR3iYwvcB-3qpeb46ekcrGXtqPs-aclfCmo82B3FKPerx_p"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0c]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-md">
+<div class="flex justify-end gap-xs">
+<button class="w-8 h-8 rounded-full bg-surface-dim/80 backdrop-blur border border-outline-variant/50 flex items-center justify-center text-on-surface hover:text-primary-fixed hover:border-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Generating Placeholder -->
+<div class="relative rounded-2xl overflow-hidden border border-[#262626] bg-[#0a0a0c] flex items-center justify-center flex-col gap-md">
+<div class="w-12 h-12 rounded-full border-2 border-outline-variant/30 border-t-primary-fixed-dim animate-spin"></div>
+<p class="font-body-sm text-body-sm text-on-surface-variant animate-pulse">正在生成图像...</p>
+<div class="absolute bottom-0 left-0 h-1 bg-primary-fixed-dim w-2/3 shadow-[0_0_10px_rgba(0,219,231,0.5)]"></div>
+</div>
+</div>
+</section>
+<!-- Right Panel: Selection Detail -->
+<aside class="w-[360px] h-full bg-surface-dim border-l border-outline-variant/30 flex flex-col overflow-y-auto">
+<div class="p-lg flex flex-col gap-lg">
+<div class="flex justify-between items-center">
+<h3 class="font-body-md text-body-md font-semibold text-on-surface">图像详情</h3>
+<button class="text-on-surface-variant hover:text-white transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Large Preview -->
+<div class="w-full aspect-square rounded-xl overflow-hidden border border-[#262626] bg-black">
+<img alt="A highly detailed cinematic shot of a futuristic cyberpunk cityscape at night. Neon cyan and deep purple lights reflect off wet dark surfaces, creating a moody, high-tech atmosphere. The scene is rendered with photorealistic clarity, perfectly matching the dark UI and modern creator aesthetic." class="w-full h-full object-contain" data-alt="A highly detailed cinematic shot of a futuristic cyberpunk cityscape at night. Neon cyan and deep purple lights reflect off wet dark surfaces, creating a moody, high-tech atmosphere. The scene is rendered with photorealistic clarity, perfectly matching the dark UI and modern creator aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA71FiL3IT1ZZr5JDXkYYnSbkOIfy-KQ7w1NCFJpa26hbjGRmC-Lc3Vo4U7Zw7rfAsIJLTaE6Sj5aiKTRCoh5wOXeaEf5Vc19Nm87GrcDDQYv68MSuwmD4GG3Ok4t1PVMdCdiQxS2BvzYmQm74ruF3Ez2JCQie3zu5ENoTakT_9m4SrAZp66DmxIz6iTPTilpY9gGKWjrC4iUg8Ylrt3ai5WUMkGDMyjuNXG_RufCkQRDQfcymGAxny_fqfUkbBTShOtmOjhscV"/>
+</div>
+<!-- Info Grid -->
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-surface-container rounded-lg p-sm border border-outline-variant/30">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-xs">分辨率</p>
+<p class="font-body-sm text-body-sm text-on-surface font-semibold">1024 x 1024</p>
+</div>
+<div class="bg-surface-container rounded-lg p-sm border border-outline-variant/30">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-xs">种子 (Seed)</p>
+<p class="font-body-sm text-body-sm text-on-surface font-semibold flex items-center gap-xs">
+                            84729104
+                            <span class="material-symbols-outlined text-[14px] text-on-surface-variant cursor-pointer hover:text-primary-fixed">content_copy</span>
+</p>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-sm mt-auto">
+<button class="w-full h-12 rounded-lg bg-surface-container hover:bg-surface-container-high border border-primary-fixed-dim/50 text-primary-fixed-dim font-body-md text-body-md font-semibold flex items-center justify-center gap-sm transition-all hover:shadow-[inset_0_0_10px_rgba(0,219,231,0.2)]">
+<span class="material-symbols-outlined">movie</span>
+                        作为图生视频首帧 (I2V)
+                    </button>
+<div class="flex gap-sm">
+<button class="flex-1 h-10 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/50 text-on-surface font-body-sm text-body-sm flex items-center justify-center gap-xs transition-colors">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                            下载原图
+                        </button>
+<button class="flex-1 h-10 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/50 text-on-surface font-body-sm text-body-sm flex items-center justify-center gap-xs transition-colors">
+<span class="material-symbols-outlined text-[18px]">high_quality</span>
+                            高清放大
+                        </button>
+</div>
+</div>
+</div>
+</aside>
+</main>
+</body></html>

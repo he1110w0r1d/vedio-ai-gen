@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background: #000;
+    color: #e5e1e4;
+    font-family: Inter, ui-sans-serif, system-ui;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply border border-[#262626] bg-[#0a0a0c]/95 backdrop-blur-xl;
+  }
+
+  .card {
+    @apply glass-panel rounded-2xl p-5;
+  }
+
+  .field {
+    @apply w-full rounded-lg border border-outline-variant/50 bg-surface-container px-3 py-2 text-sm text-on-surface outline-none transition focus:border-primary-fixed-dim focus:ring-1 focus:ring-primary-fixed-dim/30;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-primary-fixed-dim to-primary-container px-4 py-2 text-sm font-bold text-on-primary-fixed transition hover:brightness-110;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-[#262626] bg-surface-container-low px-4 py-2 text-sm text-on-surface-variant transition hover:border-primary-fixed-dim/70 hover:text-primary-fixed;
+  }
+
+  .chip {
+    @apply rounded-full border border-outline-variant/50 bg-surface-container px-2.5 py-1 text-xs text-on-surface-variant;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
+}

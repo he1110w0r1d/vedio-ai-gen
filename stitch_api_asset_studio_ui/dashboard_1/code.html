@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>API Asset Studio - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "on-secondary-fixed": "#23005c",
+                            "on-tertiary": "#303030",
+                            "on-error-container": "#ffdad6",
+                            "secondary-fixed-dim": "#d0bcff",
+                            "inverse-surface": "#e5e1e4",
+                            "on-background": "#e5e1e4",
+                            "primary-fixed": "#74f5ff",
+                            "surface-tint": "#00dbe7",
+                            "primary-fixed-dim": "#00dbe7",
+                            "surface-container": "#201f21",
+                            "inverse-primary": "#00696f",
+                            "tertiary-fixed": "#e4e2e1",
+                            "on-tertiary-fixed": "#1b1c1c",
+                            "error": "#ffb4ab",
+                            "surface-container-highest": "#353437",
+                            "outline-variant": "#3a494b",
+                            "primary": "#e1fdff",
+                            "on-secondary": "#3c0091",
+                            "tertiary-fixed-dim": "#c8c6c5",
+                            "surface-dim": "#131315",
+                            "surface-container-high": "#2a2a2c",
+                            "on-surface": "#e5e1e4",
+                            "inverse-on-surface": "#313032",
+                            "secondary-container": "#571bc1",
+                            "on-error": "#690005",
+                            "on-tertiary-container": "#605f5f",
+                            "surface-container-lowest": "#0e0e10",
+                            "on-primary-fixed": "#002022",
+                            "on-secondary-fixed-variant": "#5516be",
+                            "primary-container": "#00f2ff",
+                            "on-primary-fixed-variant": "#004f54",
+                            "surface-container-low": "#1c1b1d",
+                            "error-container": "#93000a",
+                            "outline": "#849495",
+                            "surface-variant": "#353437",
+                            "on-primary-container": "#006a71",
+                            "surface": "#131315",
+                            "on-tertiary-fixed-variant": "#474746",
+                            "on-primary": "#00363a",
+                            "secondary-fixed": "#e9ddff",
+                            "on-surface-variant": "#b9cacb",
+                            "tertiary-container": "#dddada",
+                            "background": "#131315",
+                            "surface-bright": "#39393b",
+                            "secondary": "#d0bcff",
+                            "on-secondary-container": "#c4abff",
+                            "tertiary": "#faf7f6"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                    },
+                    "spacing": {
+                            "xs": "4px",
+                            "xl": "40px",
+                            "lg": "24px",
+                            "container-max": "1440px",
+                            "gutter": "20px",
+                            "sm": "8px",
+                            "margin": "32px",
+                            "unit": "4px",
+                            "md": "16px"
+                    },
+                    "fontFamily": {
+                            "h2": ["Inter"],
+                            "h1": ["Inter"],
+                            "body-lg": ["Inter"],
+                            "h3": ["Inter"],
+                            "body-md": ["Inter"],
+                            "body-sm": ["Inter"],
+                            "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                            "h2": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                            "h1": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                            "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                            "h3": ["24px", {"lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                            "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                            "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                            "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #000000; color: #e5e1e4; }
+        .glass-panel { background-color: #0a0a0c; border: 1px solid #262626; backdrop-filter: blur(12px); }
+        .glass-hover:hover { border-color: #262626; box-shadow: inset 0 0 20px rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body class="font-body-md text-body-md bg-black text-on-surface flex min-h-screen">
+<!-- SideNavBar -->
+<nav class="bg-surface-dim dark:bg-surface-dim w-[280px] h-screen fixed left-0 top-0 border-r border-outline-variant/30 backdrop-blur-xl flex flex-col h-full py-lg px-md z-50">
+<div class="mb-xl flex items-center space-x-md">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center border border-primary-container/30">
+<img alt="用户头像" class="w-8 h-8 rounded-full object-cover" data-alt="A macro shot of a sleek, minimalist glowing neon cyan geometric abstract logo design on a dark background. The lighting is cinematic and high-tech, fitting for an advanced AI software suite." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGdI5b-aOdLv8tU1bWGjYk7IkqOhFpaqgTK_R3mhu1ot9xeUAjq--jQXnBzgxaqXfgRvUdQ3JracixWYkNHn4e7qQFNFumF3kYDZ1270clR9mAMupFEry1M3gEthUff7s7hLV7F-DG47dD3PmblWeWk0t4ecNHn3cYSqElQ83GID9AlXZw3onRYzjXUMFYs831QMBr-1kn6HBO4aaLGIX6oRBomNt1HnaJs45MlrQGKx8iW7pzqnl9WNwjY-NGxhBC98_1eQ0q"/>
+</div>
+<div>
+<h1 class="font-h3 text-h3 font-bold text-primary-container">API Asset Studio</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">高级创作者版</p>
+</div>
+</div>
+<div class="flex-1 space-y-sm">
+<a class="flex items-center space-x-md px-md py-sm rounded-lg text-primary-fixed-dim font-bold bg-primary-container/10 border-r-2 border-primary-fixed-dim transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span>控制台</span>
+</a>
+<a class="flex items-center space-x-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span>项目</span>
+</a>
+<a class="flex items-center space-x-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">image</span>
+<span>图像工作室</span>
+</a>
+<a class="flex items-center space-x-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">movie</span>
+<span>视频工作室</span>
+</a>
+<a class="flex items-center space-x-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>资产库</span>
+</a>
+<a class="flex items-center space-x-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">task</span>
+<span>任务中心</span>
+</a>
+<a class="flex items-center space-x-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">api</span>
+<span>供应商与API</span>
+</a>
+<a class="flex items-center space-x-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">description</span>
+<span>提示词模板</span>
+</a>
+<a class="flex items-center space-x-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>设置</span>
+</a>
+</div>
+<div class="mt-auto pt-lg border-t border-outline-variant/30">
+<div class="glass-panel p-md rounded-xl text-center">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[32px] mb-sm block">account_balance_wallet</span>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-xs">成本提示</p>
+<p class="font-body-sm text-body-sm text-on-surface">由您绑定的供应商结算</p>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-[280px] min-h-screen flex flex-col relative">
+<!-- TopNavBar -->
+<header class="bg-surface/80 dark:bg-surface/80 docked full-width top-0 border-b border-outline-variant/30 backdrop-blur-xl flex justify-between items-center w-full px-margin h-16 z-40 fixed left-[280px] right-0 w-auto">
+<div class="flex items-center">
+<button class="flex items-center space-x-sm text-on-surface-variant hover:text-primary-fixed transition-colors">
+<span class="font-body-sm text-body-sm">项目选择</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+</div>
+<div class="flex items-center space-x-lg">
+<button class="text-on-surface-variant hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined">sensors</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/50">
+<img alt="个人中心" class="w-full h-full object-cover" data-alt="A sharp, professional headshot portrait in a modern dark-mode aesthetic with rim lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2mZ__RyGTE56Rfl-IT0IU9F6KtJc_PDx0pq4oNrTUFvu_sgGs79J7OywNtCUflRewwxBZlZNR9S97EzimwpOzcOVzqHTla3UYqeGZxA166pMa2a_LfCqedem1h3XCX7_nCVail-mtHXiqHwHY5LU1ihe78fsQVngFCkXy6dnuuNOPYWXxzRwGO3vhygCxD84T3wc7dqToNCQz2RN6J_QNe_qzrvtWzc3t2S0jfU9poXIrbiPWqwHwfIH8kj2ifkzTjXSbBsZl"/>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="flex-1 mt-16 p-margin overflow-y-auto max-w-container-max mx-auto w-full space-y-margin">
+<!-- Welcome Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Welcome Card -->
+<div class="lg:col-span-2 rounded-2xl relative overflow-hidden p-xl border border-outline-variant/30 group">
+<div class="absolute inset-0 bg-gradient-to-br from-secondary-container/40 to-surface-dim z-0"></div>
+<div class="absolute -right-20 -top-20 w-64 h-64 bg-secondary-fixed/20 rounded-full blur-[80px] z-0"></div>
+<div class="relative z-10 flex flex-col justify-between h-full">
+<div>
+<h2 class="font-h2 text-h2 text-on-surface mb-sm">欢迎回来，创作者</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg">您的API引擎正在高速运转。今日已成功生成了惊人的创意资产。</p>
+</div>
+<div class="mt-lg flex space-x-md">
+<button class="bg-gradient-to-r from-primary-container to-surface-tint text-on-primary-container font-body-md text-body-md font-bold px-lg py-sm rounded-lg flex items-center space-x-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span>新建任务</span>
+</button>
+<button class="glass-panel text-primary-fixed-dim font-body-md text-body-md px-lg py-sm rounded-lg flex items-center space-x-sm hover:text-primary-fixed hover:border-primary-fixed-dim/50 transition-all">
+<span class="material-symbols-outlined text-[20px]">explore</span>
+<span>浏览画廊</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Provider Health -->
+<div class="glass-panel rounded-2xl p-lg flex flex-col">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-h3 text-h3 text-on-surface">API 状态</h3>
+<span class="material-symbols-outlined text-on-surface-variant">dns</span>
+</div>
+<div class="space-y-md flex-1">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-sm">
+<div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">smart_toy</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface">OpenAI</span>
+</div>
+<div class="flex items-center space-x-xs">
+<span class="w-2 h-2 rounded-full bg-[#00ff9d] animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">正常</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-sm">
+<div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">cloud</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Google Cloud</span>
+</div>
+<div class="flex items-center space-x-xs">
+<span class="w-2 h-2 rounded-full bg-[#00ff9d] animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">正常</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-sm">
+<div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">video_camera_back</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Runway</span>
+</div>
+<div class="flex items-center space-x-xs">
+<span class="w-2 h-2 rounded-full bg-surface-tint"></span>
+<span class="font-label-caps text-label-caps text-primary-fixed-dim">繁忙</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="glass-panel rounded-2xl p-lg glass-hover transition-all">
+<div class="flex justify-between items-start mb-md">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed-dim/10 text-primary-fixed-dim flex items-center justify-center border border-primary-fixed-dim/20">
+<span class="material-symbols-outlined">image</span>
+</div>
+<span class="bg-primary-fixed-dim/20 text-primary-fixed-dim font-label-caps text-label-caps px-2 py-1 rounded-full">+12%</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-xs">今日生成图像</p>
+<p class="font-h2 text-h2 text-on-surface font-bold">1,284</p>
+</div>
+<div class="glass-panel rounded-2xl p-lg glass-hover transition-all">
+<div class="flex justify-between items-start mb-md">
+<div class="w-10 h-10 rounded-xl bg-secondary-fixed/10 text-secondary-fixed-dim flex items-center justify-center border border-secondary-fixed/20">
+<span class="material-symbols-outlined">movie</span>
+</div>
+<span class="bg-secondary-fixed/20 text-secondary-fixed-dim font-label-caps text-label-caps px-2 py-1 rounded-full">+5%</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-xs">今日生成视频</p>
+<p class="font-h2 text-h2 text-on-surface font-bold">42</p>
+</div>
+<div class="glass-panel rounded-2xl p-lg glass-hover transition-all">
+<div class="flex justify-between items-start mb-md">
+<div class="w-10 h-10 rounded-xl bg-surface-tint/10 text-surface-tint flex items-center justify-center border border-surface-tint/20">
+<span class="material-symbols-outlined">pending_actions</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-xs">运行中任务</p>
+<p class="font-h2 text-h2 text-on-surface font-bold">8</p>
+</div>
+<div class="glass-panel rounded-2xl p-lg glass-hover transition-all">
+<div class="flex justify-between items-start mb-md">
+<div class="w-10 h-10 rounded-xl bg-white/5 text-on-surface flex items-center justify-center border border-white/10">
+<span class="material-symbols-outlined">cable</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-xs">已连接节点</p>
+<p class="font-h2 text-h2 text-on-surface font-bold">5/6</p>
+</div>
+</div>
+<!-- Active Tasks & Recent Assets -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Active Tasks -->
+<div class="glass-panel rounded-2xl p-lg col-span-1 flex flex-col">
+<div class="flex justify-between items-center mb-lg">
+<h3 class="font-h3 text-h3 text-on-surface">进行中任务</h3>
+<button class="text-primary-fixed-dim text-body-sm hover:underline">查看全部</button>
+</div>
+<div class="space-y-lg">
+<!-- Task 1 -->
+<div>
+<div class="flex justify-between mb-sm">
+<div class="flex items-center space-x-sm">
+<span class="material-symbols-outlined text-secondary-fixed-dim text-[18px]">movie</span>
+<span class="font-body-md text-body-md text-on-surface">赛博朋克城市概念视频</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">78%</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-secondary-fixed-dim h-1.5 rounded-full relative" style="width: 78%">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(208,188,255,0.8)]"></div>
+</div>
+</div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-sm">Runway Gen-2 · 剩余约 2 分钟</p>
+</div>
+<!-- Task 2 -->
+<div>
+<div class="flex justify-between mb-sm">
+<div class="flex items-center space-x-sm">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">image</span>
+<span class="font-body-md text-body-md text-on-surface">批量生成：太空服材质变体</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">45%</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-primary-fixed-dim h-1.5 rounded-full relative" style="width: 45%">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(0,219,231,0.8)]"></div>
+</div>
+</div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-sm">Midjourney API · 批处理 45/100</p>
+</div>
+</div>
+</div>
+<!-- Recent Assets Grid -->
+<div class="glass-panel rounded-2xl p-lg col-span-1 lg:col-span-2">
+<div class="flex justify-between items-center mb-lg">
+<h3 class="font-h3 text-h3 text-on-surface">最近生成资产</h3>
+<div class="flex space-x-sm">
+<span class="px-3 py-1 rounded-full bg-primary-fixed-dim/20 text-primary-fixed-dim font-label-caps text-label-caps border border-primary-fixed-dim/30">图像</span>
+<span class="px-3 py-1 rounded-full bg-surface-container-highest text-on-surface-variant font-label-caps text-label-caps hover:text-on-surface cursor-pointer">视频</span>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-md">
+<div class="relative group rounded-xl overflow-hidden border border-outline-variant/30 aspect-square">
+<img alt="资产缩略图" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A highly detailed, cinematic rendering of an abstract geometric architectural structure in a deep, moody sci-fi setting. High contrast lighting with subtle neon cyan reflections on dark metallic surfaces. The overall composition is striking and minimal." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBImFnTtoKdmm93_FdtpSpBky5yn9F6ax7pSPMAv9EOd-fw76fDpduY_uVj4YKIsqnkOQ1pC4Z8TiowU62l9QG_a9XeqTGJAgCiUGjbjHSlaMw5_QrSe-IEZI2CokuiockUeurjkW_D667ZP0HlkR6pUX-mfKlGI_mRKOy8YLzzPid8Hot3NDVscK3ml1ABukQQRVADw7D4wp4yvfoo6CIFv_2Ps36D1JGqKO_V2kYC2ggXE-N2wg5Icomr5wEWY0ZF9l-DYveC"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-sm">
+<span class="font-label-caps text-label-caps text-white mb-xs">v4_final.png</span>
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-primary-fixed-dim bg-primary-fixed-dim/20 px-2 rounded-sm">Midjourney</span>
+<span class="material-symbols-outlined text-white text-[16px]">download</span>
+</div>
+</div>
+</div>
+<div class="relative group rounded-xl overflow-hidden border border-outline-variant/30 aspect-square">
+<img alt="资产缩略图" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A surreal digital art landscape featuring floating neon geometric prisms above a dark, reflective liquid surface. The lighting is dominated by deep purples and vibrant cyans, creating a premium glassmorphic aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCd7L8i9yUc62ko2ShRKNUKbNb3bKjXBmrBKuqpZdQG9p3S6Mt8evTtO_r2nLD4ZromJxknt8NJzmkqG-WhnCwge2MK1vkWbiY6Bs-0XdiFvAyDerlJvIVLLbhRrWRKygidqxO3hWXc1gP0QCe_8UhNTObMf2pHoGLhbC_cX-L8WYDH9bKMsPQyYtMEScil0gqtwNADJSJB8NODmFEvED4Nze69qmsi-Wb3w7nWri-yTEQJANRwOYA5p4ixtgW7CcDTyVjuWzNb"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-sm">
+<span class="font-label-caps text-label-caps text-white mb-xs">neon_landscape.jpg</span>
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-primary-fixed-dim bg-primary-fixed-dim/20 px-2 rounded-sm">DALL-E 3</span>
+<span class="material-symbols-outlined text-white text-[16px]">download</span>
+</div>
+</div>
+</div>
+<div class="relative group rounded-xl overflow-hidden border border-outline-variant/30 aspect-square">
+<img alt="资产缩略图" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A sleek, macro view of a high-tech robotic iris or lens mechanism. Dark matte metal textures contrasted with glowing cyan inner rings. High definition, photorealistic, professional concept art." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuW6ZC2n8lYUZXXvLHDhMN_TM2oQxifPV_DK_tfvFYt89AAgVgvBNNLgdrBa9MPifMRDsumkVpzDK1XmRxgHCE8tY7jDzREwiCwiDqgt7pKSOl1NFTN3z8b--CSj_olfxFXwzyI_Y69WUIz4PEmsSUq0QMonwtUTlcuEi3SRRDw1e78VzUZBES428AA7McTHCSvu_Ao6znlHyeJkGWw418JZZW1ZKbfMPB81jTBRY2ZOHDNRbCl3O8i61gJm-j3bULfasdo5Z3"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-sm">
+<span class="font-label-caps text-label-caps text-white mb-xs">lens_study_01.png</span>
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-primary-fixed-dim bg-primary-fixed-dim/20 px-2 rounded-sm">Midjourney</span>
+<span class="material-symbols-outlined text-white text-[16px]">download</span>
+</div>
+</div>
+</div>
+<div class="relative group rounded-xl overflow-hidden border border-outline-variant/30 aspect-square">
+<img alt="资产缩略图" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Abstract 3D rendered waves of fluid metal in dark charcoal and metallic silver tones, illuminated by soft blue ambient light. The composition flows dynamically, creating a sense of elegant, modern motion." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7pn2p_GVkBm6EJucjW7T-IMDU_hQmqphJB1juiIKjco2xM_1frDhtX-I3TjC7b8TILSuduN1WnlFu2lEgTHtaYuJUhKzKnjlFcg_XWYBEUDpjnSt6nHXOJie02l0xP_wmQlx5AQf9qt9QdpUFbRTahPMavXevjseYeLT61c5STD8HIqIbxktkJvQYEj8FIeBVekBfqZQA0EYTF93EWn8C38nxga8pYcWK0MFGz-BbkAIaeUQCQNZct6wJGS5kNF1cJOVVU4kL"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-sm">
+<span class="font-label-caps text-label-caps text-white mb-xs">fluid_metal.jpg</span>
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-primary-fixed-dim bg-primary-fixed-dim/20 px-2 rounded-sm">Stable Diffusion</span>
+<span class="material-symbols-outlined text-white text-[16px]">download</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

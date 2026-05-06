@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Asset Library - API Asset Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#23005c",
+                        "on-tertiary": "#303030",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#d0bcff",
+                        "inverse-surface": "#e5e1e4",
+                        "on-background": "#e5e1e4",
+                        "primary-fixed": "#74f5ff",
+                        "surface-tint": "#00dbe7",
+                        "primary-fixed-dim": "#00dbe7",
+                        "surface-container": "#201f21",
+                        "inverse-primary": "#00696f",
+                        "tertiary-fixed": "#e4e2e1",
+                        "on-tertiary-fixed": "#1b1c1c",
+                        "error": "#ffb4ab",
+                        "surface-container-highest": "#353437",
+                        "outline-variant": "#3a494b",
+                        "primary": "#e1fdff",
+                        "on-secondary": "#3c0091",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "surface-dim": "#131315",
+                        "surface-container-high": "#2a2a2c",
+                        "on-surface": "#e5e1e4",
+                        "inverse-on-surface": "#313032",
+                        "secondary-container": "#571bc1",
+                        "on-error": "#690005",
+                        "on-tertiary-container": "#605f5f",
+                        "surface-container-lowest": "#0e0e10",
+                        "on-primary-fixed": "#002022",
+                        "on-secondary-fixed-variant": "#5516be",
+                        "primary-container": "#00f2ff",
+                        "on-primary-fixed-variant": "#004f54",
+                        "surface-container-low": "#1c1b1d",
+                        "error-container": "#93000a",
+                        "outline": "#849495",
+                        "surface-variant": "#353437",
+                        "on-primary-container": "#006a71",
+                        "surface": "#131315",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "on-primary": "#00363a",
+                        "secondary-fixed": "#e9ddff",
+                        "on-surface-variant": "#b9cacb",
+                        "tertiary-container": "#dddada",
+                        "background": "#131315",
+                        "surface-bright": "#39393b",
+                        "secondary": "#d0bcff",
+                        "on-secondary-container": "#c4abff",
+                        "tertiary": "#faf7f6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "40px",
+                        "lg": "24px",
+                        "container-max": "1440px",
+                        "gutter": "20px",
+                        "sm": "8px",
+                        "margin": "32px",
+                        "unit": "4px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h3": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h2": ["32px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "h1": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "h3": ["24px", { "lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        .glass-panel { background: rgba(26, 26, 28, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: theme('colors.outline-variant'); border-radius: 10px; }
+    </style>
+</head>
+<body class="font-body-md text-body-md antialiased overflow-hidden flex h-screen">
+<!-- Shared Component: SideNavBar -->
+<nav class="w-[280px] h-screen fixed left-0 top-0 bg-surface-dim dark:bg-surface-dim border-r border-outline-variant/30 backdrop-blur-xl flex flex-col py-lg px-md z-50 transition-all duration-200 ease-in-out">
+<div class="mb-xl flex items-center gap-md px-md">
+<div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">api</span>
+</div>
+<div>
+<h1 class="font-h3 text-h3 font-bold text-primary-container">API Asset Studio</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">高级创作者版</p>
+</div>
+</div>
+<ul class="flex-1 flex flex-col gap-xs overflow-y-auto custom-scrollbar pr-xs">
+<!-- 0: 控制台 -->
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">控制台</span>
+</a>
+</li>
+<!-- 1: 项目 -->
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-body-md text-body-md">项目</span>
+</a>
+</li>
+<!-- 2: 图像工作室 -->
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">image</span>
+<span class="font-body-md text-body-md">图像工作室</span>
+</a>
+</li>
+<!-- 3: 视频工作室 -->
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">movie</span>
+<span class="font-body-md text-body-md">视频工作室</span>
+</a>
+</li>
+<!-- 4: 资产库 (ACTIVE) -->
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-primary-fixed-dim font-bold bg-primary-container/10 border-r-2 border-primary-fixed-dim transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-body-md text-body-md">资产库</span>
+</a>
+</li>
+<!-- 5: 任务中心 -->
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">task</span>
+<span class="font-body-md text-body-md">任务中心</span>
+</a>
+</li>
+<!-- 6: 供应商与API -->
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">api</span>
+<span class="font-body-md text-body-md">供应商与API</span>
+</a>
+</li>
+<!-- 7: 提示词模板 -->
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-body-md text-body-md">提示词模板</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto pt-lg border-t border-outline-variant/30">
+<!-- 8: 设置 -->
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">设置</span>
+</a>
+</div>
+</nav>
+<!-- Shared Component: TopNavBar -->
+<header class="fixed w-full top-0 flex justify-between items-center pl-[312px] pr-margin h-16 z-40 bg-surface/80 dark:bg-surface/80 border-b border-outline-variant/30 backdrop-blur-xl backdrop-blur-md transition-colors font-body-sm text-body-sm">
+<div class="flex items-center gap-md">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-full py-1.5 pl-10 pr-4 text-on-surface focus:outline-none focus:border-primary-fixed-dim focus:ring-1 focus:ring-primary-fixed-dim/50 transition-all font-body-sm text-body-sm placeholder:text-on-surface-variant/50" placeholder="搜索资产、提示词或标签..." type="text"/>
+</div>
+<button class="flex items-center gap-xs px-3 py-1.5 rounded-full border border-outline-variant/50 text-on-surface-variant hover:text-primary-fixed hover:border-primary-fixed-dim/50 transition-all">
+<span class="font-body-sm text-body-sm">项目选择</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+</div>
+<div class="flex items-center gap-lg">
+<button class="text-on-surface-variant hover:text-primary-fixed transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-primary-fixed-dim rounded-full shadow-[0_0_8px_rgba(0,219,231,0.6)]"></span>
+</button>
+<button class="text-on-surface-variant hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined">sensors</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant cursor-pointer hover:border-primary-fixed-dim transition-all">
+<img alt="个人中心" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5HaI53AO2rxyzv828qwVDkKDDXd2wm49G103_7ST0clrEwJCDHBDI1auwdxCKzc66NQ8BXTHoTUfIUk-UcKSMrTiLerIvgkduBNkiRd-jmVQhm7Mvw_048C88WOQllAd7qxfbyiLr1RyTgOnzyuurOAKX4mQww7hmuNnJ5vpD7OA5jyu6jtOQIZYuPdJDiPUmF8FCYalNRRrs8cVCbERKcY2B5CXtujCQNnZoE8h7OvHNlc6dIhG2-SLDo7r95qWgJJilUsZA"/>
+</div>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="flex-1 flex pt-[80px] pl-[280px] w-full h-full">
+<!-- Canvas Area (Left Side) -->
+<div class="flex-1 flex flex-col p-margin overflow-hidden h-full">
+<!-- Page Header & Global Actions -->
+<div class="flex justify-between items-end mb-lg shrink-0">
+<div>
+<h2 class="font-h2 text-h2 text-on-surface mb-xs">资产库</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">管理、过滤和导出所有 AI 生成的媒体资产。</p>
+</div>
+<div class="flex gap-md">
+<button class="px-4 py-2 rounded-lg border border-outline-variant bg-surface-container hover:bg-surface-container-high text-on-surface font-body-sm text-body-sm transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">checklist</span>
+                        批量操作
+                    </button>
+<button class="px-4 py-2 rounded-lg bg-primary-container text-on-primary-container font-body-sm text-body-sm font-bold hover:bg-primary-fixed transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(0,242,255,0.2)]">
+<span class="material-symbols-outlined text-[18px]">cloud_download</span>
+                        导出资产
+                    </button>
+</div>
+</div>
+<!-- Filters & Tabs Bar -->
+<div class="flex items-center justify-between mb-lg shrink-0 pb-md border-b border-outline-variant/30">
+<!-- Tabs -->
+<div class="flex gap-1 bg-surface-container-low p-1 rounded-lg border border-outline-variant/30">
+<button class="px-4 py-1.5 rounded-md bg-surface-container-high text-primary-fixed-dim font-bold shadow-sm transition-all font-body-sm text-body-sm">全部</button>
+<button class="px-4 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all font-body-sm text-body-sm">图像</button>
+<button class="px-4 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all font-body-sm text-body-sm">视频</button>
+<button class="px-4 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all font-body-sm text-body-sm">参考</button>
+<button class="px-4 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all font-body-sm text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">star</span> 收藏
+                    </button>
+</div>
+<!-- Secondary Filters -->
+<div class="flex gap-sm">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-outline-variant/50 text-on-surface-variant text-label-caps font-label-caps hover:text-primary-fixed hover:border-primary-fixed-dim/50 transition-all bg-surface-container-lowest">
+                        供应商 <span class="material-symbols-outlined text-[14px]">expand_more</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-outline-variant/50 text-on-surface-variant text-label-caps font-label-caps hover:text-primary-fixed hover:border-primary-fixed-dim/50 transition-all bg-surface-container-lowest">
+                        模型 <span class="material-symbols-outlined text-[14px]">expand_more</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-outline-variant/50 text-on-surface-variant text-label-caps font-label-caps hover:text-primary-fixed hover:border-primary-fixed-dim/50 transition-all bg-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]">sort</span> 排序: 最新
+                    </button>
+</div>
+</div>
+<!-- Asset Grid -->
+<div class="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-margin">
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-gutter">
+<!-- Asset Card 1 (Selected) -->
+<div class="group relative rounded-2xl bg-surface-container overflow-hidden border-2 border-primary-fixed-dim shadow-[0_0_10px_rgba(0,219,231,0.1)] transition-all cursor-pointer">
+<div class="absolute top-2 left-2 z-10 bg-black/60 backdrop-blur-md rounded px-2 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-surface-tint">image</span>
+<span class="font-label-caps text-[10px] text-surface-tint">Midjourney v6</span>
+</div>
+<div class="absolute top-2 right-2 z-10 w-5 h-5 rounded border border-primary-fixed-dim bg-primary-fixed-dim/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-primary-fixed-dim font-bold">check</span>
+</div>
+<div class="aspect-square w-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A highly detailed conceptual rendering of a futuristic cybernetic interface overlaying a dark, abstract nebula. The aesthetic is extremely minimalist and modern, utilizing deep charcoal blacks contrasted with vibrant neon cyan and violet accents. The lighting is emissive and glowing, suggesting high-tech holographic projections in a sterile, professional dark-mode environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0hZhpkFt6TKEjvi_1Spn9hRLbw0iOaQ0GnNuxJgKrFjt2Xm4xNXmwSuGbXOCe0Z_7fQPxMzmIgWvceiSsSLg2V50GWChYwEXQQf2CnZyGhOHI1tRmasnSzrf59l7bMVv1NdqS0f_huP4zhQLx408dvLvzYqYHFfSmTHrkts6mnLE7cILiuC7a5lkC-fKuUKyHRdUfqghJ_f3-vgJdq9OJ-0wYCMk9rVGqEjUCnkViEKR7pTSqyi-pg9_Slt6kybHK39g-7UEs"/>
+</div>
+<div class="p-3 bg-surface-container-highest border-t border-outline-variant/30">
+<p class="font-body-sm text-body-sm text-on-surface truncate">Cybernetic Interface v2</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">2 小时前</p>
+</div>
+</div>
+<!-- Asset Card 2 -->
+<div class="group relative rounded-2xl bg-surface-container overflow-hidden border border-outline-variant/50 hover:border-outline-variant transition-all cursor-pointer">
+<div class="absolute top-2 left-2 z-10 bg-black/60 backdrop-blur-md rounded px-2 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-on-surface-variant">movie</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">Runway Gen-2</span>
+</div>
+<div class="aspect-square w-full overflow-hidden relative">
+<span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/70 text-h1 drop-shadow-lg z-10">play_circle</span>
+<img class="w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500" data-alt="A cinematic still from a generative video sequence showing a sleek, brutalist architectural structure emerging from a dense, moody fog. The color palette is strictly monochromatic, dominated by varying shades of matte dark grey and pitch black. The lighting is cinematic and diffuse, emphasizing the imposing geometry of the building against the soft, ethereal background in a premium sci-fi style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxncU77aUSif7KATyEylWQxfpkjzUCAjprG-3gGIyLuDbowuxBcIV2GF1mhW6gnJaDvaMCFKTy2053s9mvsQ2oSWzIh0jLasuc6G783dctAcocMjZNwTY6RdTDFSXl9kJwdgsA7U_fgEJtF_Dp-aE59z0f0SA_usHegYBOqgzbZMGL-OCiWmX7tDrkbnprVSS-xHTCTbJStHNQyKdiiel-kgfCVVa_KEXRpYdf2a8-VZ4AHavxqqbt3H3qsNnqFja6fjnWxz63"/>
+</div>
+<div class="p-3 bg-surface-container-highest border-t border-outline-variant/30">
+<p class="font-body-sm text-body-sm text-on-surface truncate">Brutalist Reveal Sequence</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">昨天</p>
+</div>
+</div>
+<!-- Asset Card 3 -->
+<div class="group relative rounded-2xl bg-surface-container overflow-hidden border border-outline-variant/50 hover:border-outline-variant transition-all cursor-pointer">
+<div class="absolute top-2 left-2 z-10 bg-black/60 backdrop-blur-md rounded px-2 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-on-surface-variant">image</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">DALL-E 3</span>
+</div>
+<div class="absolute top-2 right-2 z-10">
+<span class="material-symbols-outlined text-[18px] text-secondary-fixed-dim drop-shadow-md" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<div class="aspect-[4/5] w-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Abstract fluid simulation art piece. Viscous streams of glossy black and metallic cyan liquid intertwining in a zero-gravity environment. The lighting is sharp studio macro photography style, creating extreme reflections on the fluid surfaces. The overall mood is luxurious, highly controlled, and perfectly aligned with a high-end dark mode digital creator aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEh_1jN2CtipBB73Lb8o_oNz9SNrp7P55-ziGSn-2vS57wBau_LjIyScT0ASTh4J0iENePB0Ctm9nFPMDpqer8SSYmhiE7g-AwYCuqvQZ6Dao7LJLXc2lec-oCHE3Gs6vwN1FS7Ap4cHB0bOPOyRn10H2SJYveXhpmoi8AKh2jVN5UwxYM-dPmw3hm2mChnMm1corzpJ5AK8G2DhOiwFBVqzOXriuOFy6eDWiKa2qE1Vi8yECWsFBGzE4vHMLXeJVBrcKW03C3"/>
+</div>
+<div class="p-3 bg-surface-container-highest border-t border-outline-variant/30">
+<p class="font-body-sm text-body-sm text-on-surface truncate">Fluid Dynamics Beta</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">2023-10-24</p>
+</div>
+</div>
+<!-- Asset Card 4 -->
+<div class="group relative rounded-2xl bg-surface-container overflow-hidden border border-outline-variant/50 hover:border-outline-variant transition-all cursor-pointer">
+<div class="absolute top-2 left-2 z-10 bg-black/60 backdrop-blur-md rounded px-2 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-on-surface-variant">image</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">Stable Diffusion XL</span>
+</div>
+<div class="aspect-square w-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A clean, minimalist UI design component floating in a dark void. The component features glassmorphism effects, soft drop shadows, and precise typography. The background is a solid deep charcoal black. Accent colors are subtle violet and teal. The lighting suggests a soft, ambient glow emitting from the UI elements themselves, representing premium modern SaaS design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDG68RdOFpUhxYe6Lzsd6fukcdm9PWU2cpfquIIdmTRfk7Y2OcNo-b8iNkxIWE88V8nHq5OkpTeVXz74fYb8BHeIl7E0BrBhkr6FDLDFCeYHqutqdLbSAsd3uLT1dBC72tus1M_IimvkTwjQwsJ90PFnGpDjCjtla8dbU_gkMWIPTsK3vJzP9m8EekVU_Fugt2Vl5odOmrP1NnliMi1vb8EH-y-YRK7MP2_OZ8ADzZ862QlC6rd-haBvHs-knjPDyuNrIB2V_oI"/>
+</div>
+<div class="p-3 bg-surface-container-highest border-t border-outline-variant/30">
+<p class="font-body-sm text-body-sm text-on-surface truncate">Dashboard Widget Glass</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">2023-10-22</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Detail Drawer (Docked Right) -->
+<aside class="w-[360px] border-l border-outline-variant/30 bg-surface-dim/50 backdrop-blur-xl h-full flex flex-col shrink-0">
+<!-- Drawer Header -->
+<div class="h-16 flex items-center justify-between px-md border-b border-outline-variant/30 shrink-0">
+<h3 class="font-h3 text-[18px] text-on-surface">资产详情</h3>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded hover:bg-white/5 flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">share</span>
+</button>
+<button class="w-8 h-8 rounded hover:bg-white/5 flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Drawer Content -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-md flex flex-col gap-lg">
+<!-- Preview Image -->
+<div class="w-full rounded-xl overflow-hidden border border-outline-variant/50 bg-black">
+<img class="w-full h-auto object-contain" data-alt="A highly detailed conceptual rendering of a futuristic cybernetic interface overlaying a dark, abstract nebula. The aesthetic is extremely minimalist and modern, utilizing deep charcoal blacks contrasted with vibrant neon cyan and violet accents. The lighting is emissive and glowing, suggesting high-tech holographic projections in a sterile, professional dark-mode environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIg-jlWLTloQ2ieqyxnfencNX9L0beVv-sY4fo_zKXyyVARLo4GjO8Jtz3I1b3wpuweZL7R8Z_KqCmXiFjLwdtsepJmY2wiS1gATw7h06lrC16cd1xkzagLy_YbSGXY0gQuRt7O9oJmWKpRKeGKXACPYpERcwuc-rzhLccSa0IGx7PEuJ1ksPVRj0tB72S5caGdePIkoo7TVDtmiysaUfDG4CGakLR-SXdhty6ZkRhEqLGO-ncZebgjC--13fPdevNhQreBtt7"/>
+</div>
+<!-- Info Section -->
+<div>
+<h4 class="font-h2 text-[16px] text-on-surface mb-1">Cybernetic Interface v2</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">生成于 2023-10-25 14:30</p>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="px-2 py-1 rounded bg-primary-container/10 border border-primary-fixed-dim/30 text-primary-fixed-dim font-label-caps text-[10px]">Midjourney v6</span>
+<span class="px-2 py-1 rounded bg-surface-container-highest border border-outline-variant/50 text-on-surface-variant font-label-caps text-[10px]">1024x1024</span>
+<span class="px-2 py-1 rounded bg-surface-container-highest border border-outline-variant/50 text-on-surface-variant font-label-caps text-[10px]">UI Design</span>
+</div>
+</div>
+<!-- Parameters Box -->
+<div class="rounded-xl border border-outline-variant/50 bg-surface-container-low p-md">
+<h5 class="font-body-sm text-body-sm font-bold text-on-surface mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">terminal</span> 生成参数
+                    </h5>
+<div class="space-y-3">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">提示词 (PROMPT)</span>
+<div class="p-2 rounded bg-surface-container-lowest border border-outline-variant/30 font-body-sm text-[13px] text-on-surface/80 leading-relaxed break-words">
+                                A highly detailed conceptual rendering of a futuristic cybernetic interface overlaying a dark, abstract nebula. The aesthetic is extremely minimalist and modern, utilizing deep charcoal blacks contrasted with vibrant neon cyan accents...
+                            </div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">种子 (SEED)</span>
+<span class="font-body-sm text-body-sm text-on-surface">84729104</span>
+</div>
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">步数 (STEPS)</span>
+<span class="font-body-sm text-body-sm text-on-surface">40</span>
+</div>
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">CFG SCALE</span>
+<span class="font-body-sm text-body-sm text-on-surface">7.5</span>
+</div>
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">采样器</span>
+<span class="font-body-sm text-body-sm text-on-surface">DPM++ 2M Karras</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Drawer Footer Actions -->
+<div class="p-md border-t border-outline-variant/30 bg-surface/50 shrink-0 grid grid-cols-2 gap-sm">
+<button class="py-2 rounded-lg border border-outline-variant hover:border-primary-fixed-dim text-on-surface hover:text-primary-fixed-dim transition-all font-body-sm text-body-sm font-bold flex justify-center items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">history</span> 重新生成
+                </button>
+<button class="py-2 rounded-lg bg-primary-container hover:bg-primary-fixed text-on-primary-container transition-all font-body-sm text-body-sm font-bold flex justify-center items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">imagesmode</span> 用作参考
+                </button>
+</div>
+</aside>
+</main>
+</body></html>

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>供应商与API - API Asset Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#23005c",
+                        "on-tertiary": "#303030",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#d0bcff",
+                        "inverse-surface": "#e5e1e4",
+                        "on-background": "#e5e1e4",
+                        "primary-fixed": "#74f5ff",
+                        "surface-tint": "#00dbe7",
+                        "primary-fixed-dim": "#00dbe7",
+                        "surface-container": "#201f21",
+                        "inverse-primary": "#00696f",
+                        "tertiary-fixed": "#e4e2e1",
+                        "on-tertiary-fixed": "#1b1c1c",
+                        "error": "#ffb4ab",
+                        "surface-container-highest": "#353437",
+                        "outline-variant": "#3a494b",
+                        "primary": "#e1fdff",
+                        "on-secondary": "#3c0091",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "surface-dim": "#131315",
+                        "surface-container-high": "#2a2a2c",
+                        "on-surface": "#e5e1e4",
+                        "inverse-on-surface": "#313032",
+                        "secondary-container": "#571bc1",
+                        "on-error": "#690005",
+                        "on-tertiary-container": "#605f5f",
+                        "surface-container-lowest": "#0e0e10",
+                        "on-primary-fixed": "#002022",
+                        "on-secondary-fixed-variant": "#5516be",
+                        "primary-container": "#00f2ff",
+                        "on-primary-fixed-variant": "#004f54",
+                        "surface-container-low": "#1c1b1d",
+                        "error-container": "#93000a",
+                        "outline": "#849495",
+                        "surface-variant": "#353437",
+                        "on-primary-container": "#006a71",
+                        "surface": "#131315",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "on-primary": "#00363a",
+                        "secondary-fixed": "#e9ddff",
+                        "on-surface-variant": "#b9cacb",
+                        "tertiary-container": "#dddada",
+                        "background": "#131315",
+                        "surface-bright": "#39393b",
+                        "secondary": "#d0bcff",
+                        "on-secondary-container": "#c4abff",
+                        "tertiary": "#faf7f6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "40px",
+                        "lg": "24px",
+                        "container-max": "1440px",
+                        "gutter": "20px",
+                        "sm": "8px",
+                        "margin": "32px",
+                        "unit": "4px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h3": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h2": ["32px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "h1": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "h3": ["24px", { "lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(10, 10, 12, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid #262626;
+        }
+        .neon-focus:focus-within {
+            border-color: #00f2ff;
+            box-shadow: 0 0 0 2px rgba(0, 242, 255, 0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #e1fdff 0%, #00dbe7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<nav class="bg-surface-dim dark:bg-surface-dim text-primary-fixed-dim font-body-md text-body-md w-[280px] h-screen fixed left-0 top-0 border-r border-outline-variant/30 backdrop-blur-xl z-50 flex flex-col h-full py-lg px-md transition-all duration-200 ease-in-out hidden md:flex">
+<div class="mb-xl px-sm">
+<h1 class="font-h3 text-h3 font-bold text-primary-container">API Asset Studio</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">高级创作者版</p>
+</div>
+<div class="flex-1 space-y-sm overflow-y-auto">
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-md text-[20px]" data-icon="dashboard">dashboard</span>
+                控制台
+            </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-md text-[20px]" data-icon="folder_open">folder_open</span>
+                项目
+            </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-md text-[20px]" data-icon="image">image</span>
+                图像工作室
+            </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-md text-[20px]" data-icon="movie">movie</span>
+                视频工作室
+            </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-md text-[20px]" data-icon="inventory_2">inventory_2</span>
+                资产库
+            </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-md text-[20px]" data-icon="task">task</span>
+                任务中心
+            </a>
+<a class="flex items-center px-md py-sm rounded-lg text-primary-fixed-dim font-bold bg-primary-container/10 border-r-2 border-primary-fixed-dim hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-md text-[20px]" data-icon="api" style="font-variation-settings: 'FILL' 1;">api</span>
+                供应商与API
+            </a>
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-md text-[20px]" data-icon="description">description</span>
+                提示词模板
+            </a>
+</div>
+<div class="mt-auto pt-lg border-t border-outline-variant/30">
+<a class="flex items-center px-md py-sm rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-md text-[20px]" data-icon="settings">settings</span>
+                设置
+            </a>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="bg-surface/80 dark:bg-surface/80 text-primary-fixed-dim font-body-sm text-body-sm flex justify-between items-center w-full pl-[312px] pr-margin h-16 z-40 fixed top-0 border-b border-outline-variant/30 backdrop-blur-xl backdrop-blur-md transition-colors hidden md:flex">
+<div class="flex items-center space-x-lg">
+<h2 class="font-h3 text-h3 font-bold text-primary-container">供应商与API</h2>
+<nav class="flex space-x-md hidden lg:flex">
+<a class="text-on-surface-variant hover:text-primary-fixed transition-colors" href="#">项目选择</a>
+</nav>
+</div>
+<div class="flex items-center space-x-md">
+<button class="p-xs text-on-surface-variant hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-xs text-on-surface-variant hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="sensors">sensors</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img alt="用户头像" class="w-full h-full object-cover" data-alt="A high-resolution, futuristic portrait of a digital creator in a minimalist tech environment. The lighting is moody with subtle cyan and deep violet reflections, creating a professional, high-performance aesthetic. The subject looks focused and composed, fitting a premium SaaS user persona." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTRbaeuAHVNelTPkl9UFw09WMScTnYRWesQQCfDehPG2-2r8V6HdQk7rh0ApcYv5jzy6GjtuqdJ8qf8dVf4DqEshULwz9aKLB46iK0hQ99EykXp77829Iteimt37qFhAZXrdoIHeOsv-aXd3UDr-SZYaABTw8sJ4kAtDd2uKw0O7blsKrbxh8p_Q79818HiDLrQGGBZcLLP9f-1amIQYX0Y4RA_shncuOS3F4wLpJMo2nfYbQtaOGmSXvJy8Rv9JZK5FoR0ZBm"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-0 md:ml-[280px] mt-0 md:mt-16 overflow-y-auto h-screen bg-background pt-xl px-margin pb-xl">
+<div class="max-w-container-max mx-auto space-y-xl">
+<!-- Page Header & Actions -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-md">
+<div>
+<h1 class="font-h2 text-h2 text-on-background gradient-text mb-xs">模型供应商与凭证</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">管理您的AI模型供应商API密钥、连接状态和默认调用偏好。所有密钥数据均在本地加密存储，仅在请求时调用。</p>
+</div>
+<div class="flex gap-sm w-full md:w-auto">
+<button class="flex-1 md:flex-none flex items-center justify-center gap-xs px-lg py-sm rounded-lg border border-[#262626] text-primary-fixed-dim hover:text-primary-fixed hover:border-primary-fixed-dim hover:bg-primary-container/10 transition-all font-body-sm text-body-sm font-semibold">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+                        测试所有连接
+                    </button>
+<button class="flex-1 md:flex-none flex items-center justify-center gap-xs px-lg py-sm rounded-lg bg-gradient-to-r from-primary-fixed-dim to-primary-fixed text-on-primary-fixed hover:opacity-90 transition-opacity font-body-sm text-body-sm font-semibold shadow-[0_0_15px_rgba(0,219,231,0.3)]">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        添加自定义供应商
+                    </button>
+</div>
+</div>
+<!-- Security Notice -->
+<div class="glass-panel rounded-xl p-md border border-outline-variant/30 flex items-start gap-md bg-surface-container-high/50">
+<span class="material-symbols-outlined text-secondary-fixed-dim mt-[2px]">security</span>
+<div>
+<h3 class="font-body-md text-body-md font-semibold text-on-background mb-xs">安全与计费提示</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">API 密钥已通过 AES-256 加密存储，仅在请求时调用。调用各类大模型将产生直接费用，请在各供应商控制台设置消费限额以避免意外支出。</p>
+</div>
+</div>
+<!-- Bento Grid layout for Providers -->
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-lg">
+<!-- OpenAI Card -->
+<div class="glass-panel rounded-2xl p-lg flex flex-col gap-md relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-fixed-dim to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-[#0a0a0c] border border-[#262626] flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container text-[24px]">view_in_ar</span>
+</div>
+<div>
+<h3 class="font-h3 text-h3 text-on-background">OpenAI</h3>
+<div class="flex items-center gap-xs mt-xs">
+<div class="w-2 h-2 rounded-full bg-primary-fixed-dim shadow-[0_0_8px_#00dbe7]"></div>
+<span class="font-label-caps text-label-caps text-primary-fixed-dim">已连接</span>
+</div>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors" title="删除密钥">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-xs">
+<span class="px-sm py-xs rounded-full bg-primary-fixed-dim/15 text-primary-fixed-dim font-label-caps text-label-caps border border-primary-fixed-dim/30">Text</span>
+<span class="px-sm py-xs rounded-full bg-primary-fixed-dim/15 text-primary-fixed-dim font-label-caps text-label-caps border border-primary-fixed-dim/30">Image (DALL-E)</span>
+<span class="px-sm py-xs rounded-full bg-secondary-fixed-dim/15 text-secondary-fixed-dim font-label-caps text-label-caps border border-secondary-fixed-dim/30">T2V (Sora Ready)</span>
+</div>
+<div class="space-y-sm mt-auto pt-md border-t border-[#262626]">
+<div class="neon-focus rounded-lg bg-[#000000] border border-[#262626] transition-all flex items-center px-md py-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-sm">key</span>
+<input class="bg-transparent border-none outline-none text-on-background font-body-sm w-full font-mono text-sm" placeholder="输入 API Key" type="password" value="sk-proj-xxxxxxxxxxxxxxxxxxxxxxxx"/>
+<button class="text-on-surface-variant hover:text-on-background ml-sm"><span class="material-symbols-outlined text-[16px]">visibility_off</span></button>
+</div>
+<div class="neon-focus rounded-lg bg-[#000000] border border-[#262626] transition-all flex items-center px-md py-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-sm">model_training</span>
+<select class="bg-transparent border-none outline-none text-on-background font-body-sm w-full appearance-none">
+<option value="gpt-4o">默认: GPT-4o</option>
+<option value="dall-e-3">默认: DALL-E 3</option>
+</select>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Google Card -->
+<div class="glass-panel rounded-2xl p-lg flex flex-col gap-md relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-error to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-[#0a0a0c] border border-[#262626] flex items-center justify-center">
+<span class="material-symbols-outlined text-on-background text-[24px]">google</span>
+</div>
+<div>
+<h3 class="font-h3 text-h3 text-on-background">Google Gemini</h3>
+<div class="flex items-center gap-xs mt-xs">
+<div class="w-2 h-2 rounded-full bg-error shadow-[0_0_8px_#ffb4ab]"></div>
+<span class="font-label-caps text-label-caps text-error">连接失败</span>
+</div>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors" title="删除密钥">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-xs">
+<span class="px-sm py-xs rounded-full bg-primary-fixed-dim/15 text-primary-fixed-dim font-label-caps text-label-caps border border-primary-fixed-dim/30">Text</span>
+<span class="px-sm py-xs rounded-full bg-primary-fixed-dim/15 text-primary-fixed-dim font-label-caps text-label-caps border border-primary-fixed-dim/30">Vision</span>
+</div>
+<div class="space-y-sm mt-auto pt-md border-t border-[#262626]">
+<p class="font-body-sm text-body-sm text-error mb-xs">错误: API Key 无效或已过期</p>
+<div class="neon-focus rounded-lg bg-[#000000] border border-error transition-all flex items-center px-md py-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-sm">key</span>
+<input class="bg-transparent border-none outline-none text-on-background font-body-sm w-full font-mono text-sm text-error" placeholder="输入 API Key" type="password" value="invalid_key_string_..."/>
+<button class="text-on-surface-variant hover:text-on-background ml-sm"><span class="material-symbols-outlined text-[16px]">visibility</span></button>
+</div>
+</div>
+</div>
+<!-- Runway Card -->
+<div class="glass-panel rounded-2xl p-lg flex flex-col gap-md relative overflow-hidden group">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-[#0a0a0c] border border-[#262626] flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary-fixed-dim text-[24px]">movie_edit</span>
+</div>
+<div>
+<h3 class="font-h3 text-h3 text-on-background">Runway</h3>
+<div class="flex items-center gap-xs mt-xs">
+<div class="w-2 h-2 rounded-full bg-outline animate-pulse"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">测试中...</span>
+</div>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors" title="删除密钥">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-xs">
+<span class="px-sm py-xs rounded-full bg-secondary-fixed-dim/15 text-secondary-fixed-dim font-label-caps text-label-caps border border-secondary-fixed-dim/30">Gen-2 (T2V)</span>
+<span class="px-sm py-xs rounded-full bg-secondary-fixed-dim/15 text-secondary-fixed-dim font-label-caps text-label-caps border border-secondary-fixed-dim/30">Gen-2 (I2V)</span>
+<span class="px-sm py-xs rounded-full bg-surface-variant text-on-surface-variant font-label-caps text-label-caps border border-outline-variant">Seed Control</span>
+</div>
+<div class="space-y-sm mt-auto pt-md border-t border-[#262626]">
+<div class="neon-focus rounded-lg bg-[#000000] border border-[#262626] transition-all flex items-center px-md py-sm opacity-60 focus-within:opacity-100">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-sm">key</span>
+<input class="bg-transparent border-none outline-none text-on-background font-body-sm w-full font-mono text-sm" placeholder="配置 API Key 启用" type="password" value="sk-runway-test..."/>
+</div>
+<button class="w-full py-sm rounded-lg border border-[#262626] text-on-surface-variant hover:text-primary-fixed hover:border-primary-fixed-dim transition-colors font-body-sm text-body-sm flex justify-center items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] animate-spin">refresh</span>
+                            验证中...
+                        </button>
+</div>
+</div>
+</div>
+<!-- Settings Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-lg">
+<!-- Default Provider Settings -->
+<div class="glass-panel rounded-2xl p-lg flex flex-col gap-md">
+<h3 class="font-h3 text-h3 text-on-background flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-fixed-dim">settings_suggest</span>
+            全局默认供应商
+        </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-sm">为不同的任务类型配置默认调用的模型供应商，在工作流中将优先使用默认设置。</p>
+<div class="space-y-md">
+<div class="flex items-center justify-between p-sm rounded-lg hover:bg-white/5 transition-colors">
+<span class="font-body-md text-on-background">文本生成 (Text)</span>
+<select class="bg-[#000000] border border-[#262626] rounded-lg px-md py-xs text-on-surface-variant font-body-sm outline-none focus:border-primary-fixed-dim">
+<option>OpenAI - GPT-4o</option>
+<option>Google - Gemini 1.5 Pro</option>
+</select>
+</div>
+<div class="flex items-center justify-between p-sm rounded-lg hover:bg-white/5 transition-colors">
+<span class="font-body-md text-on-background">图像生成 (Image)</span>
+<select class="bg-[#000000] border border-[#262626] rounded-lg px-md py-xs text-on-surface-variant font-body-sm outline-none focus:border-primary-fixed-dim">
+<option>OpenAI - DALL-E 3</option>
+<option>Midjourney (Custom API)</option>
+</select>
+</div>
+<div class="flex items-center justify-between p-sm rounded-lg hover:bg-white/5 transition-colors">
+<span class="font-body-md text-on-background">视频生成 (Video)</span>
+<select class="bg-[#000000] border border-[#262626] rounded-lg px-md py-xs text-on-surface-variant font-body-sm outline-none focus:border-primary-fixed-dim">
+<option>Runway - Gen-2</option>
+<option>Luma Dream Machine</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Custom Provider Form -->
+<div class="glass-panel rounded-2xl p-lg flex flex-col gap-md">
+<h3 class="font-h3 text-h3 text-on-background flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary-fixed-dim">add_box</span>
+            配置自定义供应商
+        </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-sm">添加与 OpenAI 兼容的 API 端点或其他受支持的第三方代理。</p>
+<div class="space-y-md">
+<div class="neon-focus rounded-lg bg-[#000000] border border-[#262626] transition-all flex items-center px-md py-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-sm">badge</span>
+<input class="bg-transparent border-none outline-none text-on-background font-body-sm w-full" placeholder="供应商名称 (如: My Custom API)" type="text"/>
+</div>
+<div class="neon-focus rounded-lg bg-[#000000] border border-[#262626] transition-all flex items-center px-md py-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-sm">link</span>
+<input class="bg-transparent border-none outline-none text-on-background font-body-sm w-full font-mono text-sm" placeholder="Base URL (如: https://api.custom.com/v1)" type="url"/>
+</div>
+<div class="neon-focus rounded-lg bg-[#000000] border border-[#262626] transition-all flex items-center px-md py-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-sm">key</span>
+<input class="bg-transparent border-none outline-none text-on-background font-body-sm w-full font-mono text-sm" placeholder="API Key" type="password"/>
+</div>
+<button class="w-full py-sm rounded-lg bg-surface-variant text-on-background hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors font-body-sm text-body-sm font-semibold mt-sm">
+                保存并测试
+            </button>
+</div>
+</div>
+</div>
+<!-- Capability Matrix -->
+<div class="glass-panel rounded-2xl p-lg overflow-x-auto">
+<h3 class="font-h3 text-h3 text-on-background mb-lg flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-fixed-dim">tune</span>
+        模型能力矩阵
+    </h3>
+<table class="w-full text-left font-body-sm min-w-[800px]">
+<thead>
+<tr class="border-b border-[#262626] text-on-surface-variant">
+<th class="py-sm px-md font-semibold">供应商 / 模型</th>
+<th class="py-sm px-md font-semibold text-center">图片生成</th>
+<th class="py-sm px-md font-semibold text-center">T2V</th>
+<th class="py-sm px-md font-semibold text-center">I2V</th>
+<th class="py-sm px-md font-semibold text-center">R2V</th>
+<th class="py-sm px-md font-semibold text-center">首尾帧</th>
+<th class="py-sm px-md font-semibold text-center">多参考图</th>
+<th class="py-sm px-md font-semibold text-center">Seed控制</th>
+<th class="py-sm px-md font-semibold text-center">负面提示词</th>
+<th class="py-sm px-md font-semibold text-center">异步任务</th>
+</tr>
+</thead>
+<tbody class="text-on-background">
+<tr class="border-b border-[#262626]/50 hover:bg-white/5 transition-colors">
+<td class="py-md px-md font-medium text-primary-fixed-dim">OpenAI Sora</td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">check</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">check</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">check</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">check</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">check</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">check</span></td>
+</tr>
+<tr class="border-b border-[#262626]/50 hover:bg-white/5 transition-colors">
+<td class="py-md px-md font-medium text-secondary-fixed-dim">Runway Gen-2</td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-secondary-fixed-dim text-[18px]">check</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-secondary-fixed-dim text-[18px]">check</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-secondary-fixed-dim text-[18px]">check</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-secondary-fixed-dim text-[18px]">check</span></td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="py-md px-md font-medium text-on-background">Google Gemini Vision</td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-background text-[18px]">check</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-background text-[18px]">check</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+<td class="py-md px-md text-center"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">close</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="bg-surface-dim/90 border-t border-outline-variant/30 backdrop-blur-xl fixed bottom-0 w-full h-16 z-50 flex justify-around items-center px-sm md:hidden">
+<a class="flex flex-col items-center justify-center w-16 h-full text-on-surface-variant hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined text-[24px]" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] mt-1 font-body-sm">控制台</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-full text-on-surface-variant hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined text-[24px]" data-icon="folder_open">folder_open</span>
+<span class="text-[10px] mt-1 font-body-sm">项目</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-full text-primary-fixed-dim font-bold" href="#">
+<span class="material-symbols-outlined text-[24px]" data-icon="api" style="font-variation-settings: 'FILL' 1;">api</span>
+<span class="text-[10px] mt-1 font-body-sm">API</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-full text-on-surface-variant hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined text-[24px]" data-icon="settings">settings</span>
+<span class="text-[10px] mt-1 font-body-sm">设置</span>
+</a>
+</nav>
+</body></html>
