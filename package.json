@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:web": "vite",
+    "dev:server": "cd server && npm run dev",
     "build": "tsc -b && vite build",
+    "build:web": "vite build",
+    "build:server": "cd server && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
