@@ -35,6 +35,8 @@ API Asset Studio 是一个 BYOK（Bring Your Own Key，自带 API Key）的 AI �
 
 第五阶段新增了 `server/` 本地后端代理服务骨架。第 5.5 阶段继续补齐了环境变量校验、统一错误验证脚本、Provider Adapter 验证脚本和本地文件存储目录预留。但当前仍不调用任何真实第三方生成 API。
 
+第 5.6 阶段完成了 real mode 数据源统一：`VITE_API_MODE=real` 时，前端启动会从本地后端拉取 providers、tasks、assets；任务进行中时会轮询后端并同步资产库。`VITE_API_MODE=mock` 时，仍保持原有 localStorage Mock 数据链路。
+
 ## 如何运行
 
 ```bash
@@ -139,7 +141,59 @@ server/storage/assets/
 server/storage/temp/
 ```
 
-目录内通过 `.gitkeep` 保留结构，真实生成文件会被 `.gitignore` 忽略。文件存储服务骨架位于 `server/src/services/fileStorageService.ts`，当前只提供接口和 Mock 实现。
+目录内通过 `.gitkeep` 保留结构，真实生成文件会被 `.gitignore` 忽略。文件存储服务骨架位于 `server/src/services/fileStorageService.ts`，已支持将 Buffer 保存为本地文件。
+
+## OpenAI Images 真实接入
+
+第六阶段开始支持一个真实图片供应商：OpenAI Images。当前只实现图片文生图，不支持图生图、图片编辑，也不接入任何真实视频生成 API。
+
+使用方式：
+
+1. 启动后端：
+
+```bash
+cd server
+npm run dev
+```
+
+2. 以 real mode 启动前端：
+
+```bash
+VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
+```
+
+3. 在 Provider 页面新增供应商，类型选择 `OpenAI Images`，输入用户自己的 OpenAI API Key。
+
+安全边界：
+
+- OpenAI API Key 只通过 Provider 页面提交给后端；
+- 后端会加密保存 API Key，只返回 `maskedApiKey`；
+- 前端不会保存明文 API Key；
+- 不要把 OpenAI API Key 写入 `.env`，本项目是 BYOK；
+- 生成图片会产生用户 OpenAI 账户费用；
+- 生成内容、内容审核、版权归属、商用授权和使用限制以 OpenAI 官方服务条款为准；
+- OpenAI GPT Image 模型可能需要完成组织验证才能使用；
+- 视频生成仍是 Mock。
+
+生成结果：
+
+- OpenAI Images 返回的 base64 图片会保存到 `server/storage/assets/`；
+- 后端资产会记录 `storageType=local`、`localPath`、`mimeType=image/png`、`sizeBytes` 等字段；
+- 前端 real mode 会展示后端返回的本地图片 URL；
+- 真实生成文件不会被提交到 Git。
+
+OpenAI Adapter 验证脚本默认只做 dry-run，不会触发真实生成：
+
+```bash
+cd server
+npm test
+```
+
+如需手动验证 OpenAI Key 是否可用，可以显式运行 live test。注意：只做连接测试，不生成图片；后续如扩展真实生成测试会产生费用。
+
+```bash
+RUN_OPENAI_LIVE_TEST=true OPENAI_API_KEY=你的测试Key APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! npx tsx scripts/verifyOpenAIAdapter.ts
+```
 
 ## 环境变量
 
@@ -154,7 +208,7 @@ VITE_APP_NAME=API Asset Studio
 `VITE_API_MODE` 当前支持：
 
 - `mock`：默认模式，使用前端 Mock service 和 Mock Provider Adapter；
-- `real`：请求本地后端代理服务，后端当前仍使用 Mock Provider Adapter。
+- `real`：请求本地后端代理服务，可使用 Mock Provider Adapter 或 OpenAI Images Adapter。
 
 第五阶段后，`real` 模式可以请求本地后端代理：
 
@@ -162,7 +216,23 @@ VITE_APP_NAME=API Asset Studio
 VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
 ```
 
-注意：本地后端仍使用 Mock Provider Adapter，不会调用真实供应商。
+注意：只有当用户在 Provider 页面添加 `OpenAI Images` 类型供应商并执行图片生成时，后端才会调用 OpenAI Images。视频仍是 Mock。
+
+## 数据源策略
+
+Mock mode：
+
+- providers、assets、tasks、projects、templates 来自前端 mockData 和 localStorage；
+- 页面刷新后由 `api-asset-studio:app-state` 恢复完整 Mock 状态；
+- 适合纯前端演示和 UI 开发。
+
+Real mode：
+
+- providers、assets、tasks 来自本地后端；
+- 页面刷新后会重新请求 `GET /api/providers`、`GET /api/assets`、`GET /api/tasks`；
+- localStorage 只保存 `api-asset-studio:ui-state` 这类非敏感 UI 状态；
+- 当前 projects 和 prompt templates 仍暂时来自前端 Mock 数据，后续接真实用户/项目体系时再迁移到后端；
+- 进行中的视频任务会由前端每 2.5 秒轮询后端，任务完成后刷新资产库。
 
 ## API 接入架构
 

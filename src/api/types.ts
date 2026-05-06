@@ -33,6 +33,7 @@ export type ApiResult<T> = {
 
 export type ProviderInput = {
   name: string;
+  providerType?: string;
   baseUrl: string;
   defaultModel: string;
   apiKey?: string;

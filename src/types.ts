@@ -29,6 +29,7 @@ export type Provider = {
   baseUrl: string;
   defaultModel: string;
   apiKeyMasked?: string;
+  providerType?: string;
   capabilities: ProviderCapability[];
   status: ProviderStatus;
   isDefault?: boolean;

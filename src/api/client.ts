@@ -1,9 +1,7 @@
 import type { ApiError, ApiMode } from './types';
 
-const viteEnv = import.meta as ImportMeta & { env?: Record<string, string | undefined> };
-
-export const API_MODE: ApiMode = viteEnv.env?.VITE_API_MODE === 'real' ? 'real' : 'mock';
-export const API_BASE_URL = viteEnv.env?.VITE_API_BASE_URL ?? 'http://127.0.0.1:8787';
+export const API_MODE: ApiMode = import.meta.env.VITE_API_MODE === 'real' ? 'real' : 'mock';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8787';
 
 export class ApiClientError extends Error {
   error: ApiError;

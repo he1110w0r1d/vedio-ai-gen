@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { env } from '../config/env.js';
 import { createId } from '../utils/id.js';
 
 export type LocalFileRecord = {
@@ -11,8 +11,7 @@ export type LocalFileRecord = {
   sizeBytes?: number;
 };
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const STORAGE_ROOT = path.resolve(__dirname, '../../storage');
+const STORAGE_ROOT = path.resolve(process.cwd(), 'storage');
 const ASSET_ROOT = path.join(STORAGE_ROOT, 'assets');
 const TEMP_ROOT = path.join(STORAGE_ROOT, 'temp');
 
@@ -42,7 +41,7 @@ export async function saveBufferToLocal(input: { buffer: Buffer; fileName: strin
 
 export function getPublicAssetUrl(input: { localPath: string }) {
   const relativePath = path.relative(ASSET_ROOT, input.localPath).split(path.sep).join('/');
-  return `/storage/assets/${relativePath}`;
+  return `http://127.0.0.1:${env.port}/storage/assets/${relativePath}`;
 }
 
 export async function deleteLocalFile(input: { localPath: string }) {

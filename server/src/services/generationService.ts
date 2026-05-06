@@ -1,6 +1,8 @@
 import { getProviderAdapter } from '../providers/providerRegistry.js';
 import type { ImageGenerationInput, VideoGenerationInput } from '../types/generation.js';
-import { validationError } from '../utils/errors.js';
+import { HttpError, validationError } from '../utils/errors.js';
+import { createId } from '../utils/id.js';
+import { nowIso } from '../utils/time.js';
 import { getProviderRecord } from './providerService.js';
 import { addTask, addTaskWithAssets } from './taskService.js';
 
@@ -9,8 +11,39 @@ export async function generateImage(input: ImageGenerationInput) {
     throw validationError('projectId、providerId、model、prompt 为必填字段');
   }
   const provider = await getProviderRecord(input.providerId);
-  const result = await getProviderAdapter(provider.providerType).generateImage(provider, input);
-  return addTaskWithAssets(result.task, result.assets);
+  try {
+    const result = await getProviderAdapter(provider.providerType).generateImage(provider, input);
+    return addTaskWithAssets(result.task, result.assets);
+  } catch (error) {
+    if (error instanceof HttpError) {
+      const now = nowIso();
+      await addTask({
+        id: createId('task'),
+        type: 'image',
+        status: 'failed',
+        progress: 100,
+        title: '图片生成失败',
+        prompt: input.prompt,
+        providerId: provider.id,
+        providerName: provider.name,
+        model: input.model || provider.defaultModel || 'unknown',
+        projectId: input.projectId,
+        projectName: '默认项目',
+        createdAt: now,
+        updatedAt: now,
+        errorCode: error.apiError.code,
+        errorReason: error.apiError.message,
+        params: {
+          aspectRatio: input.aspectRatio ?? '1:1',
+          count: input.count ?? 1,
+          seed: input.seed ?? '',
+          style: input.style ?? '',
+          negativePrompt: input.negativePrompt ?? '',
+        },
+      });
+    }
+    throw error;
+  }
 }
 
 export async function generateVideo(input: VideoGenerationInput) {

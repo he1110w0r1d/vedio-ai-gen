@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+import path from 'node:path';
 import { env } from './config/env.js';
 import { assetsRouter } from './routes/assets.js';
 import { generationsRouter } from './routes/generations.js';
@@ -14,6 +15,7 @@ export function createApp() {
 
   app.use(cors({ origin: env.corsOrigin }));
   app.use(express.json({ limit: '10mb' }));
+  app.use('/storage', express.static(path.resolve(process.cwd(), 'storage')));
   ensureStorageDirs().catch(() => undefined);
 
   app.get('/health', (_req, res) => {

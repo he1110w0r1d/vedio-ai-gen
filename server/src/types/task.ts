@@ -20,6 +20,7 @@ export type GenerationTaskRecord = {
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
+  errorCode?: string;
   errorReason?: string;
   params: Record<string, string | number | boolean>;
 };

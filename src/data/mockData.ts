@@ -15,7 +15,7 @@ export const mockProjects: Project[] = [
 
 export const mockProviders: Provider[] = [
   { id: 'google', name: 'Google', baseUrl: 'https://generativelanguage.googleapis.com', defaultModel: 'Imagen / Veo', apiKeyMasked: '已配置（脱敏）', capabilities: ['图片生成', 'T2V', 'I2V', 'R2V', '负面提示词', '异步任务'], status: 'connected', isDefault: true },
-  { id: 'openai', name: 'OpenAI', baseUrl: 'https://api.openai.com/v1', defaultModel: 'gpt-image / video', apiKeyMasked: '已配置（脱敏）', capabilities: ['图片生成', '负面提示词', 'Seed'], status: 'connected' },
+  { id: 'openai', name: 'OpenAI Images', baseUrl: 'https://api.openai.com/v1', defaultModel: 'gpt-image-1.5', apiKeyMasked: '已配置（脱敏）', providerType: 'openai-images', capabilities: ['图片生成'], status: 'connected' },
   { id: 'runway', name: 'Runway', baseUrl: 'https://api.runwayml.com/v1', defaultModel: 'Gen-4', capabilities: ['T2V', 'I2V', 'R2V', '首帧', '尾帧', '多参考图', '异步任务'], status: 'unconfigured' },
   { id: 'kling', name: 'Kling', baseUrl: 'https://api.klingai.com', defaultModel: 'Kling 2.0', capabilities: ['T2V', 'I2V', '首帧', '尾帧', '异步任务'], status: 'failed' },
   { id: 'minimax', name: 'MiniMax', baseUrl: 'https://api.minimax.chat', defaultModel: 'Hailuo', capabilities: ['T2V', 'I2V', '异步任务'], status: 'unconfigured' },

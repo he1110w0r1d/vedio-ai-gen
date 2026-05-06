@@ -1,9 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { loadServerBootstrapData } from '../api/appBootstrapApi';
 import { assetApi } from '../api/assetApi';
+import { API_MODE, shouldUseMockApi } from '../api/client';
 import { providerApi } from '../api/providerApi';
 import { taskApi } from '../api/taskApi';
 import { createVideoAsset } from '../services/mockService';
-import { loadAppState, saveAppState } from '../services/storageService';
+import { loadAppState, loadUiState, saveAppState, saveUiState } from '../services/storageService';
 import { getCompletedVideoTasksNeedingAssets, markVideoAssetsCreated } from '../services/taskService';
 import type { Asset, GenerationTask, Project, PromptTemplate, Provider, ProviderCapability, VideoSeed, ViewId } from '../types';
 import { resolveHashView } from '../utils/navigation';
@@ -27,6 +29,9 @@ type AppContextValue = {
   videoSeed?: VideoSeed;
   consumeVideoSeed: () => VideoSeed | undefined;
   toasts: Toast[];
+  isBootstrapping: boolean;
+  bootstrapError?: string;
+  refreshFromServer: () => Promise<void>;
   showToast: (message: string, tone?: Toast['tone']) => void;
   addAssets: (items: Asset[]) => void;
   toggleFavorite: (assetId: string) => void;
@@ -40,7 +45,7 @@ type AppContextValue = {
   deleteProviderKey: (providerId: string) => void;
   testProvider: (providerId: string) => void;
   setDefaultProvider: (providerId: string) => void;
-  addCustomProvider: (input: { name: string; baseUrl: string; defaultModel: string; apiKey: string; capabilities: ProviderCapability[] }) => void;
+  addCustomProvider: (input: { name: string; providerType?: string; baseUrl: string; defaultModel: string; apiKey: string; capabilities: ProviderCapability[] }) => void;
   addTemplate: (template: PromptTemplate) => void;
   updateTemplate: (template: PromptTemplate) => void;
   deleteTemplate: (templateId: string) => void;
@@ -52,17 +57,21 @@ const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [initialState] = useState(loadAppState);
+  const [initialUiState] = useState(loadUiState);
+  const isMockMode = shouldUseMockApi();
   const [view, setViewState] = useState<ViewId>(() => resolveHashView());
   const [projects] = useState(initialState.projects);
-  const [currentProjectId, setCurrentProjectId] = useState(initialState.currentProjectId);
-  const [providers, setProviders] = useState(initialState.providers);
-  const [assets, setAssets] = useState(initialState.assets);
-  const [tasks, setTasks] = useState(initialState.tasks);
+  const [currentProjectId, setCurrentProjectId] = useState(isMockMode ? initialState.currentProjectId : initialUiState.currentProjectId);
+  const [providers, setProviders] = useState(isMockMode ? initialState.providers : []);
+  const [assets, setAssets] = useState<Asset[]>(isMockMode ? initialState.assets : []);
+  const [tasks, setTasks] = useState<GenerationTask[]>(isMockMode ? initialState.tasks : []);
   const [templates, setTemplates] = useState(initialState.promptTemplates);
   const [globalSearch, setGlobalSearch] = useState('');
   const [selectedAsset, setSelectedAsset] = useState<Asset | undefined>(undefined);
-  const [videoSeed, setVideoSeed] = useState<VideoSeed | undefined>(initialState.selectedVideoInput);
+  const [videoSeed, setVideoSeed] = useState<VideoSeed | undefined>(isMockMode ? initialState.selectedVideoInput : initialUiState.selectedVideoInput);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [isBootstrapping, setIsBootstrapping] = useState(API_MODE === 'real');
+  const [bootstrapError, setBootstrapError] = useState<string | undefined>(undefined);
 
   const currentProject = projects.find((project) => project.id === currentProjectId) ?? projects[0] ?? initialState.projects[0];
 
@@ -77,6 +86,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     window.setTimeout(() => setToasts((items) => items.filter((item) => item.id !== toast.id)), 2600);
   };
 
+  const refreshFromServer = async () => {
+    if (isMockMode) return;
+    setIsBootstrapping(true);
+    setBootstrapError(undefined);
+    try {
+      const data = await loadServerBootstrapData();
+      setProviders(data.providers);
+      setAssets(data.assets);
+      setTasks(data.tasks);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '无法连接本地后端服务';
+      setBootstrapError(message);
+    } finally {
+      setIsBootstrapping(false);
+    }
+  };
+
   useEffect(() => {
     const syncViewFromHash = () => setViewState(resolveHashView());
     syncViewFromHash();
@@ -85,6 +111,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (isMockMode) return;
+    refreshFromServer();
+  }, []);
+
+  useEffect(() => {
+    if (!isMockMode) return;
     saveAppState({
       version: 1,
       providers,
@@ -95,9 +127,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       currentProjectId,
       selectedVideoInput: videoSeed,
     });
-  }, [providers, assets, tasks, templates, projects, currentProjectId, videoSeed]);
+  }, [isMockMode, providers, assets, tasks, templates, projects, currentProjectId, videoSeed]);
 
   useEffect(() => {
+    if (isMockMode) return;
+    saveUiState({
+      version: 1,
+      currentProjectId,
+      selectedVideoInput: videoSeed,
+    });
+  }, [isMockMode, currentProjectId, videoSeed]);
+
+  useEffect(() => {
+    if (!isMockMode) return;
     const timer = window.setInterval(() => {
       setTasks((items) =>
         items.map((task) => {
@@ -109,9 +151,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       );
     }, 1200);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [isMockMode]);
 
   useEffect(() => {
+    if (!isMockMode) return;
     const completedVideoTasks = getCompletedVideoTasksNeedingAssets(tasks, assets);
     if (!completedVideoTasks.length) return;
 
@@ -127,7 +170,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
     setTasks((items) => markVideoAssetsCreated(items, completedVideoTasks));
     if (createdCount) showToast('视频 Mock 任务已完成，资产已加入资产库', 'success');
-  }, [tasks, assets]);
+  }, [isMockMode, tasks, assets]);
+
+  useEffect(() => {
+    if (isMockMode) return;
+    const hasActiveTasks = tasks.some((task) => ['queued', 'running'].includes(task.status));
+    if (!hasActiveTasks) return;
+
+    const timer = window.setInterval(async () => {
+      try {
+        const [nextTasks, nextAssets] = await Promise.all([
+          taskApi.listTasks([]),
+          assetApi.listAssets([]),
+        ]);
+        setTasks(nextTasks);
+        setAssets(nextAssets);
+      } catch (error) {
+        setBootstrapError(error instanceof Error ? error.message : '任务轮询失败');
+      }
+    }, 2500);
+
+    return () => window.clearInterval(timer);
+  }, [isMockMode, tasks]);
 
   const value = useMemo<AppContextValue>(
     () => ({
@@ -151,9 +215,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return seed;
       },
       toasts,
+      isBootstrapping,
+      bootstrapError,
+      refreshFromServer,
       showToast,
       addAssets: (items) => {
-        setAssets((existing) => [...items, ...existing]);
+        setAssets((existing) => {
+          const existingIds = new Set(existing.map((item) => item.id));
+          return [...items.filter((item) => !existingIds.has(item.id)), ...existing];
+        });
         setSelectedAsset(items[0]);
       },
       toggleFavorite: (assetId) => {
@@ -176,7 +246,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         showToast('素材已带入视频生成工作台', 'success');
       },
       addTask: (task) => {
-        setTasks((items) => [task, ...items]);
+        setTasks((items) => [task, ...items.filter((item) => item.id !== task.id)]);
         showToast('Mock 生成任务已创建', 'success');
       },
       updateTask: (taskId, patch) => setTasks((items) => items.map((task) => (task.id === taskId ? { ...task, ...patch } : task))),
@@ -244,7 +314,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         showToast('所有 API Key 已从前端模拟状态中删除', 'success');
       },
     }),
-    [view, projects, currentProject, providers, assets, tasks, templates, globalSearch, selectedAsset, videoSeed, toasts],
+    [view, projects, currentProject, providers, assets, tasks, templates, globalSearch, selectedAsset, videoSeed, toasts, isBootstrapping, bootstrapError],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

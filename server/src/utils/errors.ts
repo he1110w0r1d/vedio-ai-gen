@@ -25,6 +25,22 @@ export function modelNotSupported(provider: string, message = '当前供应商�
   return new HttpError(400, { code: 'MODEL_NOT_SUPPORTED', message, provider, retryable: false });
 }
 
+export function insufficientBalance(provider: string, message = '供应商账户余额或额度不足') {
+  return new HttpError(402, { code: 'INSUFFICIENT_BALANCE', message, provider, retryable: false });
+}
+
+export function rateLimited(provider: string, providerCode?: string) {
+  return new HttpError(429, { code: 'RATE_LIMITED', message: '供应商限流，请稍后重试', provider, providerCode, retryable: true });
+}
+
+export function contentRejected(provider: string, providerCode?: string) {
+  return new HttpError(400, { code: 'CONTENT_REJECTED', message: '内容审核未通过，请调整提示词', provider, providerCode, retryable: false });
+}
+
+export function providerUnavailable(provider: string, providerCode?: string) {
+  return new HttpError(503, { code: 'PROVIDER_UNAVAILABLE', message: '供应商服务暂不可用', provider, providerCode, retryable: true });
+}
+
 export function unknownProviderError(provider: string, providerCode?: string, detail?: unknown) {
   return new HttpError(502, {
     code: 'UNKNOWN_PROVIDER_ERROR',

@@ -2,7 +2,14 @@ import { mockAssets, mockProjects, mockProviders, mockPromptTemplates, mockTasks
 import type { AppStateSnapshot } from '../types';
 
 const STORAGE_KEY = 'api-asset-studio:app-state';
+const UI_STORAGE_KEY = 'api-asset-studio:ui-state';
 const STORAGE_VERSION = 1;
+
+export type AppUiState = {
+  version: number;
+  currentProjectId: string;
+  selectedVideoInput?: AppStateSnapshot['selectedVideoInput'];
+};
 
 export function resetToMockData(): AppStateSnapshot {
   return {
@@ -61,5 +68,34 @@ export function clearAppState() {
     window.localStorage.removeItem(STORAGE_KEY);
   } catch {
     // Ignore storage cleanup failures in the frontend-only MVP.
+  }
+}
+
+export function loadUiState(): AppUiState {
+  if (typeof window === 'undefined') {
+    return { version: STORAGE_VERSION, currentProjectId: mockProjects[0]?.id ?? '' };
+  }
+
+  try {
+    const raw = window.localStorage.getItem(UI_STORAGE_KEY);
+    if (!raw) return { version: STORAGE_VERSION, currentProjectId: mockProjects[0]?.id ?? '' };
+    const parsed = JSON.parse(raw) as Partial<AppUiState>;
+    return {
+      version: STORAGE_VERSION,
+      currentProjectId: typeof parsed.currentProjectId === 'string' ? parsed.currentProjectId : mockProjects[0]?.id ?? '',
+      selectedVideoInput: parsed.selectedVideoInput,
+    };
+  } catch {
+    return { version: STORAGE_VERSION, currentProjectId: mockProjects[0]?.id ?? '' };
+  }
+}
+
+export function saveUiState(state: AppUiState) {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(UI_STORAGE_KEY, JSON.stringify({ ...state, version: STORAGE_VERSION }));
+  } catch {
+    // UI preferences are non-critical.
   }
 }

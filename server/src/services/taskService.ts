@@ -26,6 +26,19 @@ export async function addTask(task: GenerationTaskRecord) {
   return task;
 }
 
+export async function updateTask(taskId: string, patch: Partial<GenerationTaskRecord>) {
+  let updated: GenerationTaskRecord | undefined;
+  await updateDb((db) => {
+    db.tasks = db.tasks.map((task) => {
+      if (task.id !== taskId) return task;
+      updated = { ...task, ...patch, updatedAt: nowIso() };
+      return updated;
+    });
+  });
+  if (!updated) throw notFound('任务不存在');
+  return updated;
+}
+
 export async function addTaskWithAssets(task: GenerationTaskRecord, assets: AssetRecord[]) {
   await updateDb((db) => {
     db.tasks.unshift(task);

@@ -19,12 +19,19 @@ function toProvider(input: ServerProvider): Provider {
   return {
     id: input.id,
     name: input.name,
+    providerType: input.providerType,
     baseUrl: input.baseUrl ?? '',
     defaultModel: input.defaultModel ?? 'mock-model',
     apiKeyMasked: input.maskedApiKey,
     capabilities: input.capabilities.map(toFrontendCapability) as Provider['capabilities'],
     status: input.status === 'not_configured' ? 'unconfigured' : input.status,
   };
+}
+
+function inferProviderType(provider: Provider) {
+  if (provider.providerType) return provider.providerType;
+  if (provider.id === 'openai' || provider.name.toLowerCase().includes('openai')) return 'openai-images';
+  return 'custom';
 }
 
 function toBackendCapability(capability: string) {
@@ -74,7 +81,7 @@ export const providerApi = {
         method: 'POST',
         body: JSON.stringify({
           name: input.name,
-          providerType: 'custom',
+          providerType: input.providerType ?? 'custom',
           baseUrl: input.baseUrl,
           apiKey: input.apiKey,
           defaultModel: input.defaultModel,
@@ -86,6 +93,7 @@ export const providerApi = {
     return {
       id: `custom_${Date.now()}`,
       name: input.name,
+      providerType: input.providerType ?? 'custom',
       baseUrl: input.baseUrl,
       defaultModel: input.defaultModel,
       apiKeyMasked: input.apiKey ? maskKey(input.apiKey) : undefined,
@@ -100,7 +108,7 @@ export const providerApi = {
         method: 'PATCH',
         body: JSON.stringify({
           name: provider.name,
-          providerType: 'custom',
+          providerType: inferProviderType(provider),
           baseUrl: provider.baseUrl,
           defaultModel: provider.defaultModel,
           capabilities: provider.capabilities.map(toBackendCapability),
