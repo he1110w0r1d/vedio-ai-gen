@@ -22,9 +22,41 @@ function toProvider(input: ServerProvider): Provider {
     baseUrl: input.baseUrl ?? '',
     defaultModel: input.defaultModel ?? 'mock-model',
     apiKeyMasked: input.maskedApiKey,
-    capabilities: input.capabilities as Provider['capabilities'],
+    capabilities: input.capabilities.map(toFrontendCapability) as Provider['capabilities'],
     status: input.status === 'not_configured' ? 'unconfigured' : input.status,
   };
+}
+
+function toBackendCapability(capability: string) {
+  const map: Record<string, string> = {
+    图片生成: 'image',
+    T2V: 't2v',
+    I2V: 'i2v',
+    R2V: 'r2v',
+    首帧: 'firstFrame',
+    尾帧: 'lastFrame',
+    多参考图: 'multiReference',
+    负面提示词: 'negativePrompt',
+    Seed: 'seed',
+    异步任务: 'asyncTask',
+  };
+  return map[capability] ?? capability;
+}
+
+function toFrontendCapability(capability: string) {
+  const map: Record<string, string> = {
+    image: '图片生成',
+    t2v: 'T2V',
+    i2v: 'I2V',
+    r2v: 'R2V',
+    firstFrame: '首帧',
+    lastFrame: '尾帧',
+    multiReference: '多参考图',
+    negativePrompt: '负面提示词',
+    seed: 'Seed',
+    asyncTask: '异步任务',
+  };
+  return map[capability] ?? capability;
 }
 
 export const providerApi = {
@@ -46,7 +78,7 @@ export const providerApi = {
           baseUrl: input.baseUrl,
           apiKey: input.apiKey,
           defaultModel: input.defaultModel,
-          capabilities: input.capabilities,
+          capabilities: input.capabilities.map(toBackendCapability),
         }),
       });
       return toProvider(provider);
@@ -71,7 +103,7 @@ export const providerApi = {
           providerType: 'custom',
           baseUrl: provider.baseUrl,
           defaultModel: provider.defaultModel,
-          capabilities: provider.capabilities,
+          capabilities: provider.capabilities.map(toBackendCapability),
         }),
       });
       return toProvider(updated);
@@ -102,7 +134,7 @@ export const providerApi = {
       return {
         status: result.status === 'not_configured' ? 'unconfigured' : result.status,
         message: result.message,
-        capabilities: result.capabilities as Provider['capabilities'],
+        capabilities: result.capabilities?.map(toFrontendCapability) as Provider['capabilities'],
       };
     }
     const adapter = getProviderAdapter(provider.id);

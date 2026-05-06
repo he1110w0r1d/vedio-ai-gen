@@ -37,7 +37,7 @@ export async function requestJson<T>(path: string, init?: RequestInit): Promise<
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new ApiClientError(payload.error ?? {
+    throw new ApiClientError(payload.error ?? payload ?? {
       code: 'UNKNOWN_PROVIDER_ERROR',
       message: `请求失败：${path}`,
       retryable: true,

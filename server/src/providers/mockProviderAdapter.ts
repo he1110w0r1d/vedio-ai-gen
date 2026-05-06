@@ -2,6 +2,7 @@ import type { ImageGenerationInput, VideoGenerationInput } from '../types/genera
 import type { ProviderRecord } from '../types/provider.js';
 import type { GenerationTaskRecord } from '../types/task.js';
 import { createId } from '../utils/id.js';
+import { invalidApiKey, modelNotSupported } from '../utils/errors.js';
 import { nowIso } from '../utils/time.js';
 import type { ImageGenerationResult, ProviderAdapter, VideoGenerationResult } from './types.js';
 
@@ -42,20 +43,29 @@ function makeTask(provider: ProviderRecord, input: ImageGenerationInput | VideoG
   };
 }
 
+function ensureCapability(provider: ProviderRecord, capability: string) {
+  const capabilities = provider.capabilities.length ? provider.capabilities : mockProviderAdapter.capabilities;
+  if (!capabilities.includes(capability)) {
+    throw modelNotSupported(provider.name, `${provider.name} 不支持 ${capability} 能力`);
+  }
+}
+
 export const mockProviderAdapter: ProviderAdapter = {
   id: 'mock',
   name: 'Mock Provider Adapter',
   capabilities: ['image', 't2v', 'i2v', 'r2v', 'firstFrame', 'lastFrame', 'multiReference', 'negativePrompt', 'seed', 'asyncTask', 'polling'],
 
   async testConnection(provider) {
+    if (!provider.maskedApiKey) throw invalidApiKey('未配置 API Key');
     return {
-      ok: Boolean(provider.maskedApiKey),
-      message: provider.maskedApiKey ? 'Mock 连接成功' : '未配置 API Key',
+      ok: true,
+      message: 'Mock 连接成功',
       capabilities: provider.capabilities.length ? provider.capabilities : this.capabilities,
     };
   },
 
   async generateImage(provider: ProviderRecord, input: ImageGenerationInput): Promise<ImageGenerationResult> {
+    ensureCapability(provider, 'image');
     const task = makeTask(provider, input, 'image');
     const count = Math.max(1, Math.min(input.count ?? 1, 4));
     const now = nowIso();
@@ -65,7 +75,11 @@ export const mockProviderAdapter: ProviderAdapter = {
       title: `Mock 图片结果 ${index + 1}`,
       prompt: input.prompt,
       thumbnail: imagePool[index % imagePool.length],
+      thumbnailUrl: imagePool[index % imagePool.length],
+      url: imagePool[index % imagePool.length],
       fileUrl: imagePool[index % imagePool.length],
+      storageType: 'mock' as const,
+      mimeType: 'image/jpeg',
       providerId: provider.id,
       providerName: provider.name,
       model: input.model,
@@ -75,20 +89,26 @@ export const mockProviderAdapter: ProviderAdapter = {
       favorite: false,
       taskId: task.id,
       aspectRatio: input.aspectRatio ?? '1:1',
+      width: 1280,
+      height: 720,
       params: task.params,
+      parameters: task.params,
     }));
     return { task, assets };
   },
 
   async generateVideoT2V(provider: ProviderRecord, input: VideoGenerationInput): Promise<VideoGenerationResult> {
+    ensureCapability(provider, 't2v');
     return { task: makeTask(provider, { ...input, mode: 'T2V' }, 'video') };
   },
 
   async generateVideoI2V(provider: ProviderRecord, input: VideoGenerationInput): Promise<VideoGenerationResult> {
+    ensureCapability(provider, 'i2v');
     return { task: makeTask(provider, { ...input, mode: 'I2V' }, 'video') };
   },
 
   async generateVideoR2V(provider: ProviderRecord, input: VideoGenerationInput): Promise<VideoGenerationResult> {
+    ensureCapability(provider, 'r2v');
     return { task: makeTask(provider, { ...input, mode: 'R2V' }, 'video') };
   },
 

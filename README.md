@@ -33,7 +33,7 @@ API Asset Studio 是一个 BYOK（Bring Your Own Key，自带 API Key）的 AI �
 
 第四阶段新增了 API Client 和 Provider Adapter 骨架，默认仍走 `mock` 模式。未来真实接入时，前端应调用自有后端 API，由后端代理第三方供应商。
 
-第五阶段新增了 `server/` 本地后端代理服务骨架。它已经具备统一接口、Mock Provider Adapter、本地 JSON 存储、API Key 加密保存和脱敏返回能力，但仍不调用任何真实第三方生成 API。
+第五阶段新增了 `server/` 本地后端代理服务骨架。第 5.5 阶段继续补齐了环境变量校验、统一错误验证脚本、Provider Adapter 验证脚本和本地文件存储目录预留。但当前仍不调用任何真实第三方生成 API。
 
 ## 如何运行
 
@@ -106,6 +106,41 @@ http://127.0.0.1:8787
 
 后端当前使用本地 JSON 文件 `server/data/db.json` 存储 Mock 数据。Provider API Key 会加密保存为 `encryptedApiKey`，接口响应只返回 `maskedApiKey`，不会返回明文 API Key。
 
+后端验证脚本：
+
+```bash
+cd server
+npm test
+```
+
+当前测试覆盖统一错误格式和 Mock Provider Adapter 行为。后续真实 Adapter 接入时，应复用同样的验证思路。
+
+## 后端环境变量
+
+后端示例配置位于 `server/.env.example`：
+
+```txt
+PORT=8787
+NODE_ENV=development
+APP_ENCRYPTION_KEY=replace-with-32-byte-secret-value
+CORS_ORIGIN=http://127.0.0.1:5173
+```
+
+`APP_ENCRYPTION_KEY` 至少需要 32 字节。服务启动时会校验该配置；如果缺失或长度不足，会给出明确错误并停止启动。不要打印、提交或共享真实加密密钥。
+
+## 本地 JSON 与文件存储
+
+后端当前使用 `server/data/db.json` 作为开发期轻量存储。真实联调时不要把包含真实测试数据或真实密钥密文的 `db.json` 提交到仓库。
+
+文件存储目录已预留：
+
+```txt
+server/storage/assets/
+server/storage/temp/
+```
+
+目录内通过 `.gitkeep` 保留结构，真实生成文件会被 `.gitignore` 忽略。文件存储服务骨架位于 `server/src/services/fileStorageService.ts`，当前只提供接口和 Mock 实现。
+
 ## 环境变量
 
 复制 `.env.example` 后按需配置本地环境。当前不需要真实后端。
@@ -149,6 +184,8 @@ VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
 不要在代码、`.env`、浏览器 localStorage 或 console 中写入 / 打印真实 API Key。当前项目只允许保存脱敏值或 Mock 数据。真实接入必须经过后端代理、加密存储、审计日志和错误标准化。
 
 不要提交真实 `.env` 文件。`server/.env.example` 中的 `APP_ENCRYPTION_KEY` 只是占位示例，本地开发脚本使用 dev-only 临时密钥，生产环境必须替换为安全密钥。
+
+不要提交包含真实测试数据的 `server/data/db.json`。当前仓库中的 `db.json` 只保留空结构。
 
 ## 下一步
 

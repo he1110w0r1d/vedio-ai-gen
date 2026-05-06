@@ -42,7 +42,11 @@ function createVideoAssetForTask(task: GenerationTaskRecord): AssetRecord {
     title: `${task.mode ?? 'T2V'} Mock 视频结果`,
     prompt: task.prompt,
     thumbnail: videoThumb,
+    thumbnailUrl: videoThumb,
+    url: 'mock://video/generated-preview.mp4',
     fileUrl: 'mock://video/generated-preview.mp4',
+    storageType: 'mock',
+    mimeType: 'video/mp4',
     providerId: task.providerId,
     providerName: task.providerName,
     model: task.model,
@@ -52,8 +56,10 @@ function createVideoAssetForTask(task: GenerationTaskRecord): AssetRecord {
     favorite: false,
     taskId: task.id,
     duration: Number(task.params.duration ?? 6),
+    durationSeconds: Number(task.params.duration ?? 6),
     mode: task.mode,
     params: task.params,
+    parameters: task.params,
   };
 }
 

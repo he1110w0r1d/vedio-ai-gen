@@ -51,6 +51,14 @@ export type AssetBase = {
   title: string;
   prompt: string;
   thumbnail: string;
+  thumbnailUrl?: string;
+  url?: string;
+  storageType?: 'mock' | 'local' | 'remote';
+  localPath?: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  width?: number;
+  height?: number;
   providerId: string;
   providerName: string;
   model: string;
@@ -59,6 +67,7 @@ export type AssetBase = {
   favorite: boolean;
   taskId?: string;
   params: Record<string, string | number | boolean>;
+  parameters?: Record<string, unknown>;
 };
 
 export type ImageAsset = AssetBase & {
@@ -69,6 +78,7 @@ export type ImageAsset = AssetBase & {
 export type VideoAsset = AssetBase & {
   type: 'video';
   duration: number;
+  durationSeconds?: number;
   mode: VideoMode;
 };
 

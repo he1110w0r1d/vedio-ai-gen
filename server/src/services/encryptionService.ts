@@ -1,14 +1,12 @@
 import crypto from 'node:crypto';
+import { env } from '../config/env.js';
 import { internalError } from '../utils/errors.js';
 
 const ALGORITHM = 'aes-256-gcm';
 
 function getKey() {
-  const secret = process.env.APP_ENCRYPTION_KEY;
-  if (!secret) {
-    throw internalError('缺少 APP_ENCRYPTION_KEY，无法加密保存 API Key');
-  }
-  return crypto.createHash('sha256').update(secret).digest();
+  if (!env.encryptionKey) throw internalError('缺少 APP_ENCRYPTION_KEY，无法加密保存 API Key');
+  return crypto.createHash('sha256').update(env.encryptionKey).digest();
 }
 
 export function encryptSecret(plainText: string): string {
