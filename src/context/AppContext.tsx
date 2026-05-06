@@ -1,7 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { createVideoAsset, maskKey } from '../services/mockService';
 import { loadAppState, saveAppState } from '../services/storageService';
+import { getCompletedVideoTasksNeedingAssets, markVideoAssetsCreated } from '../services/taskService';
 import type { Asset, GenerationTask, Project, PromptTemplate, Provider, ProviderCapability, VideoSeed, ViewId } from '../types';
+import { resolveHashView } from '../utils/navigation';
 
 type Toast = { id: string; tone: 'success' | 'error' | 'info'; message: string };
 
@@ -44,33 +46,6 @@ type AppContextValue = {
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
-
-const viewIds: ViewId[] = ['dashboard', 'projects', 'image-studio', 'video-studio', 'assets', 'tasks', 'providers', 'templates', 'settings'];
-const viewAliases: Record<string, ViewId> = {
-  dashboard: 'dashboard',
-  projects: 'projects',
-  project: 'projects',
-  image: 'image-studio',
-  'image-studio': 'image-studio',
-  video: 'video-studio',
-  'video-studio': 'video-studio',
-  assets: 'assets',
-  'asset-library': 'assets',
-  tasks: 'tasks',
-  'task-center': 'tasks',
-  providers: 'providers',
-  provider: 'providers',
-  api: 'providers',
-  templates: 'templates',
-  'prompt-templates': 'templates',
-  settings: 'settings',
-};
-
-function resolveHashView(hash = window.location.hash): ViewId {
-  const key = hash.replace(/^#\/?/, '').trim();
-  if (!key) return 'dashboard';
-  return viewAliases[key] ?? (viewIds.includes(key as ViewId) ? (key as ViewId) : 'dashboard');
-}
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [initialState] = useState(loadAppState);
@@ -134,7 +109,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const completedVideoTasks = tasks.filter((task) => task.type === 'video' && task.status === 'completed' && !task.assetCreated);
+    const completedVideoTasks = getCompletedVideoTasksNeedingAssets(tasks, assets);
     if (!completedVideoTasks.length) return;
 
     let createdCount = 0;
@@ -147,13 +122,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         });
       return newAssets.length ? [...newAssets, ...items] : items;
     });
-    setTasks((items) =>
-      items.map((task) =>
-        completedVideoTasks.some((completedTask) => completedTask.id === task.id) ? { ...task, assetCreated: true } : task,
-      ),
-    );
+    setTasks((items) => markVideoAssetsCreated(items, completedVideoTasks));
     if (createdCount) showToast('视频 Mock 任务已完成，资产已加入资产库', 'success');
-  }, [tasks]);
+  }, [tasks, assets]);
 
   const value = useMemo<AppContextValue>(
     () => ({

@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AssetCard } from '../components/AssetCard';
-import { EmptyState, Icon, SectionHeader } from '../components/ui';
+import { EmptyState, SectionHeader } from '../components/ui';
+import { I2VPanel } from '../components/video/I2VPanel';
+import { R2VPanel } from '../components/video/R2VPanel';
+import { T2VPanel } from '../components/video/T2VPanel';
+import { VideoGeneratePanel } from '../components/video/VideoGeneratePanel';
+import { VideoModeTabs } from '../components/video/VideoModeTabs';
 import { useApp } from '../context/AppContext';
 import { createTask } from '../services/mockService';
 import type { Asset, VideoMode } from '../types';
-
-const tabs: { id: VideoMode; label: string }[] = [
-  { id: 'T2V', label: 'T2V 文生视频' },
-  { id: 'I2V', label: 'I2V 图生视频' },
-  { id: 'R2V', label: 'R2V 参考生成视频' },
-];
 
 export function VideoStudio() {
   const { providers, assets, currentProject, addTask, setView, consumeVideoSeed, showToast, setSelectedAsset, toggleFavorite, sendImageToVideo } = useApp();
@@ -87,68 +86,48 @@ export function VideoStudio() {
   return (
     <div>
       <SectionHeader title="视频生成 Video Studio" subtitle="T2V、I2V、R2V 三种模式均为 Mock 异步任务。" />
-      <div className="mb-5 flex flex-wrap gap-2 rounded-2xl border border-outline-variant/30 bg-surface-container-low p-2">
-        {tabs.map((tab) => <button key={tab.id} className={`rounded-xl px-5 py-2 text-sm font-bold transition ${mode === tab.id ? 'bg-surface-bright text-primary-fixed-dim shadow-neon' : 'text-on-surface-variant hover:text-on-surface'}`} onClick={() => setMode(tab.id)}>{tab.label}</button>)}
-      </div>
+      <VideoModeTabs mode={mode} onModeChange={setMode} />
       <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
         <section className="card space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">供应商</span><select className="field" value={providerId} onChange={(event) => setProviderId(event.target.value)}>{videoProviders.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-            <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">模型</span><input className="field" value={model} readOnly /></label>
-          </div>
           {mode === 'T2V' ? (
-            <>
-              <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">视频提示词</span><textarea className="field min-h-28" value={prompt} onChange={(event) => setPrompt(event.target.value)} /></label>
-              <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">镜头运动</span><select className="field" value={camera} onChange={(event) => setCamera(event.target.value)}><option>缓慢推进</option><option>环绕运镜</option><option>手持跟拍</option><option>俯冲拉远</option></select></label>
-            </>
+            <T2VPanel prompt={prompt} camera={camera} onPromptChange={setPrompt} onCameraChange={setCamera} />
           ) : null}
           {mode === 'I2V' ? (
-            <>
-              <div className="rounded-xl border border-outline-variant/40 bg-surface-container p-3 text-sm">
-                <p className="font-semibold">从资产库选择图片</p>
-                <p className="text-xs text-on-surface-variant">也可以使用上传图片入口，当前上传仅 Mock。</p>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <select className="field" value={i2vFirst} onChange={(event) => setI2vFirst(event.target.value)}><option value="">设置为首帧</option>{imageAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.title}</option>)}</select>
-                <select className="field" value={i2vLast} onChange={(event) => setI2vLast(event.target.value)}><option value="">设置为尾帧</option>{imageAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.title}</option>)}</select>
-              </div>
-              <button className="btn-ghost w-full"><Icon name="upload" />上传图片（Mock）</button>
-              <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">运动提示词</span><textarea className="field min-h-24" value={prompt} onChange={(event) => setPrompt(event.target.value)} /></label>
-              <label className="flex items-center justify-between rounded-xl bg-surface-container p-3 text-sm"><span>保持构图</span><input type="checkbox" checked={keepComposition} onChange={(event) => setKeepComposition(event.target.checked)} /></label>
-            </>
+            <I2VPanel
+              imageAssets={imageAssets}
+              firstFrameId={i2vFirst}
+              lastFrameId={i2vLast}
+              prompt={prompt}
+              keepComposition={keepComposition}
+              onFirstFrameChange={setI2vFirst}
+              onLastFrameChange={setI2vLast}
+              onPromptChange={setPrompt}
+              onKeepCompositionChange={setKeepComposition}
+            />
           ) : null}
           {mode === 'R2V' ? (
-            <>
-              <div className="rounded-xl border border-primary-fixed-dim/30 bg-primary-fixed-dim/10 p-3 text-sm text-primary">R2V 不是简单让图片动起来，而是使用参考素材保持角色、风格、场景或动作一致性。</div>
-              {[
-                ['character', '角色参考'],
-                ['style', '风格参考'],
-                ['scene', '场景参考'],
-                ['action', '动作参考'],
-                ['video', '参考视频'],
-              ].map(([key, label]) => (
-                <label key={key} className="block text-sm">
-                  <span className="mb-1 block text-on-surface-variant">{label}</span>
-                  <select className="field" value={refs[key] ?? ''} onChange={(event) => setRefs((item) => ({ ...item, [key]: event.target.value }))}>
-                    <option value="">选择素材</option>
-                    {assets.map((asset) => <option key={asset.id} value={asset.id}>{asset.title}</option>)}
-                  </select>
-                </label>
-              ))}
-              <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">新场景提示词</span><textarea className="field min-h-24" value={prompt} onChange={(event) => setPrompt(event.target.value)} /></label>
-            </>
+            <R2VPanel assets={assets} refs={refs} prompt={prompt} onRefChange={(key, assetId) => setRefs((item) => ({ ...item, [key]: assetId }))} onPromptChange={setPrompt} />
           ) : null}
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">时长</span><select className="field" value={duration} onChange={(event) => setDuration(Number(event.target.value))}><option value={4}>4 秒</option><option value={6}>6 秒</option><option value={8}>8 秒</option></select></label>
-            <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">画幅</span><select className="field" value={aspect} onChange={(event) => setAspect(event.target.value)}><option>16:9</option><option>9:16</option><option>1:1</option></select></label>
-            <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">分辨率</span><select className="field" value={resolution} onChange={(event) => setResolution(event.target.value)}><option>720p</option><option>1080p</option><option>2K</option></select></label>
-            <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">风格</span><select className="field" value={style} onChange={(event) => setStyle(event.target.value)}><option>电影广告</option><option>纪录片</option><option>产品展示</option><option>赛博朋克</option></select></label>
-          </div>
-          <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">{mode === 'R2V' ? '参考权重' : '运动强度'}：{mode === 'R2V' ? referenceWeight : motion}</span><input className="w-full accent-primary-fixed-dim" type="range" min={0} max={100} value={mode === 'R2V' ? referenceWeight : motion} onChange={(event) => mode === 'R2V' ? setReferenceWeight(Number(event.target.value)) : setMotion(Number(event.target.value))} /></label>
-          <div className="rounded-xl border border-outline-variant/40 bg-surface-container p-3 text-xs leading-5 text-on-surface-variant">
-            视频生成调用、内容审核、版权归属和商用授权均以所选第三方供应商条款为准；当前仅创建 Mock 异步任务。
-          </div>
-          <button className="btn-primary w-full py-3" onClick={generate}><Icon name="movie" />生成视频 Mock 任务</button>
+          <VideoGeneratePanel
+            providers={videoProviders}
+            providerId={providerId}
+            model={model}
+            mode={mode}
+            duration={duration}
+            aspect={aspect}
+            resolution={resolution}
+            style={style}
+            motion={motion}
+            referenceWeight={referenceWeight}
+            onProviderChange={setProviderId}
+            onDurationChange={setDuration}
+            onAspectChange={setAspect}
+            onResolutionChange={setResolution}
+            onStyleChange={setStyle}
+            onMotionChange={setMotion}
+            onReferenceWeightChange={setReferenceWeight}
+            onGenerate={generate}
+          />
         </section>
         <section>
           <h3 className="mb-4 text-xl font-bold">素材与预览</h3>

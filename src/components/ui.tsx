@@ -1,46 +1,8 @@
-import type { ReactNode } from 'react';
-
-export function Icon({ name, className = '' }: { name: string; className?: string }) {
-  return <span className={`material-symbols-outlined ${className}`}>{name}</span>;
-}
-
-export function SectionHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
-  return (
-    <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight text-on-surface">{title}</h2>
-        {subtitle ? <p className="mt-1 text-sm text-on-surface-variant">{subtitle}</p> : null}
-      </div>
-      {action}
-    </div>
-  );
-}
-
-export function EmptyState({ icon, title, text, action }: { icon: string; title: string; text: string; action?: ReactNode }) {
-  return (
-    <div className="card flex min-h-56 flex-col items-center justify-center text-center">
-      <Icon name={icon} className="mb-3 text-5xl text-primary-fixed-dim" />
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="mt-1 max-w-md text-sm text-on-surface-variant">{text}</p>
-      {action ? <div className="mt-4">{action}</div> : null}
-    </div>
-  );
-}
-
-export function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    connected: '已连接',
-    failed: '失败',
-    unconfigured: '未配置',
-    testing: '测试中',
-    queued: '排队中',
-    running: '生成中',
-    completed: '已完成',
-    canceled: '已取消',
-  };
-  const tone = status === 'connected' || status === 'completed' ? 'text-[#00ff9d] bg-[#00ff9d]/10 border-[#00ff9d]/30' : status === 'failed' ? 'text-error bg-error-container/30 border-error/30' : status === 'running' || status === 'testing' ? 'text-primary-fixed bg-primary-fixed-dim/10 border-primary-fixed-dim/30' : 'text-on-surface-variant bg-surface-container border-outline-variant/40';
-  return <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${tone}`}>{map[status] ?? status}</span>;
-}
+export { Icon } from './common/Icon';
+export { SectionHeader } from './common/SectionHeader';
+export { EmptyState } from './common/EmptyState';
+export { StatusBadge } from './common/StatusBadge';
+import { Icon } from './common/Icon';
 
 export function LoadingBlock({ text = '正在加载 Mock 数据...' }: { text?: string }) {
   return (
