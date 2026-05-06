@@ -7,7 +7,7 @@ import { T2VPanel } from '../components/video/T2VPanel';
 import { VideoGeneratePanel } from '../components/video/VideoGeneratePanel';
 import { VideoModeTabs } from '../components/video/VideoModeTabs';
 import { useApp } from '../context/AppContext';
-import { createTask } from '../services/mockService';
+import { generationApi } from '../api/generationApi';
 import type { Asset, VideoMode } from '../types';
 
 export function VideoStudio() {
@@ -61,13 +61,13 @@ export function VideoStudio() {
     [assets, i2vFirst, i2vLast, refs],
   );
 
-  const generate = () => {
+  const generate = async () => {
     if (!provider) {
       showToast('请先配置视频供应商', 'error');
       return;
     }
-    const task = createTask({
-      type: 'video',
+    try {
+      const { task } = await generationApi.generateVideo({
       mode,
       title: `${mode} 视频生成`,
       prompt,
@@ -75,9 +75,12 @@ export function VideoStudio() {
       project: currentProject,
       model,
       params: { camera, duration, aspect, resolution, motion, style, keepComposition, referenceWeight },
-    });
-    addTask(task);
-    setView('tasks');
+      });
+      addTask(task);
+      setView('tasks');
+    } catch {
+      showToast('视频生成请求失败：当前仍为 Mock 接口层', 'error');
+    }
   };
 
   const assetSelect = (target: 'first' | 'last' | 'character' | 'style' | 'scene' | 'action' | 'video', assetId: string) => {

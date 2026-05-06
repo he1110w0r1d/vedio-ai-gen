@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { createVideoAsset, maskKey } from '../services/mockService';
+import { assetApi } from '../api/assetApi';
+import { providerApi } from '../api/providerApi';
+import { taskApi } from '../api/taskApi';
+import { createVideoAsset } from '../services/mockService';
 import { loadAppState, saveAppState } from '../services/storageService';
 import { getCompletedVideoTasksNeedingAssets, markVideoAssetsCreated } from '../services/taskService';
 import type { Asset, GenerationTask, Project, PromptTemplate, Provider, ProviderCapability, VideoSeed, ViewId } from '../types';
@@ -153,11 +156,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAssets((existing) => [...items, ...existing]);
         setSelectedAsset(items[0]);
       },
-      toggleFavorite: (assetId) => setAssets((items) => items.map((asset) => (asset.id === assetId ? { ...asset, favorite: !asset.favorite } : asset))),
+      toggleFavorite: (assetId) => {
+        const target = assets.find((asset) => asset.id === assetId);
+        if (!target) return;
+        assetApi.favoriteAsset(target).then((updated) => {
+          setAssets((items) => items.map((asset) => (asset.id === assetId ? updated : asset)));
+        });
+      },
       deleteAsset: (assetId) => {
-        setAssets((items) => items.filter((asset) => asset.id !== assetId));
-        setSelectedAsset(undefined);
-        showToast('资产已删除', 'success');
+        assetApi.deleteAsset(assetId).then(() => {
+          setAssets((items) => items.filter((asset) => asset.id !== assetId));
+          setSelectedAsset(undefined);
+          showToast('资产已删除', 'success');
+        });
       },
       sendImageToVideo: (assetId, usage) => {
         setVideoSeed({ assetId, usage });
@@ -170,23 +181,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
       },
       updateTask: (taskId, patch) => setTasks((items) => items.map((task) => (task.id === taskId ? { ...task, ...patch } : task))),
       retryTask: (taskId) => {
-        setTasks((items) => items.map((task) => (task.id === taskId ? { ...task, status: 'queued', progress: 0, errorReason: undefined } : task)));
-        showToast('任务已重新排队', 'success');
+        const target = tasks.find((task) => task.id === taskId);
+        if (!target) return;
+        taskApi.retryTask(target).then((updated) => {
+          setTasks((items) => items.map((task) => (task.id === taskId ? updated : task)));
+          showToast('任务已重新排队', 'success');
+        });
       },
       cancelTask: (taskId) => {
-        setTasks((items) => items.map((task) => (task.id === taskId ? { ...task, status: 'canceled', progress: 0 } : task)));
-        showToast('任务已取消', 'info');
+        const target = tasks.find((task) => task.id === taskId);
+        if (!target) return;
+        taskApi.cancelTask(target).then((updated) => {
+          setTasks((items) => items.map((task) => (task.id === taskId ? updated : task)));
+          showToast('任务已取消', 'info');
+        });
       },
-      upsertProvider: (provider) => setProviders((items) => items.map((item) => (item.id === provider.id ? provider : item))),
+      upsertProvider: (provider) => {
+        providerApi.updateProvider(provider).then((updated) => {
+          setProviders((items) => items.map((item) => (item.id === updated.id ? updated : item)));
+        });
+      },
       deleteProviderKey: (providerId) => {
-        setProviders((items) => items.map((item) => (item.id === providerId ? { ...item, apiKeyMasked: undefined, status: 'unconfigured' } : item)));
-        showToast('API Key 已删除，仅清除了前端模拟数据', 'success');
+        const target = providers.find((provider) => provider.id === providerId);
+        if (!target) return;
+        providerApi.deleteProviderKey(target).then((updated) => {
+          setProviders((items) => items.map((item) => (item.id === providerId ? updated : item)));
+          showToast('API Key 已删除，仅清除了前端模拟数据', 'success');
+        });
       },
       testProvider: (providerId) => {
         setProviders((items) => items.map((item) => (item.id === providerId ? { ...item, status: 'testing' } : item)));
+        const target = providers.find((provider) => provider.id === providerId);
+        if (!target) return;
         window.setTimeout(() => {
-          setProviders((items) => items.map((item) => (item.id === providerId ? { ...item, status: item.apiKeyMasked ? 'connected' : 'failed' } : item)));
+          providerApi.testProvider(target).then((result) => {
+            setProviders((items) => items.map((item) => (item.id === providerId ? { ...item, status: result.status } : item)));
           showToast('连接测试完成：这是 Mock 结果', 'success');
+          });
         }, 800);
       },
       setDefaultProvider: (providerId) => {
@@ -194,19 +225,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         showToast('默认供应商已更新', 'success');
       },
       addCustomProvider: (input) => {
-        setProviders((items) => [
-          {
-            id: `custom_${Date.now()}`,
-            name: input.name,
-            baseUrl: input.baseUrl,
-            defaultModel: input.defaultModel,
-            apiKeyMasked: maskKey(input.apiKey),
-            capabilities: input.capabilities,
-            status: input.apiKey ? 'connected' : 'unconfigured',
-          },
-          ...items,
-        ]);
-        showToast('自定义供应商已添加', 'success');
+        providerApi.createProvider(input).then((provider) => {
+          setProviders((items) => [provider, ...items]);
+          showToast('自定义供应商已添加', 'success');
+        });
       },
       addTemplate: (template) => setTemplates((items) => [template, ...items]),
       updateTemplate: (template) => setTemplates((items) => items.map((item) => (item.id === template.id ? template : item))),

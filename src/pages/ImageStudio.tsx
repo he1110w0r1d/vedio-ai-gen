@@ -5,7 +5,7 @@ import { Icon, SectionHeader } from '../components/ui';
 import { ParameterPanel } from '../components/studio/ParameterPanel';
 import { PromptEditor } from '../components/studio/PromptEditor';
 import { useApp } from '../context/AppContext';
-import { createImageAssets, createTask } from '../services/mockService';
+import { generationApi } from '../api/generationApi';
 import type { Asset } from '../types';
 
 export function ImageStudio() {
@@ -24,23 +24,27 @@ export function ImageStudio() {
   const model = provider?.defaultModel.split('/')[0].trim() || 'Mock Image';
   const selected = useMemo(() => selectedAsset && selectedAsset.type !== 'video' ? selectedAsset : results[0], [selectedAsset, results]);
 
-  const generate = () => {
+  const generate = async () => {
     if (!provider || !prompt.trim()) {
       setStatus('failed');
       showToast('请选择供应商并输入提示词', 'error');
       return;
     }
     setStatus('loading');
-    const task = createTask({ type: 'image', title: '图片生成任务', prompt, provider, project: currentProject, model, params: { aspectRatio, count, seed: seed || '随机', negativePrompt } });
-    addTask(task);
-    window.setTimeout(() => {
-      const items = createImageAssets({ prompt, count, provider, project: currentProject, model, aspectRatio, style, seed });
-      addAssets(items);
-      setResults(items);
-      setSelectedAsset(items[0]);
-      setStatus('success');
-      showToast('图片 Mock 生成完成', 'success');
-    }, 900);
+    try {
+      const { task, assets: items } = await generationApi.generateImage({ prompt, negativePrompt, count, provider, project: currentProject, model, aspectRatio, style, seed });
+      addTask(task);
+      window.setTimeout(() => {
+        addAssets(items);
+        setResults(items);
+        setSelectedAsset(items[0]);
+        setStatus('success');
+        showToast('图片 Mock 生成完成', 'success');
+      }, 900);
+    } catch {
+      setStatus('failed');
+      showToast('图片生成请求失败：当前仍为 Mock 接口层', 'error');
+    }
   };
 
   return (
