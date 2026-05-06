@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { mockAssets, mockProjects, mockProviders, mockPromptTemplates, mockTasks } from '../data/mockData';
 import { createVideoAsset, maskKey } from '../services/mockService';
+import { loadAppState, saveAppState } from '../services/storageService';
 import type { Asset, GenerationTask, Project, PromptTemplate, Provider, ProviderCapability, VideoSeed, ViewId } from '../types';
 
 type Toast = { id: string; tone: 'success' | 'error' | 'info'; message: string };
@@ -45,24 +45,52 @@ type AppContextValue = {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
+const viewIds: ViewId[] = ['dashboard', 'projects', 'image-studio', 'video-studio', 'assets', 'tasks', 'providers', 'templates', 'settings'];
+const viewAliases: Record<string, ViewId> = {
+  dashboard: 'dashboard',
+  projects: 'projects',
+  project: 'projects',
+  image: 'image-studio',
+  'image-studio': 'image-studio',
+  video: 'video-studio',
+  'video-studio': 'video-studio',
+  assets: 'assets',
+  'asset-library': 'assets',
+  tasks: 'tasks',
+  'task-center': 'tasks',
+  providers: 'providers',
+  provider: 'providers',
+  api: 'providers',
+  templates: 'templates',
+  'prompt-templates': 'templates',
+  settings: 'settings',
+};
+
+function resolveHashView(hash = window.location.hash): ViewId {
+  const key = hash.replace(/^#\/?/, '').trim();
+  if (!key) return 'dashboard';
+  return viewAliases[key] ?? (viewIds.includes(key as ViewId) ? (key as ViewId) : 'dashboard');
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [view, setViewState] = useState<ViewId>('dashboard');
-  const [projects] = useState(mockProjects);
-  const [currentProjectId, setCurrentProjectId] = useState(mockProjects[0].id);
-  const [providers, setProviders] = useState(mockProviders);
-  const [assets, setAssets] = useState(mockAssets);
-  const [tasks, setTasks] = useState(mockTasks);
-  const [templates, setTemplates] = useState(mockPromptTemplates);
+  const [initialState] = useState(loadAppState);
+  const [view, setViewState] = useState<ViewId>(() => resolveHashView());
+  const [projects] = useState(initialState.projects);
+  const [currentProjectId, setCurrentProjectId] = useState(initialState.currentProjectId);
+  const [providers, setProviders] = useState(initialState.providers);
+  const [assets, setAssets] = useState(initialState.assets);
+  const [tasks, setTasks] = useState(initialState.tasks);
+  const [templates, setTemplates] = useState(initialState.promptTemplates);
   const [globalSearch, setGlobalSearch] = useState('');
-  const [selectedAsset, setSelectedAsset] = useState<Asset | undefined>(mockAssets[0]);
-  const [videoSeed, setVideoSeed] = useState<VideoSeed | undefined>();
+  const [selectedAsset, setSelectedAsset] = useState<Asset | undefined>(initialState.assets[0]);
+  const [videoSeed, setVideoSeed] = useState<VideoSeed | undefined>(initialState.selectedVideoInput);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const currentProject = projects.find((project) => project.id === currentProjectId) ?? projects[0];
+  const currentProject = projects.find((project) => project.id === currentProjectId) ?? projects[0] ?? initialState.projects[0];
 
   const setView = (next: ViewId) => {
     setViewState(next);
-    window.history.replaceState(null, '', `#${next}`);
+    if (window.location.hash !== `#${next}`) window.location.hash = next;
   };
 
   const showToast = (message: string, tone: Toast['tone'] = 'info') => {
@@ -72,9 +100,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const hash = window.location.hash.replace('#', '') as ViewId;
-    if (hash) setViewState(hash);
+    const syncViewFromHash = () => setViewState(resolveHashView());
+    syncViewFromHash();
+    window.addEventListener('hashchange', syncViewFromHash);
+    return () => window.removeEventListener('hashchange', syncViewFromHash);
   }, []);
+
+  useEffect(() => {
+    saveAppState({
+      version: 1,
+      providers,
+      assets,
+      tasks,
+      promptTemplates: templates,
+      projects,
+      currentProjectId,
+      selectedVideoInput: videoSeed,
+    });
+  }, [providers, assets, tasks, templates, projects, currentProjectId, videoSeed]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -91,13 +134,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const completedVideoTasks = tasks.filter(
-      (task) => task.type === 'video' && task.status === 'completed' && !assets.some((asset) => asset.taskId === task.id),
-    );
+    const completedVideoTasks = tasks.filter((task) => task.type === 'video' && task.status === 'completed' && !task.assetCreated);
     if (!completedVideoTasks.length) return;
-    setAssets((items) => [...completedVideoTasks.map(createVideoAsset), ...items]);
-    showToast('视频 Mock 任务已完成，资产已加入资产库', 'success');
-  }, [tasks, assets]);
+
+    let createdCount = 0;
+    setAssets((items) => {
+      const newAssets = completedVideoTasks
+        .filter((task) => !items.some((asset) => asset.type === 'video' && asset.taskId === task.id))
+        .map((task) => {
+          createdCount += 1;
+          return createVideoAsset(task);
+        });
+      return newAssets.length ? [...newAssets, ...items] : items;
+    });
+    setTasks((items) =>
+      items.map((task) =>
+        completedVideoTasks.some((completedTask) => completedTask.id === task.id) ? { ...task, assetCreated: true } : task,
+      ),
+    );
+    if (createdCount) showToast('视频 Mock 任务已完成，资产已加入资产库', 'success');
+  }, [tasks]);
 
   const value = useMemo<AppContextValue>(
     () => ({
@@ -186,6 +242,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteTemplate: (templateId) => setTemplates((items) => items.filter((item) => item.id !== templateId)),
       resetHistory: () => {
         setTasks([]);
+        setAssets([]);
+        setSelectedAsset(undefined);
         showToast('生成历史已清空', 'success');
       },
       deleteAllKeys: () => {

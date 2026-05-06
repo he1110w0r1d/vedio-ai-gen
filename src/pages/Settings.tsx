@@ -9,6 +9,12 @@ export function Settings() {
     <div>
       <SectionHeader title="设置 Settings" subtitle="管理账户、默认项、隐私控制与危险操作。" />
       <div className="grid gap-5 lg:grid-cols-2">
+        <section className="card border-primary-fixed-dim/30 bg-primary-fixed-dim/10 lg:col-span-2">
+          <h3 className="mb-2 text-lg font-bold text-primary">第三方供应商规则说明</h3>
+          <p className="text-sm leading-6 text-primary">
+            平台仅提供统一创作工作台、资产管理和调用编排能力。用户通过本人 API Key 调用第三方供应商生成内容，相关费用、内容审核、版权归属、商用授权和使用限制均以对应第三方供应商的服务条款为准。平台不对第三方模型生成内容的版权、合规性或商用授权作额外承诺。
+          </p>
+        </section>
         <section className="card">
           <h3 className="mb-4 text-lg font-bold">账户信息</h3>
           <div className="flex items-center gap-4">
@@ -38,7 +44,7 @@ export function Settings() {
             <button className="btn-ghost justify-start" onClick={resetHistory}><Icon name="delete_sweep" />清空生成历史</button>
             <button className="btn-ghost justify-start" onClick={deleteAllKeys}><Icon name="key_off" />删除所有 API Key</button>
           </div>
-          <p className="mt-4 text-sm text-on-surface-variant">第三方供应商的审核、扣费、可用区域与内容政策以对应供应商为准。第一阶段仅保留接口层设计，不接真实 API。</p>
+          <p className="mt-4 text-sm text-on-surface-variant">第三方供应商的审核、扣费、可用区域、内容政策、版权归属和商用授权以对应供应商为准。第一阶段仅保留接口层设计，不接真实 API。</p>
         </section>
       </div>
     </div>

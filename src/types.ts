@@ -83,6 +83,7 @@ export type GenerationTask = {
   mode?: VideoMode;
   status: TaskStatus;
   progress: number;
+  assetCreated?: boolean;
   title: string;
   prompt: string;
   providerId: string;
@@ -107,4 +108,15 @@ export type PromptTemplate = {
 export type VideoSeed = {
   assetId: string;
   usage: 'i2v-first' | 'i2v-last' | 'r2v-character' | 'r2v-style';
+};
+
+export type AppStateSnapshot = {
+  version: number;
+  providers: Provider[];
+  assets: Asset[];
+  tasks: GenerationTask[];
+  promptTemplates: PromptTemplate[];
+  projects: Project[];
+  currentProjectId: string;
+  selectedVideoInput?: VideoSeed;
 };

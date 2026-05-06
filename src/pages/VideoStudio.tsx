@@ -145,6 +145,9 @@ export function VideoStudio() {
             <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">风格</span><select className="field" value={style} onChange={(event) => setStyle(event.target.value)}><option>电影广告</option><option>纪录片</option><option>产品展示</option><option>赛博朋克</option></select></label>
           </div>
           <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">{mode === 'R2V' ? '参考权重' : '运动强度'}：{mode === 'R2V' ? referenceWeight : motion}</span><input className="w-full accent-primary-fixed-dim" type="range" min={0} max={100} value={mode === 'R2V' ? referenceWeight : motion} onChange={(event) => mode === 'R2V' ? setReferenceWeight(Number(event.target.value)) : setMotion(Number(event.target.value))} /></label>
+          <div className="rounded-xl border border-outline-variant/40 bg-surface-container p-3 text-xs leading-5 text-on-surface-variant">
+            视频生成调用、内容审核、版权归属和商用授权均以所选第三方供应商条款为准；当前仅创建 Mock 异步任务。
+          </div>
           <button className="btn-primary w-full py-3" onClick={generate}><Icon name="movie" />生成视频 Mock 任务</button>
         </section>
         <section>

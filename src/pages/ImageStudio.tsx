@@ -56,7 +56,9 @@ export function ImageStudio() {
             <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">数量</span><input className="field" type="number" min={1} max={4} value={count} onChange={(event) => setCount(Number(event.target.value))} /></label>
             <label className="block text-sm"><span className="mb-1 block text-on-surface-variant">Seed</span><input className="field" value={seed} onChange={(event) => setSeed(event.target.value)} placeholder="随机" /></label>
           </div>
-          <div className="rounded-xl border border-outline-variant/40 bg-surface-container p-3 text-xs text-on-surface-variant">预估消耗：由供应商账户计费，本工作台仅做前端 Mock。</div>
+          <div className="rounded-xl border border-outline-variant/40 bg-surface-container p-3 text-xs leading-5 text-on-surface-variant">
+            预估消耗：由供应商账户计费，本工作台仅做前端 Mock。生成内容的版权归属、商用授权和使用限制以对应第三方供应商服务条款为准。
+          </div>
           <button className="btn-primary w-full py-3" onClick={generate}><Icon name="auto_awesome" />生成图片</button>
         </aside>
         <section>

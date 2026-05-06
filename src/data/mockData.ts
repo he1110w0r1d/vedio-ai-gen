@@ -28,14 +28,14 @@ export const mockProviders: Provider[] = [
 export const mockAssets: Asset[] = [
   { id: 'a1', type: 'image', title: '赛博城市主视觉', prompt: '雨夜赛博朋克城市，霓虹反射，电影级光影', thumbnail: imagePool[0], providerId: 'google', providerName: 'Google', model: 'Imagen', projectId: 'p1', createdAt: '2026-05-06 13:12', favorite: true, aspectRatio: '16:9', params: { style: '电影感', seed: 1204 } },
   { id: 'a2', type: 'image', title: '流体金属产品图', prompt: '黑色流体金属与青色高光，产品广告质感', thumbnail: imagePool[1], providerId: 'openai', providerName: 'OpenAI', model: 'gpt-image', projectId: 'p1', createdAt: '2026-05-06 11:05', favorite: false, aspectRatio: '1:1', params: { style: '产品展示', seed: 9021 } },
-  { id: 'a3', type: 'video', title: '建筑雾中推进镜头', prompt: '冷峻建筑在雾气中缓慢出现，推轨镜头', thumbnail: imagePool[2], providerId: 'runway', providerName: 'Runway', model: 'Gen-4', projectId: 'p2', createdAt: '2026-05-05 20:30', favorite: true, duration: 6, mode: 'T2V', params: { resolution: '1080p', motion: '低' } },
+  { id: 'a3', type: 'video', title: '建筑雾中推进镜头', prompt: '冷峻建筑在雾气中缓慢出现，推轨镜头', thumbnail: imagePool[2], providerId: 'runway', providerName: 'Runway', model: 'Gen-4', projectId: 'p2', createdAt: '2026-05-05 20:30', favorite: true, taskId: 't3', duration: 6, mode: 'T2V', params: { resolution: '1080p', motion: '低' } },
   { id: 'a4', type: 'reference', title: '角色一致性参考', prompt: '专业创作者头像，暗色科技边缘光', thumbnail: imagePool[3], providerId: 'google', providerName: 'Google', model: 'Imagen', projectId: 'p2', createdAt: '2026-05-04 16:22', favorite: false, aspectRatio: '4:3', params: { usage: '角色参考' } },
 ];
 
 export const mockTasks: GenerationTask[] = [
   { id: 't1', type: 'video', mode: 'R2V', status: 'running', progress: 58, title: '角色参考生成广告片', prompt: '保持角色一致性，进入未来产品发布现场', providerId: 'runway', providerName: 'Runway', model: 'Gen-4', projectId: 'p1', projectName: '品牌广告片', createdAt: '2026-05-06 14:42', params: { duration: 6 } },
   { id: 't2', type: 'image', status: 'failed', progress: 100, title: '产品主图重绘', prompt: '极简产品图，透明玻璃材质', providerId: 'kling', providerName: 'Kling', model: 'Kling Image', projectId: 'p1', projectName: '品牌广告片', createdAt: '2026-05-06 12:18', errorReason: 'API Key 无效', params: { aspect: '1:1' } },
-  { id: 't3', type: 'video', mode: 'I2V', status: 'completed', progress: 100, title: '城市主视觉动效', prompt: '镜头穿过雨夜街道，灯光流动', providerId: 'google', providerName: 'Google', model: 'Veo', projectId: 'p3', projectName: '社媒短视频', createdAt: '2026-05-05 21:00', params: { duration: 5 } },
+  { id: 't3', type: 'video', mode: 'I2V', status: 'completed', progress: 100, assetCreated: true, title: '城市主视觉动效', prompt: '镜头穿过雨夜街道，灯光流动', providerId: 'google', providerName: 'Google', model: 'Veo', projectId: 'p3', projectName: '社媒短视频', createdAt: '2026-05-05 21:00', params: { duration: 5 } },
 ];
 
 export const mockPromptTemplates: PromptTemplate[] = [
