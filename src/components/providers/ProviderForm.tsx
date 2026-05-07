@@ -16,11 +16,11 @@ const initialDraft: ProviderDraft = { name: '', providerType: 'custom', baseUrl:
 
 const providerTypeOptions = [
   { value: 'custom', label: 'Custom Provider', defaultModel: 'custom-model', capabilities: ['图片生成', 'T2V', 'I2V'] as ProviderCapability[] },
-  { value: 'openai-images', label: 'OpenAI Images', defaultModel: 'gpt-image-1.5', capabilities: ['图片生成'] as ProviderCapability[] },
+  { value: 'openai-images', label: '万物焕新 gpt-image-2', defaultModel: 'gpt-image-2', capabilities: ['图片生成'] as ProviderCapability[] },
   { value: 'mock', label: 'Mock Provider', defaultModel: 'mock-image/mock-video', capabilities: ['图片生成', 'T2V', 'I2V', 'R2V', '异步任务'] as ProviderCapability[] },
 ];
 
-const openAIImageModels = ['gpt-image-2', 'gpt-image-1.5', 'gpt-image-1', 'gpt-image-1-mini'];
+const wanwuImageModels = ['gpt-image-2'];
 
 export function ProviderForm({ onSubmit }: { onSubmit: (draft: ProviderDraft) => void }) {
   const [draft, setDraft] = useState<ProviderDraft>(initialDraft);
@@ -40,7 +40,7 @@ export function ProviderForm({ onSubmit }: { onSubmit: (draft: ProviderDraft) =>
       ...item,
       providerType,
       name: item.name || option?.label || '',
-      baseUrl: providerType === 'openai-images' ? 'https://api.openai.com/v1' : item.baseUrl,
+      baseUrl: providerType === 'openai-images' ? 'https://api.wanwuhuanxin.cn/v1' : item.baseUrl,
       defaultModel: option?.defaultModel ?? item.defaultModel,
       capabilities: option?.capabilities ?? item.capabilities,
     }));
@@ -65,7 +65,7 @@ export function ProviderForm({ onSubmit }: { onSubmit: (draft: ProviderDraft) =>
         <input className="field" placeholder="Base URL" value={draft.baseUrl} onChange={(event) => setDraft({ ...draft, baseUrl: event.target.value })} />
         {draft.providerType === 'openai-images' ? (
           <select className="field" value={draft.defaultModel} onChange={(event) => setDraft({ ...draft, defaultModel: event.target.value })}>
-            {openAIImageModels.map((model) => (
+            {wanwuImageModels.map((model) => (
               <option key={model} value={model}>{model}</option>
             ))}
           </select>
@@ -83,7 +83,7 @@ export function ProviderForm({ onSubmit }: { onSubmit: (draft: ProviderDraft) =>
       </button>
       {draft.providerType === 'openai-images' ? (
         <p className="mt-3 rounded-xl border border-primary-fixed-dim/30 bg-primary-fixed-dim/10 p-3 text-xs leading-5 text-on-surface-variant">
-          OpenAI Images 目前仅用于图片文生图测试。API Key 通过后端加密保存，视频生成仍使用 Mock。
+          万物焕新 gpt-image-2 目前仅用于图片文生图测试。API Key 通过后端加密保存，视频生成仍使用 Mock。
         </p>
       ) : null}
     </section>

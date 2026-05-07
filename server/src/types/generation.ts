@@ -10,6 +10,10 @@ export type ImageGenerationInput = {
   count?: number;
   seed?: string;
   style?: string;
+  size?: string;
+  quality?: string;
+  outputFormat?: string;
+  background?: string;
 };
 
 export type VideoGenerationInput = {

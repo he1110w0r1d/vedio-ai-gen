@@ -22,5 +22,5 @@ export type GenerationTaskRecord = {
   completedAt?: string;
   errorCode?: string;
   errorReason?: string;
-  params: Record<string, string | number | boolean>;
+  params: Record<string, string | number | boolean | undefined>;
 };

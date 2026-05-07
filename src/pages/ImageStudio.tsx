@@ -20,10 +20,14 @@ export function ImageStudio() {
   const [aspectRatio, setAspectRatio] = useState('16:9');
   const [count, setCount] = useState(2);
   const [seed, setSeed] = useState('');
+  const [quality, setQuality] = useState('供应商默认');
+  const [outputFormat, setOutputFormat] = useState('供应商返回格式');
+  const [background, setBackground] = useState('供应商默认');
   const [results, setResults] = useState<Asset[]>([]);
   const [status, setStatus] = useState<'empty' | 'loading' | 'success' | 'failed'>('empty');
+  const [errorMessage, setErrorMessage] = useState('');
   const model = provider?.defaultModel.split('/')[0].trim() || 'Mock Image';
-  const isOpenAIRealProvider = API_MODE === 'real' && provider?.providerType === 'openai-images';
+  const isWanwuRealProvider = API_MODE === 'real' && provider?.providerType === 'openai-images';
   const selected = useMemo(() => selectedAsset && selectedAsset.type !== 'video' ? selectedAsset : results[0], [selectedAsset, results]);
 
   const generate = async () => {
@@ -33,19 +37,36 @@ export function ImageStudio() {
       return;
     }
     setStatus('loading');
+    setErrorMessage('');
     try {
-      const { task, assets: items } = await generationApi.generateImage({ prompt, negativePrompt, count, provider, project: currentProject, model, aspectRatio, style, seed });
+      const { task, assets: items } = await generationApi.generateImage({
+        prompt,
+        negativePrompt,
+        count,
+        provider,
+        project: currentProject,
+        model,
+        aspectRatio,
+        style,
+        seed,
+        quality,
+        outputFormat,
+        background,
+      });
       addTask(task);
-      window.setTimeout(() => {
+      const finish = () => {
         addAssets(items);
         setResults(items);
         setSelectedAsset(items[0]);
         setStatus('success');
-        showToast(isOpenAIRealProvider ? 'OpenAI 图片生成完成' : '图片 Mock 生成完成', 'success');
-      }, 900);
+        showToast(isWanwuRealProvider ? `万物焕新已生成 ${items.length} 张图片` : '图片 Mock 生成完成', 'success');
+      };
+      if (isWanwuRealProvider) finish();
+      else window.setTimeout(finish, 900);
     } catch (error) {
       setStatus('failed');
-      const message = error instanceof ApiClientError ? error.error.message : '图片生成请求失败';
+      const message = getFriendlyGenerationError(error);
+      setErrorMessage(message);
       showToast(message, 'error');
     }
   };
@@ -64,22 +85,36 @@ export function ImageStudio() {
             aspectRatio={aspectRatio}
             count={count}
             seed={seed}
+            quality={quality}
+            outputFormat={outputFormat}
+            background={background}
             onProviderChange={setProviderId}
             onStyleChange={setStyle}
             onAspectRatioChange={setAspectRatio}
             onCountChange={setCount}
             onSeedChange={setSeed}
+            onQualityChange={setQuality}
+            onOutputFormatChange={setOutputFormat}
+            onBackgroundChange={setBackground}
           />
           <PromptEditor prompt={prompt} negativePrompt={negativePrompt} onPromptChange={setPrompt} onNegativePromptChange={setNegativePrompt} />
           <div className="rounded-xl border border-outline-variant/40 bg-surface-container p-3 text-xs leading-5 text-on-surface-variant">
             预估消耗：由供应商账户计费，本工作台仅做前端 Mock。生成内容的版权归属、商用授权和使用限制以对应第三方供应商服务条款为准。
-            {isOpenAIRealProvider ? (
+            {isWanwuRealProvider ? (
               <span className="mt-2 block text-primary-fixed">
-                真实生成会调用用户自己的 OpenAI API Key，并可能产生费用。生成速度、审核结果、模型权限以 OpenAI 账户状态为准。
+                真实生成会调用用户自己的万物焕新 API Key，并可能产生费用。生成速度、审核结果、模型权限以万物焕新账户状态为准。
               </span>
             ) : null}
           </div>
-          <button className="btn-primary w-full py-3" onClick={generate}><Icon name="auto_awesome" />生成图片</button>
+          {errorMessage ? (
+            <div className="rounded-xl border border-error/30 bg-error-container/30 p-3 text-xs leading-5 text-error">
+              {errorMessage}
+            </div>
+          ) : null}
+          <button className="btn-primary w-full py-3 disabled:cursor-not-allowed disabled:opacity-60" onClick={generate} disabled={status === 'loading'}>
+            <Icon name={status === 'loading' ? 'hourglass_empty' : 'auto_awesome'} />
+            {status === 'loading' ? '生成中...' : '生成图片'}
+          </button>
         </aside>
         <section>
           <ImageResultGrid
@@ -95,4 +130,19 @@ export function ImageStudio() {
       </div>
     </div>
   );
+}
+
+function getFriendlyGenerationError(error: unknown) {
+  if (!(error instanceof ApiClientError)) return '图片生成请求失败，请稍后重试。';
+  const map: Record<string, string> = {
+    INVALID_API_KEY: 'API Key 无效，请到 Provider 页面检查或重新填写。',
+    INSUFFICIENT_BALANCE: '账户余额或额度不足，请检查供应商账户状态。',
+    RATE_LIMITED: '请求过于频繁，请稍后重试。',
+    CONTENT_REJECTED: '当前提示词未通过内容审核，请调整后重试。',
+    MODEL_NOT_SUPPORTED: '当前模型不可用，可能与账户权限、组织验证或模型支持情况有关。',
+    TASK_TIMEOUT: '生成超时，请稍后重试或简化提示词。',
+    PROVIDER_UNAVAILABLE: '供应商服务暂时不可用，请稍后重试。',
+    UNKNOWN_PROVIDER_ERROR: '生成失败，请查看后端日志或稍后再试。',
+  };
+  return map[error.error.code] ?? error.error.message;
 }

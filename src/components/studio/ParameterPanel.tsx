@@ -8,11 +8,17 @@ export function ParameterPanel({
   aspectRatio,
   count,
   seed,
+  quality,
+  outputFormat,
+  background,
   onProviderChange,
   onStyleChange,
   onAspectRatioChange,
   onCountChange,
   onSeedChange,
+  onQualityChange,
+  onOutputFormatChange,
+  onBackgroundChange,
 }: {
   providers: Provider[];
   providerId: string;
@@ -21,11 +27,17 @@ export function ParameterPanel({
   aspectRatio: string;
   count: number;
   seed: string;
+  quality: string;
+  outputFormat: string;
+  background: string;
   onProviderChange: (value: string) => void;
   onStyleChange: (value: string) => void;
   onAspectRatioChange: (value: string) => void;
   onCountChange: (value: number) => void;
   onSeedChange: (value: string) => void;
+  onQualityChange: (value: string) => void;
+  onOutputFormatChange: (value: string) => void;
+  onBackgroundChange: (value: string) => void;
 }) {
   return (
     <>
@@ -69,6 +81,32 @@ export function ParameterPanel({
         <label className="block text-sm">
           <span className="mb-1 block text-on-surface-variant">Seed</span>
           <input className="field" value={seed} onChange={(event) => onSeedChange(event.target.value)} placeholder="随机" />
+        </label>
+        <label className="block text-sm">
+          <span className="mb-1 block text-on-surface-variant">质量</span>
+          <select className="field" value={quality} onChange={(event) => onQualityChange(event.target.value)}>
+            <option value="供应商默认">供应商默认</option>
+            <option value="标准">标准</option>
+            <option value="高质量">高质量</option>
+          </select>
+        </label>
+        <label className="block text-sm">
+          <span className="mb-1 block text-on-surface-variant">格式</span>
+          <select className="field" value={outputFormat} onChange={(event) => onOutputFormatChange(event.target.value)}>
+            <option value="供应商返回格式">供应商返回格式</option>
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </label>
+        <label className="block text-sm">
+          <span className="mb-1 block text-on-surface-variant">背景</span>
+          <select className="field" value={background} onChange={(event) => onBackgroundChange(event.target.value)}>
+            <option value="供应商默认">供应商默认</option>
+            <option value="透明">透明</option>
+            <option value="白底">白底</option>
+            <option value="深色">深色</option>
+          </select>
         </label>
       </div>
     </>

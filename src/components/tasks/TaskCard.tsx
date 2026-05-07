@@ -28,7 +28,7 @@ export function TaskCard({
           <p className="mt-2 text-xs text-on-surface-variant">
             {task.providerName} · {task.model} · {task.projectName} · {task.createdAt}
           </p>
-          <TaskErrorMessage errorReason={task.errorReason} />
+          <TaskErrorMessage errorCode={task.errorCode} errorReason={task.errorReason} />
         </div>
         <div className="flex flex-wrap gap-2">
           <button className="btn-ghost" onClick={() => onRetry(task.id)}>

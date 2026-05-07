@@ -15,7 +15,7 @@ export const mockProjects: Project[] = [
 
 export const mockProviders: Provider[] = [
   { id: 'google', name: 'Google', baseUrl: 'https://generativelanguage.googleapis.com', defaultModel: 'Imagen / Veo', apiKeyMasked: '已配置（脱敏）', capabilities: ['图片生成', 'T2V', 'I2V', 'R2V', '负面提示词', '异步任务'], status: 'connected', isDefault: true },
-  { id: 'openai', name: 'OpenAI Images', baseUrl: 'https://api.openai.com/v1', defaultModel: 'gpt-image-1.5', apiKeyMasked: '已配置（脱敏）', providerType: 'openai-images', capabilities: ['图片生成'], status: 'connected' },
+  { id: 'openai', name: '万物焕新 gpt-image-2', baseUrl: 'https://api.wanwuhuanxin.cn/v1', defaultModel: 'gpt-image-2', apiKeyMasked: '已配置（脱敏）', providerType: 'openai-images', capabilities: ['图片生成'], status: 'connected' },
   { id: 'runway', name: 'Runway', baseUrl: 'https://api.runwayml.com/v1', defaultModel: 'Gen-4', capabilities: ['T2V', 'I2V', 'R2V', '首帧', '尾帧', '多参考图', '异步任务'], status: 'unconfigured' },
   { id: 'kling', name: 'Kling', baseUrl: 'https://api.klingai.com', defaultModel: 'Kling 2.0', capabilities: ['T2V', 'I2V', '首帧', '尾帧', '异步任务'], status: 'failed' },
   { id: 'minimax', name: 'MiniMax', baseUrl: 'https://api.minimax.chat', defaultModel: 'Hailuo', capabilities: ['T2V', 'I2V', '异步任务'], status: 'unconfigured' },
@@ -27,7 +27,7 @@ export const mockProviders: Provider[] = [
 
 export const mockAssets: Asset[] = [
   { id: 'a1', type: 'image', title: '赛博城市主视觉', prompt: '雨夜赛博朋克城市，霓虹反射，电影级光影', thumbnail: imagePool[0], providerId: 'google', providerName: 'Google', model: 'Imagen', projectId: 'p1', createdAt: '2026-05-06 13:12', favorite: true, aspectRatio: '16:9', params: { style: '电影感', seed: 1204 } },
-  { id: 'a2', type: 'image', title: '流体金属产品图', prompt: '黑色流体金属与青色高光，产品广告质感', thumbnail: imagePool[1], providerId: 'openai', providerName: 'OpenAI', model: 'gpt-image', projectId: 'p1', createdAt: '2026-05-06 11:05', favorite: false, aspectRatio: '1:1', params: { style: '产品展示', seed: 9021 } },
+  { id: 'a2', type: 'image', title: '流体金属产品图', prompt: '黑色流体金属与青色高光，产品广告质感', thumbnail: imagePool[1], providerId: 'openai', providerName: '万物焕新', model: 'gpt-image-2', projectId: 'p1', createdAt: '2026-05-06 11:05', favorite: false, aspectRatio: '1:1', params: { style: '产品展示', seed: 9021 } },
   { id: 'a3', type: 'video', title: '建筑雾中推进镜头', prompt: '冷峻建筑在雾气中缓慢出现，推轨镜头', thumbnail: imagePool[2], providerId: 'runway', providerName: 'Runway', model: 'Gen-4', projectId: 'p2', createdAt: '2026-05-05 20:30', favorite: true, taskId: 't3', duration: 6, mode: 'T2V', params: { resolution: '1080p', motion: '低' } },
   { id: 'a4', type: 'reference', title: '角色一致性参考', prompt: '专业创作者头像，暗色科技边缘光', thumbnail: imagePool[3], providerId: 'google', providerName: 'Google', model: 'Imagen', projectId: 'p2', createdAt: '2026-05-04 16:22', favorite: false, aspectRatio: '4:3', params: { usage: '角色参考' } },
 ];

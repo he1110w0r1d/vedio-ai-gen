@@ -56,6 +56,10 @@ export type ImageGenerationInput = {
   aspectRatio: string;
   style: string;
   seed: string;
+  quality?: string;
+  outputFormat?: string;
+  background?: string;
+  size?: string;
 };
 
 export type ImageGenerationResult = {

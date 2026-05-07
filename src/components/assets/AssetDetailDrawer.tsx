@@ -9,6 +9,16 @@ function assetTypeLabel(asset: Asset) {
   return '图片资产';
 }
 
+function formatBytes(value?: number) {
+  if (!value) return '未知';
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${(value / 1024 / 1024).toFixed(2)} MB`;
+}
+
+function parameterEntries(asset: Asset) {
+  return Object.entries(asset.parameters ?? asset.params).filter(([, value]) => value !== undefined && value !== '');
+}
+
 export function AssetDetailDrawer({
   asset,
   projectName,
@@ -47,7 +57,14 @@ export function AssetDetailDrawer({
       {asset ? (
         <div className="space-y-4">
           <div className="relative overflow-hidden rounded-xl bg-black">
-            <img src={asset.thumbnail} alt={asset.title} className="aspect-video w-full object-cover" />
+            <img
+              src={asset.thumbnailUrl ?? asset.url ?? asset.thumbnail}
+              alt={asset.title}
+              className="aspect-video w-full object-cover"
+              onError={(event) => {
+                event.currentTarget.style.opacity = '0.35';
+              }}
+            />
             {asset.type === 'video' ? (
               <div className="absolute inset-0 flex items-center justify-center bg-black/25">
                 <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/35 bg-black/50">
@@ -72,11 +89,21 @@ export function AssetDetailDrawer({
             <span>模型：{asset.model}</span>
             <span>创建：{asset.createdAt}</span>
             <span>任务：{asset.taskId ?? 'Mock 初始资产'}</span>
+            <span>存储：{asset.storageType ?? 'mock'}</span>
+            <span>MIME：{asset.mimeType ?? '未知'}</span>
+            <span>大小：{formatBytes(asset.sizeBytes)}</span>
+            <span>尺寸：{asset.width && asset.height ? `${asset.width} x ${asset.height}` : '未知'}</span>
           </div>
+          {asset.localPath || asset.url ? (
+            <div className="rounded-xl border border-outline-variant/30 bg-surface-container-low p-3 text-xs leading-5 text-on-surface-variant">
+              {asset.localPath ? <p className="break-all">本地文件：{asset.localPath}</p> : null}
+              {asset.url ? <p className="break-all">访问 URL：{asset.url}</p> : null}
+            </div>
+          ) : null}
           <div className="rounded-xl border border-outline-variant/30 bg-surface-container-low p-3">
             <p className="mb-2 text-sm font-semibold">生成参数</p>
             <div className="flex flex-wrap gap-2">
-              {Object.entries(asset.params).map(([key, value]) => (
+              {parameterEntries(asset).map(([key, value]) => (
                 <span key={key} className="chip">{key}: {String(value)}</span>
               ))}
             </div>

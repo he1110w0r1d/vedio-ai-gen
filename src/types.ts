@@ -67,7 +67,7 @@ export type AssetBase = {
   createdAt: string;
   favorite: boolean;
   taskId?: string;
-  params: Record<string, string | number | boolean>;
+  params: Record<string, string | number | boolean | undefined>;
   parameters?: Record<string, unknown>;
 };
 
@@ -103,8 +103,9 @@ export type GenerationTask = {
   projectId: string;
   projectName: string;
   createdAt: string;
+  errorCode?: string;
   errorReason?: string;
-  params: Record<string, string | number | boolean>;
+  params: Record<string, string | number | boolean | undefined>;
 };
 
 export type PromptTemplate = {

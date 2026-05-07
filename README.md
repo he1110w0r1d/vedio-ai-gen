@@ -143,9 +143,9 @@ server/storage/temp/
 
 目录内通过 `.gitkeep` 保留结构，真实生成文件会被 `.gitignore` 忽略。文件存储服务骨架位于 `server/src/services/fileStorageService.ts`，已支持将 Buffer 保存为本地文件。
 
-## OpenAI Images 真实接入
+## 万物焕新 gpt-image-2 真实接入
 
-第六阶段开始支持一个真实图片供应商：OpenAI Images。当前只实现图片文生图，不支持图生图、图片编辑，也不接入任何真实视频生成 API。
+第六阶段当前使用万物焕新 `gpt-image-2` 作为真实图片测试端点。当前只实现图片文生图，不支持图生图、图片编辑，也不接入任何真实视频生成 API。
 
 使用方式：
 
@@ -162,55 +162,75 @@ npm run dev
 VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
 ```
 
-3. 在 Provider 页面新增供应商，类型选择 `OpenAI Images`，输入用户自己的 OpenAI API Key。
+3. 在 Provider 页面新增供应商，类型选择 `万物焕新 gpt-image-2`，输入用户自己的万物焕新 API Key。
 
-OpenAI Images 默认模型当前为 `gpt-image-1.5`。Provider 表单可选择 `gpt-image-2`、`gpt-image-1.5`、`gpt-image-1`、`gpt-image-1-mini`；如果账户、组织验证或模型权限不足，测试连接可能成功，但真实生成仍可能返回模型不可用或权限不足错误。
+万物焕新图片测试链路当前固定使用 `gpt-image-2`。后端调用 `POST https://api.wanwuhuanxin.cn/v1/chat/completions`，从返回 JSON 的文本内容中提取 `https://...png/jpg/webp` 图片链接，然后下载到本地文件存储。如果账户、模型权限或供应商策略受限，测试连接可能成功，但真实生成仍可能失败。
+
+当前真实文生图已打通的参数：
+
+- `prompt`：作为用户消息主体发送；
+- `model`：固定为 `gpt-image-2`；
+- `aspectRatio`：会映射为期望画幅和参考尺寸，并写入提示词；
+- `count`：后端按数量串行生成，多张图会保存为多个独立 asset；
+- `quality`、`outputFormat`、`background`：万物焕新 chat/completions 当前未声明专用字段，后端作为偏好写入提示词并记录到 task / asset parameters；
+- `size`：当前不直接发送专用尺寸字段，后端记录 `requestedAspectRatio`、`resolvedWidth`、`resolvedHeight`、`resolvedSizeLabel`，4:3 等无法精确确认的画幅会记录 `fallbackReason`。
 
 安全边界：
 
-- OpenAI API Key 只通过 Provider 页面提交给后端；
+- 万物焕新 API Key 只通过 Provider 页面提交给后端；
 - 后端会加密保存 API Key，只返回 `maskedApiKey`；
 - 前端不会保存明文 API Key；
-- 不要把 OpenAI API Key 写入 `.env`，本项目是 BYOK；
-- 生成图片会产生用户 OpenAI 账户费用；
+- 不要把万物焕新 API Key 写入 `.env`，本项目是 BYOK；
+- 生成图片会产生用户万物焕新账户费用；
 - 图片生成可能较慢，复杂 prompt 可能等待更久；后端图片生成请求当前使用 120 秒超时；
-- 生成内容、内容审核、版权归属、商用授权和使用限制以 OpenAI 官方服务条款为准；
-- OpenAI GPT Image 模型可能需要完成组织验证才能使用；
+- 生成内容、内容审核、版权归属、商用授权和使用限制以万物焕新服务条款为准；
 - 视频生成仍是 Mock。
 
 生成结果：
 
-- OpenAI Images 返回的 base64 图片会保存到 `server/storage/assets/`；
-- 后端资产会记录 `storageType=local`、`localPath`、`mimeType=image/png`、`sizeBytes` 等字段；
+- 万物焕新返回文本中的图片 URL 会被后端提取，并下载保存到 `server/storage/assets/`；
+- 后端资产会记录 `storageType=local`、`localPath`、`mimeType`、`sizeBytes`、`width`、`height`、`parameters` 等字段；
+- 多图生成采用“整批成功才完成”的策略；如果中途失败，已下载的临时文件会被清理，不写入半截 asset；
 - 前端 real mode 会展示后端返回的本地图片 URL；
 - 真实生成文件不会被提交到 Git。
 
-OpenAI Adapter 验证脚本默认只做 dry-run，不会触发真实生成：
+常见错误排查：
+
+- `INVALID_API_KEY`：检查 Provider 页面中的万物焕新 API Key；
+- `INSUFFICIENT_BALANCE`：检查供应商账户余额或额度；
+- `RATE_LIMITED`：请求过于频繁，稍后重试；
+- `CONTENT_REJECTED`：提示词未通过内容审核，调整描述后重试；
+- `MODEL_NOT_SUPPORTED`：模型不可用，可能与账户权限或模型支持情况有关；
+- `TASK_TIMEOUT`：生成超时，可简化提示词后重试；
+- `PROVIDER_UNAVAILABLE`：供应商服务暂时不可用；
+- `UNKNOWN_PROVIDER_ERROR`：查看后端日志，确认返回 JSON 中是否包含可解析图片 URL。
+
+万物焕新 Adapter 验证脚本默认只做 dry-run，不会触发真实生成：
 
 ```bash
 cd server
 npm test
-npm run verify:openai
+npm run verify:wanwu
 ```
 
-如需手动执行 OpenAI live test，必须显式开启 `RUN_OPENAI_LIVE_TEST=true`，并通过临时环境变量传入测试 Key。live test 会调用 testConnection，并生成 1 张低风险测试图片保存到 `server/storage/assets/`，因此会产生用户 OpenAI 账户费用。脚本不会打印 API Key。
+如需手动执行万物焕新 live test，必须显式开启 `RUN_WANWUHUANXIN_LIVE_TEST=true`，并通过临时环境变量传入测试 Key。live test 会调用 testConnection，并生成 1 张低风险测试图片保存到 `server/storage/assets/`，因此会产生用户万物焕新账户费用。脚本不会打印 API Key。
 
 ```bash
 cd server
-OPENAI_TEST_API_KEY=sk-xxx RUN_OPENAI_LIVE_TEST=true npm run verify:openai
+WANWUHUANXIN_TEST_API_KEY=你的测试Key RUN_WANWUHUANXIN_LIVE_TEST=true npm run verify:wanwu
 ```
 
 Live test 输出会包含连接测试结果、生成任务状态、asset id、localPath、sizeBytes 和 public url；失败时只输出统一错误 code 和 message，不输出敏感 detail。
 
-### OpenAI Live 联调步骤
+### 万物焕新 Live 联调步骤
 
 1. 启动后端：`cd server && npm run dev`。
 2. 启动前端 real mode：`VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev`。
-3. 在 Provider 页面添加 `OpenAI Images`，临时输入用户自己的 OpenAI API Key。
+3. 在 Provider 页面添加 `万物焕新 gpt-image-2`，临时输入用户自己的万物焕新 API Key。
 4. 点击测试连接。连接成功只说明 Key 基本可用，具体图片模型权限仍以真实生成为准。
-5. 进入 Image Studio，选择 OpenAI provider。
+5. 进入 Image Studio，选择万物焕新 provider。
 6. 使用简单 prompt，例如 `A small watercolor icon of a blue water droplet on a white background.`。
-7. 生成数量设为 1，点击生成。
+7. 生成数量先设为 1，确认成功后可尝试 2-4 张多图生成。
 8. 检查 `server/storage/assets/` 是否出现真实图片文件。
 9. 检查 Asset Library 是否展示该图片。
 10. 刷新页面，确认后端 `assets` 数据仍可恢复。
@@ -230,7 +250,7 @@ VITE_APP_NAME=API Asset Studio
 `VITE_API_MODE` 当前支持：
 
 - `mock`：默认模式，使用前端 Mock service 和 Mock Provider Adapter；
-- `real`：请求本地后端代理服务，可使用 Mock Provider Adapter 或 OpenAI Images Adapter。
+- `real`：请求本地后端代理服务，可使用 Mock Provider Adapter 或万物焕新 gpt-image-2 Adapter。
 
 第五阶段后，`real` 模式可以请求本地后端代理：
 
@@ -238,7 +258,7 @@ VITE_APP_NAME=API Asset Studio
 VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
 ```
 
-注意：只有当用户在 Provider 页面添加 `OpenAI Images` 类型供应商并执行图片生成时，后端才会调用 OpenAI Images。视频仍是 Mock。
+注意：只有当用户在 Provider 页面添加 `万物焕新 gpt-image-2` 类型供应商并执行图片生成时，后端才会调用万物焕新端点。视频仍是 Mock。
 
 ## 数据源策略
 

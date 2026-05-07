@@ -18,6 +18,10 @@ export const generationApi = {
           count: input.count,
           seed: input.seed,
           style: input.style,
+          quality: input.quality,
+          outputFormat: input.outputFormat,
+          background: input.background,
+          size: input.size,
         }),
       });
     }

@@ -8,6 +8,8 @@ const registry: Record<string, ProviderAdapter> = {
   google: mockProviderAdapter,
   openai: openaiImagesAdapter,
   'openai-images': openaiImagesAdapter,
+  wanwuhuanxin: openaiImagesAdapter,
+  'wanwuhuanxin-image': openaiImagesAdapter,
   runway: mockProviderAdapter,
   kling: mockProviderAdapter,
   minimax: mockProviderAdapter,

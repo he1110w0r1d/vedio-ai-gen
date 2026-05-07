@@ -29,6 +29,6 @@ export type AssetRecord = {
   duration?: number;
   durationSeconds?: number;
   mode?: VideoMode;
-  params: Record<string, string | number | boolean>;
+  params: Record<string, string | number | boolean | undefined>;
   parameters?: Record<string, unknown>;
 };

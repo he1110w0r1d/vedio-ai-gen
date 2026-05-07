@@ -30,7 +30,8 @@ function toProvider(input: ServerProvider): Provider {
 
 function inferProviderType(provider: Provider) {
   if (provider.providerType) return provider.providerType;
-  if (provider.id === 'openai' || provider.name.toLowerCase().includes('openai')) return 'openai-images';
+  const name = provider.name.toLowerCase();
+  if (provider.id === 'openai' || name.includes('openai') || name.includes('万物焕新')) return 'openai-images';
   return 'custom';
 }
 

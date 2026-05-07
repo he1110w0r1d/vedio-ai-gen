@@ -7,16 +7,16 @@ function assert(condition: unknown, message: string) {
 }
 
 const dryRunProvider: ProviderRecord = createProviderCredential({
-  name: 'OpenAI Images Dry Run',
+  name: '万物焕新 gpt-image-2 Dry Run',
   providerType: 'openai-images',
-  baseUrl: 'https://api.openai.com/v1',
+  baseUrl: 'https://api.wanwuhuanxin.cn/v1',
   apiKey: 'dry-run-key-not-real',
-  defaultModel: 'gpt-image-1.5',
+  defaultModel: 'gpt-image-2',
   capabilities: ['image'],
 });
 
 assert(openaiImagesAdapter.id === 'openai-images', 'Adapter id 应为 openai-images');
-assert(openaiImagesAdapter.capabilities.includes('image'), 'OpenAI Images Adapter 应声明 image 能力');
+assert(openaiImagesAdapter.capabilities.includes('image'), '万物焕新图片 Adapter 应声明 image 能力');
 
 try {
   await openaiImagesAdapter.generateVideoT2V(dryRunProvider, {
@@ -32,21 +32,21 @@ try {
   assert(item.apiError?.code === 'MODEL_NOT_SUPPORTED', '视频方法应返回 MODEL_NOT_SUPPORTED');
 }
 
-if (process.env.RUN_OPENAI_LIVE_TEST === 'true') {
-  const apiKey = process.env.OPENAI_TEST_API_KEY;
-  if (!apiKey) throw new Error('RUN_OPENAI_LIVE_TEST=true 时必须提供 OPENAI_TEST_API_KEY。真实测试会产生 OpenAI 图片生成费用。');
+if (process.env.RUN_OPENAI_LIVE_TEST === 'true' || process.env.RUN_WANWUHUANXIN_LIVE_TEST === 'true') {
+  const apiKey = process.env.WANWUHUANXIN_TEST_API_KEY ?? process.env.WANWUHUANXIN_API_KEY;
+  if (!apiKey) throw new Error('RUN_WANWUHUANXIN_LIVE_TEST=true 时必须提供 WANWUHUANXIN_TEST_API_KEY。真实测试会产生万物焕新图片生成费用。');
   const liveProvider = createProviderCredential({
-    name: 'OpenAI Images Live Test',
+    name: '万物焕新 gpt-image-2 Live Test',
     providerType: 'openai-images',
-    baseUrl: 'https://api.openai.com/v1',
+    baseUrl: 'https://api.wanwuhuanxin.cn/v1',
     apiKey,
-    defaultModel: process.env.OPENAI_IMAGE_MODEL ?? 'gpt-image-1.5',
+    defaultModel: process.env.WANWUHUANXIN_IMAGE_MODEL ?? 'gpt-image-2',
     capabilities: ['image'],
   });
-  const model = liveProvider.defaultModel ?? 'gpt-image-1.5';
+  const model = liveProvider.defaultModel ?? 'gpt-image-2';
   try {
     const result = await openaiImagesAdapter.testConnection(liveProvider);
-    assert(result.ok, 'OpenAI live testConnection 应成功');
+    assert(result.ok, '万物焕新 live testConnection 应成功');
     console.log(`provider testConnection: ${result.message}`);
 
     const generation = await openaiImagesAdapter.generateImage(liveProvider, {
@@ -59,22 +59,22 @@ if (process.env.RUN_OPENAI_LIVE_TEST === 'true') {
       style: 'watercolor icon',
     });
     const asset = generation.assets[0];
-    assert(generation.task.status === 'completed', 'OpenAI live image task 应完成');
-    assert(Boolean(asset?.localPath), 'OpenAI live image 应保存到本地');
+    assert(generation.task.status === 'completed', '万物焕新 live image task 应完成');
+    assert(Boolean(asset?.localPath), '万物焕新 live image 应保存到本地');
     console.log(`image generation task status: ${generation.task.status}`);
     console.log(`asset id: ${asset.id}`);
     console.log(`localPath: ${asset.localPath ?? ''}`);
     console.log(`sizeBytes: ${asset.sizeBytes ?? 0}`);
-    console.log(`public url: ${asset.url ?? asset.fileUrl ?? ''}`);
+      console.log(`public url: ${asset.url ?? asset.fileUrl ?? ''}`);
   } catch (error) {
     const item = error as { apiError?: { code?: string; message?: string } };
     if (item.apiError) {
-      console.log(`OpenAI live test failed: ${item.apiError.code} ${item.apiError.message}`);
+      console.log(`Wanwuhuanxin live test failed: ${item.apiError.code} ${item.apiError.message}`);
       process.exitCode = 1;
     } else {
       throw error;
     }
   }
 } else {
-  console.log('verifyOpenAIAdapter dry-run passed');
+  console.log('verifyWanwuhuanxinAdapter dry-run passed');
 }

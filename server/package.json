@@ -8,13 +8,13 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/src/index.js",
     "test": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyErrors.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyProviderAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyOpenAIAdapter.js",
-    "verify:openai": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyOpenAIAdapter.js"
+    "verify:openai": "npm run verify:wanwu",
+    "verify:wanwu": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyOpenAIAdapter.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
-    "express": "^5.1.0",
-    "openai": "^6.36.0"
+    "express": "^5.1.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
