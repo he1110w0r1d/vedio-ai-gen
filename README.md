@@ -164,6 +164,8 @@ VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
 
 3. 在 Provider 页面新增供应商，类型选择 `OpenAI Images`，输入用户自己的 OpenAI API Key。
 
+OpenAI Images 默认模型当前为 `gpt-image-1.5`。Provider 表单可选择 `gpt-image-2`、`gpt-image-1.5`、`gpt-image-1`、`gpt-image-1-mini`；如果账户、组织验证或模型权限不足，测试连接可能成功，但真实生成仍可能返回模型不可用或权限不足错误。
+
 安全边界：
 
 - OpenAI API Key 只通过 Provider 页面提交给后端；
@@ -171,6 +173,7 @@ VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
 - 前端不会保存明文 API Key；
 - 不要把 OpenAI API Key 写入 `.env`，本项目是 BYOK；
 - 生成图片会产生用户 OpenAI 账户费用；
+- 图片生成可能较慢，复杂 prompt 可能等待更久；后端图片生成请求当前使用 120 秒超时；
 - 生成内容、内容审核、版权归属、商用授权和使用限制以 OpenAI 官方服务条款为准；
 - OpenAI GPT Image 模型可能需要完成组织验证才能使用；
 - 视频生成仍是 Mock。
@@ -187,13 +190,32 @@ OpenAI Adapter 验证脚本默认只做 dry-run，不会触发真实生成：
 ```bash
 cd server
 npm test
+npm run verify:openai
 ```
 
-如需手动验证 OpenAI Key 是否可用，可以显式运行 live test。注意：只做连接测试，不生成图片；后续如扩展真实生成测试会产生费用。
+如需手动执行 OpenAI live test，必须显式开启 `RUN_OPENAI_LIVE_TEST=true`，并通过临时环境变量传入测试 Key。live test 会调用 testConnection，并生成 1 张低风险测试图片保存到 `server/storage/assets/`，因此会产生用户 OpenAI 账户费用。脚本不会打印 API Key。
 
 ```bash
-RUN_OPENAI_LIVE_TEST=true OPENAI_API_KEY=你的测试Key APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! npx tsx scripts/verifyOpenAIAdapter.ts
+cd server
+OPENAI_TEST_API_KEY=sk-xxx RUN_OPENAI_LIVE_TEST=true npm run verify:openai
 ```
+
+Live test 输出会包含连接测试结果、生成任务状态、asset id、localPath、sizeBytes 和 public url；失败时只输出统一错误 code 和 message，不输出敏感 detail。
+
+### OpenAI Live 联调步骤
+
+1. 启动后端：`cd server && npm run dev`。
+2. 启动前端 real mode：`VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev`。
+3. 在 Provider 页面添加 `OpenAI Images`，临时输入用户自己的 OpenAI API Key。
+4. 点击测试连接。连接成功只说明 Key 基本可用，具体图片模型权限仍以真实生成为准。
+5. 进入 Image Studio，选择 OpenAI provider。
+6. 使用简单 prompt，例如 `A small watercolor icon of a blue water droplet on a white background.`。
+7. 生成数量设为 1，点击生成。
+8. 检查 `server/storage/assets/` 是否出现真实图片文件。
+9. 检查 Asset Library 是否展示该图片。
+10. 刷新页面，确认后端 `assets` 数据仍可恢复。
+11. 检查浏览器 localStorage 不包含明文 API Key。
+12. 检查 `server/data/db.json` 不包含明文 API Key，只应包含加密密文和脱敏展示值。
 
 ## 环境变量
 

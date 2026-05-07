@@ -20,6 +20,8 @@ const providerTypeOptions = [
   { value: 'mock', label: 'Mock Provider', defaultModel: 'mock-image/mock-video', capabilities: ['图片生成', 'T2V', 'I2V', 'R2V', '异步任务'] as ProviderCapability[] },
 ];
 
+const openAIImageModels = ['gpt-image-2', 'gpt-image-1.5', 'gpt-image-1', 'gpt-image-1-mini'];
+
 export function ProviderForm({ onSubmit }: { onSubmit: (draft: ProviderDraft) => void }) {
   const [draft, setDraft] = useState<ProviderDraft>(initialDraft);
 
@@ -61,7 +63,15 @@ export function ProviderForm({ onSubmit }: { onSubmit: (draft: ProviderDraft) =>
         </select>
         <input className="field" placeholder="供应商名称" value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
         <input className="field" placeholder="Base URL" value={draft.baseUrl} onChange={(event) => setDraft({ ...draft, baseUrl: event.target.value })} />
-        <input className="field" placeholder="默认模型" value={draft.defaultModel} onChange={(event) => setDraft({ ...draft, defaultModel: event.target.value })} />
+        {draft.providerType === 'openai-images' ? (
+          <select className="field" value={draft.defaultModel} onChange={(event) => setDraft({ ...draft, defaultModel: event.target.value })}>
+            {openAIImageModels.map((model) => (
+              <option key={model} value={model}>{model}</option>
+            ))}
+          </select>
+        ) : (
+          <input className="field" placeholder="默认模型" value={draft.defaultModel} onChange={(event) => setDraft({ ...draft, defaultModel: event.target.value })} />
+        )}
         <input className="field" placeholder="API Key（仅前端脱敏）" type="password" value={draft.apiKey} onChange={(event) => setDraft({ ...draft, apiKey: event.target.value })} />
       </div>
       <div className="mt-3">

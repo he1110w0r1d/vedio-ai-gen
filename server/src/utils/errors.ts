@@ -41,6 +41,10 @@ export function providerUnavailable(provider: string, providerCode?: string) {
   return new HttpError(503, { code: 'PROVIDER_UNAVAILABLE', message: '供应商服务暂不可用', provider, providerCode, retryable: true });
 }
 
+export function taskTimeout(provider: string, message = '供应商任务超时，请稍后重试') {
+  return new HttpError(504, { code: 'TASK_TIMEOUT', message, provider, retryable: true });
+}
+
 export function unknownProviderError(provider: string, providerCode?: string, detail?: unknown) {
   return new HttpError(502, {
     code: 'UNKNOWN_PROVIDER_ERROR',

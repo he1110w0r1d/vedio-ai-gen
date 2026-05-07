@@ -6,6 +6,7 @@ import { ParameterPanel } from '../components/studio/ParameterPanel';
 import { PromptEditor } from '../components/studio/PromptEditor';
 import { useApp } from '../context/AppContext';
 import { generationApi } from '../api/generationApi';
+import { ApiClientError, API_MODE } from '../api/client';
 import type { Asset } from '../types';
 
 export function ImageStudio() {
@@ -22,6 +23,7 @@ export function ImageStudio() {
   const [results, setResults] = useState<Asset[]>([]);
   const [status, setStatus] = useState<'empty' | 'loading' | 'success' | 'failed'>('empty');
   const model = provider?.defaultModel.split('/')[0].trim() || 'Mock Image';
+  const isOpenAIRealProvider = API_MODE === 'real' && provider?.providerType === 'openai-images';
   const selected = useMemo(() => selectedAsset && selectedAsset.type !== 'video' ? selectedAsset : results[0], [selectedAsset, results]);
 
   const generate = async () => {
@@ -39,11 +41,12 @@ export function ImageStudio() {
         setResults(items);
         setSelectedAsset(items[0]);
         setStatus('success');
-        showToast('图片 Mock 生成完成', 'success');
+        showToast(isOpenAIRealProvider ? 'OpenAI 图片生成完成' : '图片 Mock 生成完成', 'success');
       }, 900);
-    } catch {
+    } catch (error) {
       setStatus('failed');
-      showToast('图片生成请求失败：当前仍为 Mock 接口层', 'error');
+      const message = error instanceof ApiClientError ? error.error.message : '图片生成请求失败';
+      showToast(message, 'error');
     }
   };
 
@@ -70,6 +73,11 @@ export function ImageStudio() {
           <PromptEditor prompt={prompt} negativePrompt={negativePrompt} onPromptChange={setPrompt} onNegativePromptChange={setNegativePrompt} />
           <div className="rounded-xl border border-outline-variant/40 bg-surface-container p-3 text-xs leading-5 text-on-surface-variant">
             预估消耗：由供应商账户计费，本工作台仅做前端 Mock。生成内容的版权归属、商用授权和使用限制以对应第三方供应商服务条款为准。
+            {isOpenAIRealProvider ? (
+              <span className="mt-2 block text-primary-fixed">
+                真实生成会调用用户自己的 OpenAI API Key，并可能产生费用。生成速度、审核结果、模型权限以 OpenAI 账户状态为准。
+              </span>
+            ) : null}
           </div>
           <button className="btn-primary w-full py-3" onClick={generate}><Icon name="auto_awesome" />生成图片</button>
         </aside>

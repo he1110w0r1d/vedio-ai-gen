@@ -16,13 +16,15 @@ import {
   modelNotSupported,
   providerUnavailable,
   rateLimited,
+  taskTimeout,
   unknownProviderError,
 } from '../utils/errors.js';
 import type { ImageGenerationResult, ProviderAdapter, VideoGenerationResult } from './types.js';
 
 const providerName = 'OpenAI Images';
 const defaultModel = 'gpt-image-1.5';
-const requestTimeoutMs = 15000;
+const testConnectionTimeoutMs = 15000;
+const imageGenerationTimeoutMs = 120000;
 const supportedModels = new Set(['gpt-image-2', 'gpt-image-1.5', 'gpt-image-1', 'gpt-image-1-mini']);
 const sizeMap: Record<string, ImageGenerateParams['size']> = {
   '1:1': '1024x1024',
@@ -31,9 +33,9 @@ const sizeMap: Record<string, ImageGenerateParams['size']> = {
   '4:3': '1536x1024',
 };
 
-function getOpenAIClient(provider: ProviderRecord) {
+function getOpenAIClient(provider: ProviderRecord, timeout: number) {
   const apiKey = decryptSecret(provider.encryptedApiKey);
-  return new OpenAI({ apiKey, timeout: requestTimeoutMs });
+  return new OpenAI({ apiKey, timeout });
 }
 
 function resolveModel(provider: ProviderRecord, inputModel?: string) {
@@ -87,18 +89,30 @@ function mapOpenAIError(error: unknown): never {
   const item = error as { status?: number; code?: string | null; type?: string; message?: string };
   const status = item.status;
   const code = String(item.code ?? item.type ?? '').toLowerCase();
+  const name = String((item as { name?: string }).name ?? '').toLowerCase();
   const message = String(item.message ?? '').toLowerCase();
 
   if (status === 401 || code.includes('invalid_api_key')) throw invalidApiKey('OpenAI API Key 无效或无权限');
   if (status === 429) throw rateLimited(providerName, item.code ?? undefined);
+  if (code.includes('timeout') || name.includes('timeout') || message.includes('timeout') || message.includes('timed out')) {
+    throw taskTimeout(providerName, 'OpenAI 图片生成或连接验证超时，请稍后重试，复杂提示词可能需要更长等待时间');
+  }
   if (code.includes('insufficient_quota') || message.includes('billing') || message.includes('quota') || message.includes('balance')) {
     throw insufficientBalance(providerName, 'OpenAI 账户余额或额度不足');
   }
   if (code.includes('content_policy') || code.includes('safety') || message.includes('safety') || message.includes('policy')) {
     throw contentRejected(providerName, item.code ?? undefined);
   }
-  if (status === 404 || code.includes('model_not_found') || code.includes('unsupported_model')) {
-    throw modelNotSupported(providerName, 'OpenAI 图片模型不存在或当前账户不可用');
+  if (
+    status === 403 ||
+    status === 404 ||
+    code.includes('model_not_found') ||
+    code.includes('unsupported_model') ||
+    message.includes('permission') ||
+    message.includes('access denied') ||
+    message.includes('not have access')
+  ) {
+    throw modelNotSupported(providerName, 'OpenAI 图片模型不存在、账户无权限，或组织验证尚未满足模型使用要求');
   }
   if (typeof status === 'number' && status >= 500) throw providerUnavailable(providerName, item.code ?? undefined);
 
@@ -112,11 +126,11 @@ export const openaiImagesAdapter: ProviderAdapter = {
 
   async testConnection(provider) {
     try {
-      const client = getOpenAIClient(provider);
+      const client = getOpenAIClient(provider, testConnectionTimeoutMs);
       await client.models.list();
       return {
         ok: true,
-        message: 'OpenAI API Key 验证成功。OpenAI Images 目前仅用于图片生成测试，视频生成仍使用 Mock。',
+        message: 'OpenAI API Key 验证成功。具体图片模型权限、组织验证状态和审核结果需要在真实生成时确认；视频生成仍使用 Mock。',
         capabilities: ['image'],
       };
     } catch (error) {
@@ -131,7 +145,7 @@ export const openaiImagesAdapter: ProviderAdapter = {
     const count = Math.max(1, Math.min(input.count ?? 1, 4));
 
     try {
-      const client = getOpenAIClient(provider);
+      const client = getOpenAIClient(provider, imageGenerationTimeoutMs);
       const response = await client.images.generate({
         model,
         prompt: input.prompt,
