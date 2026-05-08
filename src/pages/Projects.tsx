@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { projectImportApi, type ProjectImportValidationResult } from '../api/projectImportApi';
 import { EmptyState, Icon, SectionHeader } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import type { Project } from '../types';
@@ -17,12 +18,18 @@ export function Projects() {
     favoriteProject,
     moveProjectAssets,
     exportProjectArchive,
+    refreshFromServer,
+    setView,
     showToast,
   } = useApp();
   const [draft, setDraft] = useState({ name: '', description: '' });
   const [editingId, setEditingId] = useState('');
   const [moveTargets, setMoveTargets] = useState<Record<string, string>>({});
   const [exportOptions, setExportOptions] = useState<Record<string, { includeFiles: boolean; includeTasks: boolean; includeTemplates: boolean }>>({});
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importValidation, setImportValidation] = useState<ProjectImportValidationResult | null>(null);
+  const [importOptions, setImportOptions] = useState({ importFiles: true, importTasks: true, importTemplates: true });
+  const [importing, setImporting] = useState(false);
 
   const saveProject = () => {
     if (!draft.name.trim()) {
@@ -44,6 +51,38 @@ export function Projects() {
     setDraft({ name: project.name, description: project.description ?? '' });
   };
 
+  const validateImport = async () => {
+    if (!importFile) {
+      showToast('请选择 zip 归档包', 'error');
+      return;
+    }
+    try {
+      const result = await projectImportApi.validate(importFile);
+      setImportValidation(result);
+      showToast(result.valid ? '归档包校验通过' : '归档包校验未通过', result.valid ? 'success' : 'error');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : '归档包校验失败', 'error');
+    }
+  };
+
+  const runImport = async () => {
+    if (!importFile || !importValidation?.valid) return;
+    setImporting(true);
+    try {
+      const result = await projectImportApi.import(importFile, importOptions);
+      await refreshFromServer();
+      setCurrentProjectId(result.project.id);
+      setImportFile(null);
+      setImportValidation(null);
+      showToast(`已导入项目：${result.project.name}`, 'success');
+      setView('projects');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : '项目归档包导入失败', 'error');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div>
       <SectionHeader title="项目 Projects" subtitle="按项目组织生成任务、图片、视频与提示词上下文。" />
@@ -54,6 +93,36 @@ export function Projects() {
           <input className="field" placeholder="项目描述" value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
           <button className="btn-primary" onClick={saveProject}><Icon name="save" />保存</button>
         </div>
+      </section>
+
+      <section className="card mb-5">
+        <h3 className="mb-3 text-lg font-bold">导入项目归档包</h3>
+        <p className="mb-4 text-sm leading-6 text-on-surface-variant">
+          导入会采用“创建副本”策略，不覆盖现有项目、资产或本地文件；不会导入 API Key 或供应商凭据。
+        </p>
+        <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
+          <input className="field" type="file" accept=".zip,application/zip" onChange={(event) => { setImportFile(event.target.files?.[0] ?? null); setImportValidation(null); }} />
+          <button className="btn-ghost" onClick={validateImport}><Icon name="fact_check" />校验归档包</button>
+          <button className="btn-primary" disabled={!importValidation?.valid || importing} onClick={runImport}><Icon name="unarchive" />{importing ? '导入中...' : '导入为新项目'}</button>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2 text-xs">
+          <label className="chip"><input className="mr-2" type="checkbox" checked={importOptions.importFiles} onChange={(event) => setImportOptions({ ...importOptions, importFiles: event.target.checked })} />导入文件</label>
+          <label className="chip"><input className="mr-2" type="checkbox" checked={importOptions.importTasks} onChange={(event) => setImportOptions({ ...importOptions, importTasks: event.target.checked })} />导入任务</label>
+          <label className="chip"><input className="mr-2" type="checkbox" checked={importOptions.importTemplates} onChange={(event) => setImportOptions({ ...importOptions, importTemplates: event.target.checked })} />导入模板</label>
+        </div>
+        {importValidation ? (
+          <div className={`mt-4 rounded-xl border p-4 text-sm ${importValidation.valid ? 'border-primary-fixed-dim/40 bg-primary-fixed-dim/10' : 'border-error/40 bg-error-container/20'}`}>
+            <div className="grid gap-2 md:grid-cols-5">
+              <p><span className="text-on-surface-variant">项目</span><br />{importValidation.summary?.projectName ?? '-'}</p>
+              <p><span className="text-on-surface-variant">资产</span><br />{importValidation.summary?.assetCount ?? 0}</p>
+              <p><span className="text-on-surface-variant">任务</span><br />{importValidation.summary?.taskCount ?? 0}</p>
+              <p><span className="text-on-surface-variant">模板</span><br />{importValidation.summary?.templateCount ?? 0}</p>
+              <p><span className="text-on-surface-variant">文件</span><br />{importValidation.summary?.fileCount ?? 0}</p>
+            </div>
+            {importValidation.warnings.length ? <p className="mt-3 text-on-surface-variant">警告：{importValidation.warnings.join('；')}</p> : null}
+            {importValidation.errors.length ? <p className="mt-3 text-error">错误：{importValidation.errors.join('；')}</p> : null}
+          </div>
+        ) : null}
       </section>
 
       {projects.length ? (

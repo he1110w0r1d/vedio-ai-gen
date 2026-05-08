@@ -117,6 +117,8 @@ http://127.0.0.1:8787
 - `POST /api/projects/:id/favorite`
 - `POST /api/projects/:id/move-assets`
 - `GET /api/projects/:id/export`
+- `POST /api/project-imports/validate`
+- `POST /api/project-imports`
 - `GET /api/prompt-templates`
 - `GET /api/prompt-templates/:id`
 - `POST /api/prompt-templates`
@@ -350,7 +352,16 @@ Real mode：
 - 当前不是正式账号系统，不包含密码、登录、权限或团队协作；
 - Settings 页面可编辑工作区名称、负责人、描述、头像 URL 和默认项目；
 - Projects 页面支持导出项目归档包；
-- 导入功能当前只完成设计文档，尚未实现。
+- 导入功能已完成最小闭环，导入设计文档仍保留用于后续增强。
+
+第 6.7 阶段后：
+
+- 项目归档包导入完成最小闭环；
+- 导入采用“创建副本”策略，不覆盖原项目、原资产或原文件；
+- 导入前可先校验归档包，预览项目名称、资产数量、任务数量、模板数量和文件数量；
+- 导入会重新生成 projectId、assetId、taskId、templateId；
+- 导入会尽量改写任务参数中的旧 assetId 引用；
+- 导入不会恢复 provider credential，不导入任何 API Key 或加密密钥字段。
 
 重置本地开发数据：
 
@@ -445,9 +456,51 @@ project-export/
 
 如果 `includeFiles=true` 且某个本地文件不存在，导出会跳过该文件并写入 `manifest.warnings`。导出不会移动、删除或修改原文件。
 
-导入功能当前尚未实现，设计文档见：
+导入功能已完成最小闭环；更完整的导入增强设计见：
 
 [docs/project-archive-import-design.md](docs/project-archive-import-design.md)
+
+## 项目归档包导入
+
+导入接口：
+
+```txt
+POST /api/project-imports/validate
+POST /api/project-imports?importFiles=true&importTasks=true&importTemplates=true
+```
+
+导入流程：
+
+1. 在 Projects 页面选择 `.zip` 归档包；
+2. 点击“校验归档包”；
+3. 查看项目名、资产数、任务数、模板数、文件数、warnings 和 errors；
+4. 校验通过后点击“导入为新项目”；
+5. 系统创建一个新的项目副本，名称追加“导入副本”；
+6. 资产、任务和模板会使用新 ID 写入当前工作区。
+
+安全策略：
+
+- 只接受 zip；
+- 上传大小限制为 100MB；
+- 不信任 zip 内路径；
+- 禁止绝对路径、`../`、Windows 盘符路径；
+- 只读取 `project-export/` 下的预期文件；
+- `files/` 下只允许 `png`、`jpg`、`jpeg`、`webp`、`mp4`、`webm`；
+- 导入文件会重新命名并写入 `server/storage/assets/`；
+- 不覆盖已有本地文件；
+- 不导入明文 API Key；
+- 不导入加密密钥字段；
+- 不导入 provider credential。
+
+如果文件缺失，资产仍可作为 metadata-only 导入，Asset Library 会显示预览兜底。Mock mode 下不支持真实归档导入，只会显示限制提示。
+
+导入失败排查：
+
+- manifest 缺失：确认归档包来自 API Asset Studio；
+- 不支持压缩格式：当前最小导入器主要支持本应用导出的无压缩 zip；
+- 文件路径风险：检查 zip 内是否包含绝对路径或 `../`；
+- 文件类型不支持：只保留常见图片和视频格式；
+- 结构错误：检查 `project.json`、`assets.json` 是否为合法 JSON。
 
 ## API 接入架构
 

@@ -5,8 +5,8 @@
     "ownerName": "本地创作者",
     "description": "单用户本地工作台配置，用于区分当前开发数据边界。",
     "defaultProjectId": "p1",
-    "createdAt": "2026-05-08T00:58:17.607Z",
-    "updatedAt": "2026-05-08T00:58:17.607Z"
+    "createdAt": "2026-05-08T01:49:53.068Z",
+    "updatedAt": "2026-05-08T01:49:53.068Z"
   },
   "providers": [],
   "projects": [
@@ -17,8 +17,8 @@
       "status": "active",
       "favorite": true,
       "tags": [],
-      "createdAt": "2026-05-08T00:58:17.607Z",
-      "updatedAt": "2026-05-08T00:58:17.607Z"
+      "createdAt": "2026-05-08T01:49:53.068Z",
+      "updatedAt": "2026-05-08T01:49:53.068Z"
     },
     {
       "id": "p2",
@@ -29,8 +29,8 @@
       "tags": [
         "demo"
       ],
-      "createdAt": "2026-05-08T00:58:17.606Z",
-      "updatedAt": "2026-05-08T00:58:17.606Z"
+      "createdAt": "2026-05-08T01:49:53.068Z",
+      "updatedAt": "2026-05-08T01:49:53.068Z"
     }
   ],
   "assets": [
@@ -47,8 +47,8 @@
       "providerName": "Mock Provider",
       "model": "mock-image",
       "projectId": "p1",
-      "createdAt": "2026-05-08T00:58:17.606Z",
-      "updatedAt": "2026-05-08T00:58:17.606Z",
+      "createdAt": "2026-05-08T01:49:53.068Z",
+      "updatedAt": "2026-05-08T01:49:53.068Z",
       "favorite": false,
       "aspectRatio": "4:3",
       "params": {
@@ -73,8 +73,8 @@
       ],
       "favorite": true,
       "usageCount": 0,
-      "createdAt": "2026-05-08T00:58:17.607Z",
-      "updatedAt": "2026-05-08T00:58:17.607Z"
+      "createdAt": "2026-05-08T01:49:53.068Z",
+      "updatedAt": "2026-05-08T01:49:53.068Z"
     },
     {
       "id": "tpl_default_video",
@@ -88,8 +88,8 @@
       ],
       "favorite": false,
       "usageCount": 0,
-      "createdAt": "2026-05-08T00:58:17.607Z",
-      "updatedAt": "2026-05-08T00:58:17.607Z"
+      "createdAt": "2026-05-08T01:49:53.068Z",
+      "updatedAt": "2026-05-08T01:49:53.068Z"
     },
     {
       "id": "tpl_default_character",
@@ -103,8 +103,8 @@
       ],
       "favorite": false,
       "usageCount": 0,
-      "createdAt": "2026-05-08T00:58:17.607Z",
-      "updatedAt": "2026-05-08T00:58:17.607Z"
+      "createdAt": "2026-05-08T01:49:53.068Z",
+      "updatedAt": "2026-05-08T01:49:53.068Z"
     }
   ],
   "auditLogs": []
