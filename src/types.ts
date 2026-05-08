@@ -38,8 +38,25 @@ export type Provider = {
 export type Project = {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   assetCount: number;
+  updatedAt: string;
+  coverAssetId?: string;
+  defaultProviderId?: string;
+  status?: 'active' | 'archived';
+  favorite?: boolean;
+  tags?: string[];
+  createdAt?: string;
+};
+
+export type WorkspaceProfile = {
+  id: string;
+  name: string;
+  ownerName?: string;
+  description?: string;
+  avatarUrl?: string;
+  defaultProjectId?: string;
+  createdAt: string;
   updatedAt: string;
 };
 
@@ -115,11 +132,23 @@ export type PromptTemplate = {
   body: string;
   variables: string[];
   favorite?: boolean;
+  description?: string;
+  tags?: string[];
+  usageCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type VideoSeed = {
   assetId: string;
   usage: 'i2v-first' | 'i2v-last' | 'r2v-character' | 'r2v-style' | 'r2v-video';
+};
+
+export type PendingPromptInput = {
+  target: 'image' | 'video';
+  mode?: 't2v' | 'i2v' | 'r2v';
+  prompt: string;
+  templateId?: string;
 };
 
 export type AppStateSnapshot = {
@@ -131,4 +160,5 @@ export type AppStateSnapshot = {
   projects: Project[];
   currentProjectId: string;
   selectedVideoInput?: VideoSeed;
+  workspace?: WorkspaceProfile;
 };

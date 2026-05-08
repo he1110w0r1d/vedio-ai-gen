@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AssetDetailDrawer } from '../components/assets/AssetDetailDrawer';
 import { ImageResultGrid } from '../components/assets/ImageResultGrid';
 import { Icon, SectionHeader } from '../components/ui';
@@ -10,7 +10,7 @@ import { ApiClientError, API_MODE } from '../api/client';
 import type { Asset } from '../types';
 
 export function ImageStudio() {
-  const { providers, currentProject, addAssets, addTask, selectedAsset, setSelectedAsset, toggleFavorite, sendImageToVideo, showToast } = useApp();
+  const { providers, currentProject, addAssets, addTask, selectedAsset, setSelectedAsset, toggleFavorite, downloadAsset, sendImageToVideo, consumePendingPromptInput, showToast } = useApp();
   const imageProviders = providers.filter((provider) => provider.capabilities.includes('图片生成'));
   const [providerId, setProviderId] = useState(imageProviders[0]?.id ?? '');
   const provider = imageProviders.find((item) => item.id === providerId) ?? imageProviders[0];
@@ -29,6 +29,23 @@ export function ImageStudio() {
   const model = provider?.defaultModel.split('/')[0].trim() || 'Mock Image';
   const isWanwuRealProvider = API_MODE === 'real' && provider?.providerType === 'openai-images';
   const selected = useMemo(() => selectedAsset && selectedAsset.type !== 'video' ? selectedAsset : results[0], [selectedAsset, results]);
+
+  useEffect(() => {
+    if (!imageProviders.length) {
+      if (providerId) setProviderId('');
+      return;
+    }
+    if (!providerId || !imageProviders.some((item) => item.id === providerId)) {
+      setProviderId(imageProviders[0].id);
+    }
+  }, [imageProviders, providerId]);
+
+  useEffect(() => {
+    const input = consumePendingPromptInput();
+    if (input?.target !== 'image') return;
+    setPrompt(input.prompt);
+    showToast('已填入模板提示词', 'success');
+  }, []);
 
   const generate = async () => {
     if (!provider || !prompt.trim()) {
@@ -126,7 +143,7 @@ export function ImageStudio() {
             onSendToVideo={(id) => sendImageToVideo(id, 'i2v-first')}
           />
         </section>
-        <AssetDetailDrawer asset={selected} onFavorite={toggleFavorite} onRegenerate={generate} onSendToVideo={sendImageToVideo} />
+        <AssetDetailDrawer asset={selected} onFavorite={toggleFavorite} onDownload={downloadAsset} onRegenerate={generate} onSendToVideo={sendImageToVideo} />
       </div>
     </div>
   );

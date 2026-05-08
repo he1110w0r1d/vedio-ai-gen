@@ -1,6 +1,7 @@
 import type { Asset, VideoSeed } from '../../types';
 import { EmptyState } from '../common/EmptyState';
 import { Icon } from '../common/Icon';
+import { AssetPreview } from './AssetPreview';
 import { UseForVideoActions } from './UseForVideoActions';
 
 function assetTypeLabel(asset: Asset) {
@@ -17,6 +18,11 @@ function formatBytes(value?: number) {
 
 function parameterEntries(asset: Asset) {
   return Object.entries(asset.parameters ?? asset.params).filter(([, value]) => value !== undefined && value !== '');
+}
+
+function displayLocalPath(asset: Asset) {
+  if (!asset.localPath) return undefined;
+  return asset.localPath.split('/storage/assets/').at(-1) ?? '本地文件已保存';
 }
 
 export function AssetDetailDrawer({
@@ -57,14 +63,7 @@ export function AssetDetailDrawer({
       {asset ? (
         <div className="space-y-4">
           <div className="relative overflow-hidden rounded-xl bg-black">
-            <img
-              src={asset.thumbnailUrl ?? asset.url ?? asset.thumbnail}
-              alt={asset.title}
-              className="aspect-video w-full object-cover"
-              onError={(event) => {
-                event.currentTarget.style.opacity = '0.35';
-              }}
-            />
+            <AssetPreview asset={asset} className="aspect-video w-full object-cover" large />
             {asset.type === 'video' ? (
               <div className="absolute inset-0 flex items-center justify-center bg-black/25">
                 <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/35 bg-black/50">
@@ -83,6 +82,7 @@ export function AssetDetailDrawer({
             <p className="mt-1 text-sm text-on-surface-variant">{asset.prompt}</p>
           </div>
           <div className="grid grid-cols-1 gap-2 text-xs text-on-surface-variant sm:grid-cols-2">
+            <span>资产 ID：{asset.id}</span>
             <span>项目：{projectName ?? asset.projectId}</span>
             <span>类型：{assetTypeLabel(asset)}</span>
             <span>供应商：{asset.providerName}</span>
@@ -96,8 +96,9 @@ export function AssetDetailDrawer({
           </div>
           {asset.localPath || asset.url ? (
             <div className="rounded-xl border border-outline-variant/30 bg-surface-container-low p-3 text-xs leading-5 text-on-surface-variant">
-              {asset.localPath ? <p className="break-all">本地文件：{asset.localPath}</p> : null}
+              {asset.localPath ? <p>本地文件：{displayLocalPath(asset)}</p> : null}
               {asset.url ? <p className="break-all">访问 URL：{asset.url}</p> : null}
+              {asset.url ? <button className="btn-ghost mt-2 px-2 py-1" onClick={() => navigator.clipboard?.writeText(asset.url ?? '')}>复制 URL</button> : null}
             </div>
           ) : null}
           <div className="rounded-xl border border-outline-variant/30 bg-surface-container-low p-3">

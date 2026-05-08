@@ -93,6 +93,8 @@ http://127.0.0.1:8787
 - `PATCH /api/providers/:id`
 - `DELETE /api/providers/:id`
 - `POST /api/providers/:id/test`
+- `GET /api/workspace`
+- `PATCH /api/workspace`
 - `POST /api/generations/image`
 - `POST /api/generations/video/t2v`
 - `POST /api/generations/video/i2v`
@@ -103,10 +105,27 @@ http://127.0.0.1:8787
 - `POST /api/tasks/:id/retry`
 - `GET /api/assets`
 - `GET /api/assets/:id`
+- `GET /api/assets/:id/download`
 - `DELETE /api/assets/:id`
 - `POST /api/assets/:id/favorite`
+- `GET /api/projects`
+- `GET /api/projects/:id`
+- `POST /api/projects`
+- `PATCH /api/projects/:id`
+- `DELETE /api/projects/:id`
+- `POST /api/projects/:id/archive`
+- `POST /api/projects/:id/favorite`
+- `POST /api/projects/:id/move-assets`
+- `GET /api/projects/:id/export`
+- `GET /api/prompt-templates`
+- `GET /api/prompt-templates/:id`
+- `POST /api/prompt-templates`
+- `PATCH /api/prompt-templates/:id`
+- `DELETE /api/prompt-templates/:id`
+- `POST /api/prompt-templates/:id/duplicate`
+- `POST /api/prompt-templates/:id/use`
 
-后端当前使用本地 JSON 文件 `server/data/db.json` 存储 Mock 数据。Provider API Key 会加密保存为 `encryptedApiKey`，接口响应只返回 `maskedApiKey`，不会返回明文 API Key。
+后端当前使用本地 JSON 文件 `server/data/db.json` 存储开发数据。Provider API Key 会加密保存为 `encryptedApiKey`，接口响应只返回 `maskedApiKey`，不会返回明文 API Key。
 
 后端验证脚本：
 
@@ -132,7 +151,21 @@ CORS_ORIGIN=http://127.0.0.1:5173
 
 ## 本地 JSON 与文件存储
 
-后端当前使用 `server/data/db.json` 作为开发期轻量存储。真实联调时不要把包含真实测试数据或真实密钥密文的 `db.json` 提交到仓库。
+后端当前使用 `server/data/db.json` 作为开发期轻量存储。`server/data/db.example.json` 是干净示例结构，首次运行时如果 `db.json` 不存在，后端会自动创建并补齐缺失字段。
+
+本地 DB 管理脚本：
+
+```bash
+cd server
+npm run db:reset
+npm run db:seed
+```
+
+- `db:reset` 会把 `server/data/db.json` 重置为干净结构；
+- `db:seed` 会写入默认项目、默认模板和少量 mock 示例资产；
+- seed 数据不包含真实 API Key，不包含真实 provider credential；
+- 真实联调前请备份需要保留的数据；
+- `server/data/db.json` 已加入 `.gitignore`，不要提交包含真实密钥密文、真实任务或真实资产记录的本地 DB。
 
 文件存储目录已预留：
 
@@ -194,6 +227,17 @@ VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
 - 前端 real mode 会展示后端返回的本地图片 URL；
 - 真实生成文件不会被提交到 Git。
 
+真实图片资产体验：
+
+- Asset Detail 和 Asset Card 的下载按钮在 real mode 下会调用 `GET /api/assets/:id/download` 下载本地文件；
+- 删除本地资产时会同步尝试删除 `server/storage/assets/` 下对应文件，文件不存在时仍会删除 asset 记录；
+- 下载和删除接口只使用数据库里的 asset 记录，不接受前端传入 `localPath`；
+- 后端会校验文件路径必须位于 `server/storage/assets/` 下，避免路径穿越；
+- 图片预览失败时会显示兜底卡片，可复制 URL 或重新加载；
+- Asset Detail 会显示基础信息、生成参数、存储信息和关联任务；
+- 可以从资产详情或任务中心按原参数重新生成，新资产不会覆盖原资产；
+- 真实图片发送到 Video Studio 后仍只作为 I2V/R2V 的 Mock 参考输入，Mock 视频任务参数会记录引用的 assetId。
+
 常见错误排查：
 
 - `INVALID_API_KEY`：检查 Provider 页面中的万物焕新 API Key；
@@ -204,6 +248,10 @@ VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
 - `TASK_TIMEOUT`：生成超时，可简化提示词后重试；
 - `PROVIDER_UNAVAILABLE`：供应商服务暂时不可用；
 - `UNKNOWN_PROVIDER_ERROR`：查看后端日志，确认返回 JSON 中是否包含可解析图片 URL。
+- 图片能生成但前端不显示：确认后端服务仍在运行，并检查 `/storage/assets/...` URL 是否可访问；
+- 下载失败：确认 asset 仍是 `storageType=local`，且本地文件未被手动删除；
+- 删除失败：检查后端是否有 `server/storage/assets/` 文件写入/删除权限；
+- provider 被删除后无法重新生成：重新添加 provider 或改用当前可用 provider 重新生成。
 
 万物焕新 Adapter 验证脚本默认只做 dry-run，不会触发真实生成：
 
@@ -270,11 +318,136 @@ Mock mode：
 
 Real mode：
 
-- providers、assets、tasks 来自本地后端；
-- 页面刷新后会重新请求 `GET /api/providers`、`GET /api/assets`、`GET /api/tasks`；
+- providers、assets、tasks、projects、promptTemplates、workspace 来自本地后端；
+- 页面刷新后会重新请求 `GET /api/providers`、`GET /api/assets`、`GET /api/tasks`、`GET /api/projects`、`GET /api/prompt-templates`、`GET /api/workspace`；
 - localStorage 只保存 `api-asset-studio:ui-state` 这类非敏感 UI 状态；
-- 当前 projects 和 prompt templates 仍暂时来自前端 Mock 数据，后续接真实用户/项目体系时再迁移到后端；
+- `currentProjectId` 仍是前端 UI 状态；如果指向不存在的项目，会回退到后端返回的第一个项目；
 - 进行中的视频任务会由前端每 2.5 秒轮询后端，任务完成后刷新资产库。
+
+第 6.4 阶段后：
+
+- 后端 `GET /api/projects` 会保证至少存在一个“默认项目”；
+- 项目删除采用安全策略：如果项目下已有资产，后端会阻止删除，避免真实资产变成悬空数据；
+- Prompt 模板支持创建、编辑、删除、复制和变量提取；
+- 模板变量格式继续使用 `{{character}}`、`{{scene}}`、`{{action}}`、`{{camera}}`、`{{style}}`、`{{emotion}}`；
+- 删除模板不影响历史生成资产；
+- projects 仍是单用户轻量项目管理，后续可继续做用户、权限和团队化。
+
+第 6.5 阶段后：
+
+- 项目支持资产迁移：`POST /api/projects/:id/move-assets` 可以迁移该项目全部资产，或只迁移指定 `assetIds`；
+- 迁移只更新资产的 `projectId`，不会移动或重写本地文件；
+- Asset Library 支持批量选择资产并移动到目标项目；
+- Prompt 模板“发送到 Image Studio / Video Studio”会真正填入目标工作台的提示词；
+- 模板复制最终 prompt、发送到图片生成、发送到视频生成都会增加 `usageCount`；
+- 模板变量自动识别支持英文、数字、下划线和中文变量名，例如 `{{character}}`、`{{场景}}`；
+- 未填写变量会保留原始 `{{变量名}}`，不会静默删除。
+
+第 6.6 阶段后：
+
+- 新增轻量 Workspace 本地工作区配置；
+- Workspace 存在于 `server/data/db.json`，用于标记当前本地数据边界和未来多用户扩展点；
+- 当前不是正式账号系统，不包含密码、登录、权限或团队协作；
+- Settings 页面可编辑工作区名称、负责人、描述、头像 URL 和默认项目；
+- Projects 页面支持导出项目归档包；
+- 导入功能当前只完成设计文档，尚未实现。
+
+重置本地开发数据：
+
+```bash
+cd server
+npm run db:reset
+npm run db:seed
+```
+
+重置前请先备份真实联调数据。不要提交包含真实密钥密文、真实任务、真实资产记录的 `server/data/db.json`，也不要提交 `server/storage/assets/` 下的真实生成文件。
+
+## 本地工作区 Workspace
+
+Workspace 是一个轻量本地配置：
+
+```ts
+type WorkspaceProfile = {
+  id: string;
+  name: string;
+  ownerName?: string;
+  description?: string;
+  avatarUrl?: string;
+  defaultProjectId?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+```
+
+接口：
+
+```txt
+GET /api/workspace
+PATCH /api/workspace
+```
+
+`PATCH /api/workspace` 支持更新 `name`、`ownerName`、`description`、`avatarUrl`、`defaultProjectId`。如果 `defaultProjectId` 不存在，后端会返回 `VALIDATION_ERROR`。
+
+说明：
+
+- Workspace 不是正式用户系统；
+- 不涉及密码、登录、权限或团队；
+- 只作为单用户本地工作台的数据边界；
+- 后续可以演进为 user / organization / workspace 模型。
+
+## 项目归档包导出
+
+Projects 页面支持导出项目归档包，后端接口：
+
+```txt
+GET /api/projects/:id/export?includeFiles=true&includeTasks=true&includeTemplates=true
+```
+
+默认导出：
+
+- 项目信息；
+- 项目下资产元数据；
+- 项目下任务元数据；
+- prompt templates；
+- 本地资产文件；
+- `manifest.json`；
+- 包内 `README.md`。
+
+归档包结构：
+
+```txt
+project-export/
+  manifest.json
+  project.json
+  assets.json
+  tasks.json
+  prompt-templates.json
+  files/
+    asset_xxx.png
+  README.md
+```
+
+导出选项：
+
+- `includeFiles=true|false`：是否打包本地图片/视频文件；
+- `includeTasks=true|false`：是否包含任务历史；
+- `includeTemplates=true|false`：是否包含提示词模板。
+
+导出包不会包含：
+
+- 明文 API Key；
+- encryptedApiKey；
+- provider credential；
+- `server/data/db.json` 原文件；
+- 服务器绝对路径；
+- `localPath` 本机路径；
+- 不适合迁移的敏感凭据。
+
+如果 `includeFiles=true` 且某个本地文件不存在，导出会跳过该文件并写入 `manifest.warnings`。导出不会移动、删除或修改原文件。
+
+导入功能当前尚未实现，设计文档见：
+
+[docs/project-archive-import-design.md](docs/project-archive-import-design.md)
 
 ## API 接入架构
 
@@ -297,7 +470,7 @@ Real mode：
 
 不要提交真实 `.env` 文件。`server/.env.example` 中的 `APP_ENCRYPTION_KEY` 只是占位示例，本地开发脚本使用 dev-only 临时密钥，生产环境必须替换为安全密钥。
 
-不要提交包含真实测试数据的 `server/data/db.json`。当前仓库中的 `db.json` 只保留空结构。
+不要提交包含真实测试数据的 `server/data/db.json`。本地开发请使用 `server/data/db.example.json`、`npm run db:reset` 和 `npm run db:seed` 管理干净数据。
 
 ## 下一步
 

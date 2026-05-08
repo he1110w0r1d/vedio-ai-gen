@@ -5,7 +5,7 @@ import { ProviderNoticeCard } from '../components/providers/ProviderNoticeCard';
 import { useApp } from '../context/AppContext';
 
 export function Providers() {
-  const { providers, upsertProvider, deleteProviderKey, testProvider, setDefaultProvider, addCustomProvider } = useApp();
+  const { providers, upsertProvider, deleteProviderKey, deleteProvider, testProvider, setDefaultProvider, addCustomProvider } = useApp();
 
   return (
     <div>
@@ -19,6 +19,7 @@ export function Providers() {
             provider={provider}
             onSave={upsertProvider}
             onDeleteKey={deleteProviderKey}
+            onDeleteProvider={deleteProvider}
             onTest={testProvider}
             onSetDefault={setDefaultProvider}
           />

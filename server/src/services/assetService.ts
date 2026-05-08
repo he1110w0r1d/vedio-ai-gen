@@ -1,5 +1,6 @@
 import type { AssetRecord } from '../types/asset.js';
-import { notFound } from '../utils/errors.js';
+import { modelNotSupported, notFound } from '../utils/errors.js';
+import { deleteLocalFile, readLocalAssetFile } from './fileStorageService.js';
 import { readDb, updateDb } from './storageService.js';
 
 export async function listAssets(query: { type?: string; projectId?: string; providerId?: string } = {}) {
@@ -27,6 +28,10 @@ export async function addAssets(assets: AssetRecord[]) {
 }
 
 export async function deleteAsset(assetId: string) {
+  const asset = await getAsset(assetId);
+  if (asset.storageType === 'local' && asset.localPath) {
+    await deleteLocalFile({ localPath: asset.localPath });
+  }
   let removed = false;
   await updateDb((db) => {
     const before = db.assets.length;
@@ -35,6 +40,20 @@ export async function deleteAsset(assetId: string) {
   });
   if (!removed) throw notFound('资产不存在');
   return { id: assetId, deleted: true };
+}
+
+export async function getAssetDownload(assetId: string) {
+  const asset = await getAsset(assetId);
+  if (!['image', 'video', 'reference'].includes(asset.type)) throw modelNotSupported('asset', '当前资产类型不支持下载');
+  if (asset.storageType !== 'local') throw notFound('仅本地保存的资产支持下载');
+  const file = await readLocalAssetFile(asset.localPath);
+  if (!file) throw notFound('资产文件不存在');
+  return {
+    asset,
+    buffer: file.buffer,
+    fileName: buildDownloadFileName(asset),
+    mimeType: asset.mimeType ?? 'application/octet-stream',
+  };
 }
 
 export async function favoriteAsset(assetId: string, favorite?: boolean) {
@@ -48,4 +67,20 @@ export async function favoriteAsset(assetId: string, favorite?: boolean) {
   });
   if (!updated) throw notFound('资产不存在');
   return updated;
+}
+
+function buildDownloadFileName(asset: AssetRecord) {
+  const provider = asset.providerName.replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]/g, '_');
+  const date = asset.createdAt.slice(0, 10).replace(/-/g, '');
+  const extension = extensionFromMime(asset.mimeType) ?? asset.localPath?.match(/\.([a-zA-Z0-9]+)$/)?.[1] ?? 'bin';
+  return `${asset.id}_${provider}_${date}.${extension}`;
+}
+
+function extensionFromMime(mimeType?: string) {
+  if (!mimeType) return undefined;
+  if (mimeType.includes('png')) return 'png';
+  if (mimeType.includes('webp')) return 'webp';
+  if (mimeType.includes('jpeg') || mimeType.includes('jpg')) return 'jpg';
+  if (mimeType.includes('mp4')) return 'mp4';
+  return undefined;
 }

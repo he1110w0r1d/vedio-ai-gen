@@ -8,15 +8,22 @@ export function ProviderCard({
   provider,
   onSave,
   onDeleteKey,
+  onDeleteProvider,
   onTest,
   onSetDefault,
 }: {
   provider: Provider;
   onSave: (provider: Provider) => void;
   onDeleteKey: (providerId: string) => void;
+  onDeleteProvider: (providerId: string) => void;
   onTest: (providerId: string) => void;
   onSetDefault: (providerId: string) => void;
 }) {
+  const deleteProvider = () => {
+    if (!window.confirm(`确认删除供应商「${provider.name}」？这会移除该供应商配置和已保存的 Key。`)) return;
+    onDeleteProvider(provider.id);
+  };
+
   return (
     <section className="card">
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -48,7 +55,7 @@ export function ProviderCard({
       <div className="mb-4">
         <CapabilityChips capabilities={provider.capabilities} />
       </div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <button className="btn-ghost px-2" onClick={() => onTest(provider.id)}>
           <Icon name="sensors" />
           测试
@@ -58,6 +65,10 @@ export function ProviderCard({
         </button>
         <button className="btn-ghost px-2" onClick={() => onSave({ ...provider, status: provider.apiKeyMasked ? 'connected' : 'unconfigured' })}>
           保存
+        </button>
+        <button className="btn-ghost px-2 text-error hover:text-error" onClick={deleteProvider}>
+          <Icon name="delete_forever" />
+          删除
         </button>
       </div>
     </section>

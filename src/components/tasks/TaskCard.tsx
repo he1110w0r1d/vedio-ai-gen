@@ -9,11 +9,15 @@ export function TaskCard({
   onRetry,
   onCancel,
   onCopyParams,
+  onRegenerate,
+  onViewAssets,
 }: {
   task: GenerationTask;
   onRetry: (taskId: string) => void;
   onCancel: (taskId: string) => void;
   onCopyParams: (task: GenerationTask) => void;
+  onRegenerate?: (task: GenerationTask) => void;
+  onViewAssets?: (taskId: string) => void;
 }) {
   return (
     <article className="card">
@@ -27,6 +31,9 @@ export function TaskCard({
           <p className="mt-1 text-sm text-on-surface-variant">{task.prompt}</p>
           <p className="mt-2 text-xs text-on-surface-variant">
             {task.providerName} · {task.model} · {task.projectName} · {task.createdAt}
+          </p>
+          <p className="mt-1 text-xs text-on-surface-variant">
+            任务 ID：{task.id} · 数量：{String(task.params.count ?? 1)} · 画幅：{String(task.params.requestedAspectRatio ?? task.params.aspectRatio ?? task.params.aspect ?? '默认')}
           </p>
           <TaskErrorMessage errorCode={task.errorCode} errorReason={task.errorReason} />
         </div>
@@ -43,6 +50,18 @@ export function TaskCard({
             <Icon name="content_copy" />
             复制参数
           </button>
+          {task.status === 'completed' && task.type === 'image' ? (
+            <button className="btn-ghost" onClick={() => onViewAssets?.(task.id)}>
+              <Icon name="image" />
+              查看资产
+            </button>
+          ) : null}
+          {task.type === 'image' ? (
+            <button className="btn-ghost" onClick={() => onRegenerate?.(task)}>
+              <Icon name="auto_awesome" />
+              再次生成
+            </button>
+          ) : null}
         </div>
       </div>
       <TaskProgress progress={task.progress} />

@@ -1,5 +1,5 @@
 import type { Asset } from '../types';
-import { requestJson, shouldUseMockApi } from './client';
+import { API_BASE_URL, requestJson, shouldUseMockApi } from './client';
 import type { AssetListQuery } from './types';
 
 export const assetApi = {
@@ -42,4 +42,26 @@ export const assetApi = {
     }
     return { ...asset, favorite };
   },
+
+  async downloadAsset(asset: Asset): Promise<void> {
+    if (shouldUseMockApi()) return;
+    const response = await fetch(`${API_BASE_URL}/api/assets/${asset.id}/download`);
+    if (!response.ok) throw new Error('资产下载失败');
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const disposition = response.headers.get('Content-Disposition') ?? '';
+    link.href = url;
+    link.download = parseFileName(disposition) ?? `${asset.id}`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  },
 };
+
+function parseFileName(disposition: string) {
+  const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/)?.[1];
+  if (encoded) return decodeURIComponent(encoded);
+  return disposition.match(/filename="?([^";]+)"?/)?.[1];
+}

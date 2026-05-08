@@ -3,6 +3,7 @@ import { AssetCard } from '../components/AssetCard';
 import { AssetDetailDrawer } from '../components/assets/AssetDetailDrawer';
 import { EmptyState, Icon, SearchInput, SectionHeader } from '../components/ui';
 import { useApp } from '../context/AppContext';
+import { generationApi } from '../api/generationApi';
 import type { Asset, AssetType } from '../types';
 
 type AssetFilter = 'all' | AssetType | 'favorite';
@@ -30,8 +31,12 @@ export function AssetLibrary() {
     setSelectedAsset,
     toggleFavorite,
     deleteAsset,
+    downloadAsset,
     sendImageToVideo,
+    addTask,
+    addAssets,
     setView,
+    moveProjectAssets,
     showToast,
   } = useApp();
   const [type, setType] = useState<AssetFilter>('all');
@@ -42,6 +47,7 @@ export function AssetLibrary() {
   const [query, setQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [batchTargetProjectId, setBatchTargetProjectId] = useState('');
 
   const models = useMemo(() => Array.from(new Set(assets.map((asset) => asset.model))).sort(), [assets]);
 
@@ -64,6 +70,7 @@ export function AssetLibrary() {
   }, [assets, globalSearch, query, type, projectId, providerId, model, sort]);
 
   const selectedAssetIds = new Set(selectedIds);
+  const selectedAssets = assets.filter((asset) => selectedAssetIds.has(asset.id));
   const selectedProjectName = selectedAsset ? projects.find((project) => project.id === selectedAsset.projectId)?.name : undefined;
 
   const toggleSelection = (assetId: string, checked: boolean) => {
@@ -76,8 +83,26 @@ export function AssetLibrary() {
   };
 
   const batchDelete = () => {
-    if (!window.confirm(`确认删除选中的 ${selectedIds.length} 个资产？这是前端 Mock 删除。`)) return;
+    if (!window.confirm(`确认删除选中的 ${selectedIds.length} 个资产？真实本地资产会同步删除文件。`)) return;
     selectedIds.forEach(deleteAsset);
+    setSelectedIds([]);
+  };
+
+  const batchMoveToProject = async () => {
+    if (!batchTargetProjectId) {
+      showToast('请选择目标项目', 'error');
+      return;
+    }
+    const movableAssets = selectedAssets.filter((asset) => asset.projectId !== batchTargetProjectId);
+    if (!movableAssets.length) {
+      showToast('所选资产已在目标项目中', 'info');
+      return;
+    }
+    const groups = movableAssets.reduce<Record<string, string[]>>((result, asset) => {
+      result[asset.projectId] = [...(result[asset.projectId] ?? []), asset.id];
+      return result;
+    }, {});
+    await Promise.all(Object.entries(groups).map(([sourceProjectId, assetIds]) => moveProjectAssets(sourceProjectId, batchTargetProjectId, assetIds)));
     setSelectedIds([]);
   };
 
@@ -89,6 +114,37 @@ export function AssetLibrary() {
   const openTask = (taskId: string) => {
     setView('tasks');
     showToast(`已跳转任务中心，关联任务：${taskId}`, 'info');
+  };
+
+  const regenerateAsset = async (asset: Asset) => {
+    const provider = providers.find((item) => item.id === asset.providerId);
+    const project = projects.find((item) => item.id === asset.projectId) ?? projects[0];
+    if (!provider || !project) {
+      showToast('原供应商或项目不存在，无法重新生成', 'error');
+      return;
+    }
+    try {
+      const params = asset.parameters ?? asset.params;
+      const { task, assets: newAssets } = await generationApi.generateImage({
+        prompt: asset.prompt,
+        negativePrompt: String(params.negativePrompt ?? ''),
+        count: Number(params.count ?? 1),
+        provider,
+        project,
+        model: asset.model,
+        aspectRatio: String(params.requestedAspectRatio ?? ('aspectRatio' in asset ? asset.aspectRatio : '1:1')),
+        style: String(params.style ?? ''),
+        seed: String(params.seed ?? ''),
+        quality: String(params.quality ?? '供应商默认'),
+        outputFormat: String(params.outputFormat ?? '供应商返回格式'),
+        background: String(params.background ?? '供应商默认'),
+      });
+      addTask(task);
+      addAssets(newAssets);
+      showToast('已按原参数重新生成', 'success');
+    } catch {
+      showToast('重新生成失败，请检查供应商配置', 'error');
+    }
   };
 
   return (
@@ -140,6 +196,11 @@ export function AssetLibrary() {
         {selectedIds.length ? (
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-primary-fixed-dim/30 bg-primary-fixed-dim/10 p-3 text-sm text-on-surface-variant">
             <span className="font-semibold text-primary">已选择 {selectedIds.length} 个资产</span>
+            <select className="field min-w-48" value={batchTargetProjectId} onChange={(event) => setBatchTargetProjectId(event.target.value)}>
+              <option value="">选择目标项目</option>
+              {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+            </select>
+            <button className="btn-ghost" onClick={batchMoveToProject}>批量移动到项目</button>
             <button className="btn-ghost" onClick={batchFavorite}>批量收藏</button>
             <button className="btn-ghost" onClick={batchDelete}>批量删除</button>
             <button className="btn-ghost" onClick={() => setSelectedIds([])}>取消选择</button>
@@ -159,6 +220,7 @@ export function AssetLibrary() {
                 onCheckedChange={toggleSelection}
                 onSelect={setSelectedAsset}
                 onFavorite={toggleFavorite}
+                onDownload={downloadAsset}
                 onSendToVideo={() => handleSendToVideo(asset)}
                 onViewTask={openTask}
               />
@@ -202,8 +264,8 @@ export function AssetLibrary() {
             if (!window.confirm('确认删除这个资产？这是前端 Mock 删除。')) return;
             deleteAsset(assetId);
           }}
-          onDownload={() => showToast('下载为 Mock 操作', 'info')}
-          onRegenerate={() => showToast('重新生成为 Mock 操作', 'info')}
+          onDownload={downloadAsset}
+          onRegenerate={() => regenerateAsset(selectedAsset)}
           onMockAction={(message) => showToast(message, 'success')}
           onViewTask={openTask}
           onSendToVideo={sendImageToVideo}

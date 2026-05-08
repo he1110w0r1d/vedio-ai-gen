@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { deleteAsset, favoriteAsset, getAsset, listAssets } from '../services/assetService.js';
+import { deleteAsset, favoriteAsset, getAsset, getAssetDownload, listAssets } from '../services/assetService.js';
 import { asyncHandler } from '../utils/errors.js';
 
 export const assetsRouter = Router();
@@ -14,6 +14,14 @@ assetsRouter.get('/', asyncHandler(async (req, res) => {
 
 assetsRouter.get('/:id', asyncHandler(async (req, res) => {
   res.json({ data: await getAsset(String(req.params.id)) });
+}));
+
+assetsRouter.get('/:id/download', asyncHandler(async (req, res) => {
+  const file = await getAssetDownload(String(req.params.id));
+  res.setHeader('Content-Type', file.mimeType);
+  res.setHeader('Content-Length', String(file.buffer.byteLength));
+  res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
+  res.send(file.buffer);
 }));
 
 assetsRouter.delete('/:id', asyncHandler(async (req, res) => {

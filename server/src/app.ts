@@ -5,7 +5,10 @@ import { env } from './config/env.js';
 import { assetsRouter } from './routes/assets.js';
 import { generationsRouter } from './routes/generations.js';
 import { providersRouter } from './routes/providers.js';
+import { projectsRouter } from './routes/projects.js';
+import { promptTemplatesRouter } from './routes/promptTemplates.js';
 import { tasksRouter } from './routes/tasks.js';
+import { workspaceRouter } from './routes/workspace.js';
 import { advanceMockTasks } from './services/taskService.js';
 import { ensureStorageDirs } from './services/fileStorageService.js';
 import { errorMiddleware } from './utils/errors.js';
@@ -23,6 +26,9 @@ export function createApp() {
   });
 
   app.use('/api/providers', providersRouter);
+  app.use('/api/workspace', workspaceRouter);
+  app.use('/api/projects', projectsRouter);
+  app.use('/api/prompt-templates', promptTemplatesRouter);
   app.use('/api/generations', generationsRouter);
   app.use('/api/tasks', tasksRouter);
   app.use('/api/assets', assetsRouter);

@@ -43,12 +43,16 @@ export function ParameterPanel({
     <>
       <label className="block text-sm">
         <span className="mb-1 block text-on-surface-variant">供应商</span>
-        <select className="field" value={providerId} onChange={(event) => onProviderChange(event.target.value)}>
-          {providers.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
+        <select className="field relative z-10 min-h-10 cursor-pointer" value={providerId} disabled={!providers.length} onChange={(event) => onProviderChange(event.target.value)}>
+          {providers.length ? (
+            providers.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))
+          ) : (
+            <option value="">暂无可用图片供应商</option>
+          )}
         </select>
       </label>
       <label className="block text-sm">

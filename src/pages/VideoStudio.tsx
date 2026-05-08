@@ -11,7 +11,7 @@ import { generationApi } from '../api/generationApi';
 import type { Asset, VideoMode } from '../types';
 
 export function VideoStudio() {
-  const { providers, assets, currentProject, addTask, setView, consumeVideoSeed, showToast, setSelectedAsset, toggleFavorite, sendImageToVideo } = useApp();
+  const { providers, assets, currentProject, addTask, setView, consumeVideoSeed, consumePendingPromptInput, showToast, setSelectedAsset, toggleFavorite, sendImageToVideo } = useApp();
   const videoProviders = providers.filter((provider) => provider.capabilities.some((capability) => ['T2V', 'I2V', 'R2V'].includes(capability)));
   const imageAssets = assets.filter((asset) => asset.type !== 'video');
   const [mode, setMode] = useState<VideoMode>('T2V');
@@ -56,6 +56,15 @@ export function VideoStudio() {
     }
   }, [consumeVideoSeed]);
 
+  useEffect(() => {
+    const input = consumePendingPromptInput();
+    if (input?.target !== 'video') return;
+    const nextMode = (input.mode ?? 't2v').toUpperCase() as VideoMode;
+    setMode(nextMode);
+    setPrompt(input.prompt);
+    showToast('已填入模板提示词', 'success');
+  }, []);
+
   const selectedAssets = useMemo(
     () => [i2vFirst, i2vLast, ...Object.values(refs)].filter(Boolean).map((assetId) => assets.find((asset) => asset.id === assetId)).filter(Boolean) as Asset[],
     [assets, i2vFirst, i2vLast, refs],
@@ -74,7 +83,24 @@ export function VideoStudio() {
       provider,
       project: currentProject,
       model,
-      params: { camera, duration, aspect, resolution, motion, style, keepComposition, referenceWeight },
+      params: {
+        camera,
+        duration,
+        aspect,
+        resolution,
+        motion,
+        style,
+        keepComposition,
+        referenceWeight,
+        sourceImageAssetId: i2vFirst || i2vLast || refs.character || refs.style || refs.scene || refs.action || refs.video || '',
+        i2vFirstAssetId: i2vFirst,
+        i2vLastAssetId: i2vLast,
+        r2vCharacterAssetId: refs.character,
+        r2vStyleAssetId: refs.style,
+        r2vSceneAssetId: refs.scene,
+        r2vActionAssetId: refs.action,
+        r2vVideoAssetId: refs.video,
+      },
       });
       addTask(task);
       setView('tasks');
@@ -143,8 +169,7 @@ export function VideoStudio() {
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {imageAssets.slice(0, 8).map((asset) => (
               <div key={asset.id} className="rounded-2xl border border-outline-variant/40 bg-surface-container-low p-2">
-                <img src={asset.thumbnail} alt={asset.title} className="aspect-[4/3] rounded-xl object-cover" />
-                <p className="mt-2 truncate text-sm font-semibold">{asset.title}</p>
+                <AssetCard asset={asset} onSelect={setSelectedAsset} onFavorite={toggleFavorite} onSendToVideo={(id) => sendImageToVideo(id, 'i2v-first')} />
                 <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                   <button className="btn-ghost px-2 py-1" onClick={() => assetSelect(mode === 'R2V' ? 'character' : 'first', asset.id)}>{mode === 'R2V' ? '角色' : '首帧'}</button>
                   <button className="btn-ghost px-2 py-1" onClick={() => assetSelect(mode === 'R2V' ? 'style' : 'last', asset.id)}>{mode === 'R2V' ? '风格' : '尾帧'}</button>

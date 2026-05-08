@@ -19,6 +19,14 @@ const STORAGE_ROOT = path.resolve(process.cwd(), 'storage');
 const ASSET_ROOT = path.join(STORAGE_ROOT, 'assets');
 const TEMP_ROOT = path.join(STORAGE_ROOT, 'temp');
 
+export function resolveAssetLocalPath(localPath?: string) {
+  if (!localPath) return undefined;
+  const resolved = path.resolve(localPath);
+  const root = `${path.resolve(ASSET_ROOT)}${path.sep}`;
+  if (!resolved.startsWith(root)) return undefined;
+  return resolved;
+}
+
 export async function saveRemoteFileToLocal(input: { remoteUrl: string; fileName?: string; mimeType?: string }): Promise<LocalFileRecord> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), downloadTimeoutMs);
@@ -61,12 +69,26 @@ export function getPublicAssetUrl(input: { localPath: string }) {
 }
 
 export async function deleteLocalFile(input: { localPath: string }) {
+  const localPath = resolveAssetLocalPath(input.localPath);
+  if (!localPath) return { deleted: false };
   try {
-    await fs.unlink(input.localPath);
+    await fs.unlink(localPath);
     return { deleted: true };
   } catch {
     return { deleted: false };
   }
+}
+
+export async function readLocalAssetFile(localPath?: string) {
+  const resolved = resolveAssetLocalPath(localPath);
+  if (!resolved) return undefined;
+  const stat = await fs.stat(resolved).catch(() => undefined);
+  if (!stat?.isFile()) return undefined;
+  return {
+    path: resolved,
+    sizeBytes: stat.size,
+    buffer: await fs.readFile(resolved),
+  };
 }
 
 export async function ensureStorageDirs() {

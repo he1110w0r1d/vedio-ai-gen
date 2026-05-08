@@ -1,4 +1,5 @@
 import type { Asset } from '../types';
+import { AssetPreview } from './assets/AssetPreview';
 import { Icon } from './ui';
 
 function assetTypeLabel(asset: Asset) {
@@ -14,6 +15,7 @@ export function AssetCard({
   onCheckedChange,
   onSelect,
   onFavorite,
+  onDownload,
   onSendToVideo,
   onViewTask,
 }: {
@@ -23,6 +25,7 @@ export function AssetCard({
   onCheckedChange?: (assetId: string, checked: boolean) => void;
   onSelect: (asset: Asset) => void;
   onFavorite: (id: string) => void;
+  onDownload?: (id: string) => void;
   onSendToVideo?: (id: string) => void;
   onViewTask?: (taskId: string) => void;
 }) {
@@ -34,8 +37,8 @@ export function AssetCard({
         </label>
       ) : null}
       <button className="block w-full text-left" onClick={() => onSelect(asset)}>
-        <div className="relative aspect-[4/3] overflow-hidden bg-black">
-          <img src={asset.thumbnail} alt={asset.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+          <div className="relative aspect-[4/3] overflow-hidden bg-black">
+          <AssetPreview asset={asset} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
           <div className="absolute left-3 top-3 flex gap-2">
             <span className="chip bg-black/70 text-primary-fixed">{assetTypeLabel(asset)}</span>
             {asset.favorite ? <span className="chip bg-black/70 text-secondary">收藏</span> : null}
@@ -56,8 +59,8 @@ export function AssetCard({
           <button className="btn-ghost px-2 py-1.5" onClick={() => onFavorite(asset.id)}>
             <Icon name={asset.favorite ? 'star' : 'star'} className="text-base" />
           </button>
-          <button className="btn-ghost px-2 py-1.5" onClick={() => navigator.clipboard?.writeText(asset.prompt)}>
-            <Icon name="content_copy" className="text-base" />
+          <button className="btn-ghost px-2 py-1.5" onClick={() => onDownload?.(asset.id) ?? navigator.clipboard?.writeText(asset.prompt)}>
+            <Icon name="download" className="text-base" />
           </button>
           <button className="btn-ghost px-2 py-1.5" onClick={() => onSendToVideo?.(asset.id)}>
             <Icon name="movie" className="text-base" />

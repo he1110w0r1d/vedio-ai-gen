@@ -135,6 +135,13 @@ export const providerApi = {
     };
   },
 
+  async deleteProvider(providerId: string): Promise<{ id: string; deleted: true }> {
+    if (!shouldUseMockApi()) {
+      return requestJson<{ id: string; deleted: true }>(`/api/providers/${providerId}`, { method: 'DELETE' });
+    }
+    return { id: providerId, deleted: true };
+  },
+
   async testProvider(provider: Provider): Promise<ProviderTestResult> {
     if (!shouldUseMockApi()) {
       const result = await requestJson<{ status: 'connected' | 'failed' | 'not_configured'; message: string; capabilities?: string[] }>(`/api/providers/${provider.id}/test`, {

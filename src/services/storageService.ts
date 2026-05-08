@@ -1,5 +1,5 @@
 import { mockAssets, mockProjects, mockProviders, mockPromptTemplates, mockTasks } from '../data/mockData';
-import type { AppStateSnapshot } from '../types';
+import type { AppStateSnapshot, WorkspaceProfile } from '../types';
 
 const STORAGE_KEY = 'api-asset-studio:app-state';
 const UI_STORAGE_KEY = 'api-asset-studio:ui-state';
@@ -9,6 +9,17 @@ export type AppUiState = {
   version: number;
   currentProjectId: string;
   selectedVideoInput?: AppStateSnapshot['selectedVideoInput'];
+  workspace?: WorkspaceProfile;
+};
+
+export const defaultWorkspace: WorkspaceProfile = {
+  id: 'workspace_local',
+  name: '本地工作区',
+  ownerName: '本地创作者',
+  description: '单用户本地工作台配置，用于区分当前开发数据边界。',
+  defaultProjectId: mockProjects[0]?.id ?? '',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
 };
 
 export function resetToMockData(): AppStateSnapshot {
@@ -21,6 +32,7 @@ export function resetToMockData(): AppStateSnapshot {
     projects: mockProjects,
     currentProjectId: mockProjects[0]?.id ?? '',
     selectedVideoInput: undefined,
+    workspace: defaultWorkspace,
   };
 }
 
@@ -84,6 +96,7 @@ export function loadUiState(): AppUiState {
       version: STORAGE_VERSION,
       currentProjectId: typeof parsed.currentProjectId === 'string' ? parsed.currentProjectId : mockProjects[0]?.id ?? '',
       selectedVideoInput: parsed.selectedVideoInput,
+      workspace: parsed.workspace,
     };
   } catch {
     return { version: STORAGE_VERSION, currentProjectId: mockProjects[0]?.id ?? '' };

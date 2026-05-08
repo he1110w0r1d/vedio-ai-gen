@@ -81,6 +81,7 @@ export function createVideoAsset(task: GenerationTask): Asset {
     duration: Number(task.params.duration ?? 6),
     mode: task.mode ?? 'T2V',
     params: task.params,
+    parameters: task.params,
   };
 }
 

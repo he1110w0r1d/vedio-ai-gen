@@ -1,0 +1,17 @@
+{
+  "workspace": {
+    "id": "workspace_local",
+    "name": "本地工作区",
+    "ownerName": "本地创作者",
+    "description": "单用户本地工作台配置，用于区分当前开发数据边界。",
+    "defaultProjectId": "p1",
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  "providers": [],
+  "projects": [],
+  "assets": [],
+  "tasks": [],
+  "promptTemplates": [],
+  "auditLogs": []
+}
