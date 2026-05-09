@@ -8,6 +8,7 @@ import { saveRemoteVideoToLocal } from './fileStorageService.js';
 import { readDb, updateDb } from './storageService.js';
 import { completeUsageRecord, failUsageRecord, cancelUsageRecord, createUsageRecord } from './usageService.js';
 import { syncBenchmarkRunItems } from './benchmarkRunnerService.js';
+import { sanitizeExternalUrlForStorage } from '../utils/urlSecurity.js';
 
 const videoThumb = 'https://images.unsplash.com/photo-1484950763426-56b5bf172dbb?auto=format&fit=crop&w=1200&q=80';
 
@@ -139,6 +140,8 @@ export async function refreshRealVideoTasks(taskId?: string) {
         const assetId = createId('asset_vid');
         const stored = await saveRemoteVideoToLocal({ remoteUrl: status.videoUrl, fileName: `${assetId}.mp4` });
         const now = nowIso();
+        // Sanitize the provider result URL to avoid persisting presigned URLs
+        const sourceUrlInfo = sanitizeExternalUrlForStorage(status.videoUrl);
         const asset: AssetRecord = {
           id: assetId,
           type: 'video',
@@ -164,7 +167,14 @@ export async function refreshRealVideoTasks(taskId?: string) {
           durationSeconds: Number(task.params.resolvedDuration ?? task.params.duration ?? 6),
           mode: task.mode,
           params: { ...task.params, providerTaskId: task.providerTaskId, providerTaskStatus: status.providerTaskStatus },
-          parameters: { ...task.params, providerTaskId: task.providerTaskId, providerTaskStatus: status.providerTaskStatus, sourceUrl: status.videoUrl },
+          parameters: {
+            ...task.params,
+            providerTaskId: task.providerTaskId,
+            providerTaskStatus: status.providerTaskStatus,
+            // Never persist the full presigned URL; only store sanitized metadata
+            sourceHost: sourceUrlInfo.host,
+            sourceContainsSignature: sourceUrlInfo.containsSignature,
+          },
         };
         await updateDb((next) => {
           next.assets.unshift(asset);

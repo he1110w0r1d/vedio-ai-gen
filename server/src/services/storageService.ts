@@ -10,6 +10,8 @@ import type { UsageRecord, CostRule } from '../types/usage.js';
 import type { QualityFeedback } from '../types/quality.js';
 import type { StorageConfig } from '../types/storage.js';
 import type { BenchmarkSet, BenchmarkRun, BenchmarkRunItem, BenchmarkCase } from '../types/benchmark.js';
+import { isPresignedUrl } from '../utils/urlSecurity.js';
+import { SEED_IMAGE_DEFS, generateSeedPngBuffers } from '../utils/seedPng.js';
 
 export type DbShape = {
   workspace: WorkspaceProfile;
@@ -108,7 +110,7 @@ export function defaultCostRules(): CostRule[] {
   ];
 }
 
-function normalizeDb(value: Partial<DbShape> | undefined): DbShape {
+export function normalizeDb(value: Partial<DbShape> | undefined): DbShape {
   const workspace = {
     ...defaultWorkspace(),
     ...(value?.workspace && typeof value.workspace === 'object' ? value.workspace : {}),
@@ -135,11 +137,15 @@ export async function readDb(): Promise<DbShape> {
   try {
     const raw = await fs.readFile(DB_PATH, 'utf8');
     const db = normalizeDb(JSON.parse(raw) as Partial<DbShape>);
-    await writeDb(db);
+    // Never write back on read — writeDb should only be called explicitly via updateDb or direct write.
+    // Writing back on every read risks data loss from race conditions or parse-then-repair cycles.
     return db;
   } catch (error) {
+    // Backup corrupted file before falling back
+    await backupCorruptedDb().catch(() => undefined);
     const db = normalizeDb(await readExampleDb());
-    await writeDb(db);
+    // Write only the first time when db.json doesn't exist or is corrupted
+    await writeDbFile(db);
     return db;
   }
 }
@@ -148,15 +154,29 @@ export async function writeDb(db: DbShape) {
   await writeDbFile(normalizeDb(db));
 }
 
+/**
+ * Atomic file write: write to temp file first, then rename.
+ * On Unix, rename is atomic — the destination either gets the new content or stays intact.
+ */
 async function writeDbFile(db: DbShape) {
   await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
-  await fs.writeFile(DB_PATH, `${JSON.stringify(db, null, 2)}\n`, 'utf8');
+  const tmpPath = `${DB_PATH}.tmp.${Date.now()}.${Math.random().toString(36).slice(2, 6)}`;
+  await fs.writeFile(tmpPath, `${JSON.stringify(db, null, 2)}\n`, 'utf8');
+  await fs.rename(tmpPath, DB_PATH);
 }
 
 export async function updateDb(updater: (db: DbShape) => DbShape | void): Promise<DbShape> {
-  const db = await readDb();
+  // Re-read raw file for update to avoid stale reads overwriting concurrent writes.
+  // This ensures updateDb always works on the latest on-disk state.
+  let db: DbShape;
+  try {
+    const raw = await fs.readFile(DB_PATH, 'utf8');
+    db = normalizeDb(JSON.parse(raw) as Partial<DbShape>);
+  } catch {
+    db = normalizeDb(await readExampleDb());
+  }
   const next = updater(db) ?? db;
-  await writeDb(next);
+  await writeDbFile(next);
   return next;
 }
 
@@ -284,6 +304,53 @@ export function defaultBenchmarkSet(): BenchmarkSet {
 
 export async function seedDb() {
   const now = new Date().toISOString();
+
+  // Create local seed image files first so they exist before assets reference them
+  const seedAssetsDir = path.resolve(process.cwd(), 'storage', 'assets', 'seed');
+  await fs.mkdir(seedAssetsDir, { recursive: true });
+
+  const seedPngs = generateSeedPngBuffers();
+  const seedAssetRecords: AssetRecord[] = [];
+
+  for (const def of SEED_IMAGE_DEFS) {
+    const pngBuffer = seedPngs.get(def.id);
+    if (!pngBuffer) continue;
+    const fileName = `${def.id}.png`;
+    const localPath = path.join(seedAssetsDir, fileName);
+    await fs.writeFile(localPath, pngBuffer);
+
+    // Build local URL for the seed asset
+    const port = process.env.PORT || '8787';
+    const publicUrl = `http://127.0.0.1:${port}/storage/assets/seed/${fileName}`;
+
+    seedAssetRecords.push({
+      id: def.id,
+      type: 'image',
+      title: def.title,
+      prompt: def.description,
+      thumbnail: publicUrl,
+      thumbnailUrl: publicUrl,
+      url: publicUrl,
+      fileUrl: publicUrl,
+      storageType: 'local',
+      localPath,
+      mimeType: 'image/png',
+      sizeBytes: pngBuffer.length,
+      width: 256,
+      height: 256,
+      providerId: 'seed',
+      providerName: 'Seed Generator',
+      model: 'seed-png',
+      projectId: 'p1',
+      createdAt: now,
+      updatedAt: now,
+      favorite: false,
+      aspectRatio: '1:1',
+      params: {},
+      parameters: { source: 'local seed png', width: 256, height: 256 },
+    });
+  }
+
   const db: DbShape = {
     workspace: defaultWorkspace(),
     storageConfig: defaultStorageConfig(),
@@ -293,6 +360,7 @@ export async function seedDb() {
       { id: 'p2', name: '素材探索', description: '用于测试真实图片和模板工作流', status: 'active', favorite: false, tags: ['demo'], createdAt: now, updatedAt: now },
     ],
     assets: [
+      ...seedAssetRecords,
       {
         id: 'asset_seed_image',
         type: 'image',
@@ -325,6 +393,7 @@ export async function seedDb() {
     benchmarkRunItems: [],
   };
   await writeDb(db);
+  console.log(`db:seed 完成：创建了 ${seedAssetRecords.length} 个本地 seed 图片资产（${seedAssetsDir}）`);
   return db;
 }
 
@@ -335,4 +404,61 @@ async function readExampleDb() {
   } catch {
     return emptyDb();
   }
+}
+
+/**
+ * Backup corrupted db.json before overwriting, so data can be recovered.
+ */
+async function backupCorruptedDb() {
+  try {
+    const raw = await fs.readFile(DB_PATH, 'utf8');
+    if (!raw.trim()) return; // empty file, nothing to back up
+    const backupPath = `${DB_PATH}.corrupted.${new Date().toISOString().replace(/[:.]/g, '-')}`;
+    await fs.writeFile(backupPath, raw, 'utf8');
+    console.warn(`[storageService] 原 db.json 解析失败，已备份至 ${backupPath}`);
+  } catch {
+    // File doesn't exist or can't be read — no backup needed
+  }
+}
+
+/**
+ * Clean presigned URLs from all assets.url fields.
+ * Returns the number of URLs cleaned.
+ * This is called during repair operations but also enforced at the data layer.
+ */
+export function sanitizeAssetUrls(db: DbShape): number {
+  let cleaned = 0;
+  for (const asset of db.assets) {
+    if (asset.url && isPresignedUrl(asset.url)) {
+      // For local assets, rebuild local URL from localPath
+      if (asset.localPath && (asset.storageType === 'local' || !asset.storageType)) {
+        try {
+          const relativePath = path.relative(
+            path.resolve(process.cwd(), 'storage', 'assets'),
+            path.resolve(asset.localPath),
+          ).split(path.sep).join('/');
+          const port = process.env.PORT || '8787';
+          asset.url = `http://127.0.0.1:${port}/storage/assets/${relativePath}`;
+        } catch {
+          asset.url = '';
+        }
+      } else if (asset.storageType === 'object' || asset.storageType === 'remote') {
+        // For object/remote assets, only keep the URL if it's not presigned
+        // If it is presigned, clear it (publicUrl might have the clean version)
+        asset.url = asset.publicUrl && !isPresignedUrl(asset.publicUrl) ? asset.publicUrl : '';
+      } else {
+        asset.url = '';
+      }
+      cleaned++;
+    }
+    if (asset.publicUrl && isPresignedUrl(asset.publicUrl)) {
+      asset.publicUrl = '';
+      cleaned++;
+    }
+    if (asset.fileUrl && isPresignedUrl(asset.fileUrl)) {
+      asset.fileUrl = '';
+      cleaned++;
+    }
+  }
+  return cleaned;
 }

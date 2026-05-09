@@ -22,7 +22,10 @@ export async function startBenchmarkRun(
 ): Promise<{ run: BenchmarkRun; items: BenchmarkRunItem[]; warning?: string }> {
   const { run } = await getBenchmarkRun(runId);
   if (run.status === 'running') throw validationError('该 Run 已在运行中');
-  if (run.status === 'completed' || run.status === 'canceled') throw validationError('该 Run 已完成或已取消');
+  if (run.status === 'completed' || run.status === 'canceled') {
+    // Prevent re-starting completed/canceled runs to avoid duplicate items
+    throw validationError('该 Run 已完成或已取消。如需重新运行，请创建新的 Benchmark Run。');
+  }
 
   const set = await getBenchmarkSet(run.setId);
   const now = nowIso();
@@ -72,12 +75,10 @@ export async function startBenchmarkRun(
     }
   }
 
-  // If live run without confirmation, reject
+  // If live run without confirmation, reject and do NOT persist items.
+  // Items are only persisted when the run actually starts (dry-run or confirmed live-run).
+  // This prevents orphaned pending items in the database.
   if (run.liveRun && !confirmLiveRun) {
-    // Still save items in pending state
-    await updateDb(db2 => {
-      db2.benchmarkRunItems.push(...items);
-    });
     return {
       run,
       items,
@@ -85,10 +86,15 @@ export async function startBenchmarkRun(
     };
   }
 
-  // Dry run: just save items
+  // Dry run: mark all pending items as skipped (DRY_RUN) for data hygiene
   if (!run.liveRun) {
+    const dryRunItems = items.map(item =>
+      item.status === 'pending'
+        ? { ...item, status: 'skipped' as BenchmarkRunItemStatus, errorCode: 'DRY_RUN', errorReason: 'dry-run 模式，不执行真实任务', updatedAt: now }
+        : item
+    );
     await updateDb(db2 => {
-      db2.benchmarkRunItems.push(...items);
+      db2.benchmarkRunItems.push(...dryRunItems);
       const runRef = db2.benchmarkRuns.find(r => r.id === runId);
       if (runRef) {
         runRef.status = 'completed';
@@ -97,7 +103,7 @@ export async function startBenchmarkRun(
         runRef.updatedAt = now;
       }
     });
-    return { run: { ...run, status: 'completed', startedAt: now, completedAt: now, updatedAt: now }, items };
+    return { run: { ...run, status: 'completed', startedAt: now, completedAt: now, updatedAt: now }, items: dryRunItems };
   }
 
   // Live run: execute tasks
@@ -136,7 +142,9 @@ export async function startBenchmarkRun(
       if (benchmarkCase.parameters.aspectRatio) params.aspectRatio = benchmarkCase.parameters.aspectRatio;
       if (benchmarkCase.parameters.seed) params.seed = benchmarkCase.parameters.seed;
       if (benchmarkCase.sourceImageUrl) params.sourceImageUrl = benchmarkCase.sourceImageUrl;
+      if (benchmarkCase.sourceImageAssetId) params.sourceImageAssetId = benchmarkCase.sourceImageAssetId;
       if (benchmarkCase.referenceUrl) params.referenceUrl = benchmarkCase.referenceUrl;
+      if (benchmarkCase.referenceAssetId) params.referenceAssetId = benchmarkCase.referenceAssetId;
 
       const videoMode = MODE_TO_VIDEO_MODE[benchmarkCase.mode]!;
       const input: VideoGenerationInput = {

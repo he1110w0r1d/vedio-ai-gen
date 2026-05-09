@@ -130,8 +130,11 @@ npm run verify:wanwu
 npm run verify:wanxiang-t2v
 npm run verify:wanxiang-i2v
 npm run verify:wanxiang-r2v
+npm run verify:db-persistence
+npm run verify:no-presigned-persistence
 npm run db:reset
 npm run db:seed
+npm run db:repair-hygiene
 ```
 
 ## 环境变量
@@ -344,10 +347,50 @@ npm run db:seed
 ```
 
 - `db:reset` 重置为干净结构；
-- `db:seed` 写入默认项目、默认模板和 Mock 示例资产；
+- `db:seed` 写入默认项目、默认模板、seed 图片资产和 Benchmark Set；
 - `server/data/db.json` 已加入 `.gitignore`；
 - 不要提交真实联调数据；
 - 不要提交真实生成图片。
+
+## 数据卫生验证
+
+第 8.3.5 阶段新增了数据卫生验证与修复工具：
+
+```bash
+cd server
+
+# 验证 DB 持久化安全（写入/读取/原子写入/不写回）
+npm run verify:db-persistence
+
+# 验证 db.json 中无 presigned URL 残留
+npm run verify:no-presigned-persistence
+
+# 修复历史脏数据（清理 presigned URL、修复 pending 残留）
+npm run db:repair-hygiene
+```
+
+### DB 持久化安全说明
+
+- `readDb()` 不再在每次读取时写回 DB（避免并发覆盖）。
+- `writeDb()` 使用原子写入（先写 temp 文件，再 rename），防止写入中断导致数据损坏。
+- `updateDb()` 始终从磁盘重读最新数据进行更新，避免脏写。
+- 解析失败的 `db.json` 会自动备份（`.corrupted.*` 后缀），再回退到示例结构。
+- 仅 `db:reset` 允许清空数据；`db:seed` 不会覆盖已有真实数据。
+
+### URL 安全策略
+
+- local storage asset 的 `asset.url` 使用本地可访问 URL（`http://127.0.0.1:{port}/storage/assets/...`），不保存供应商 OSS presigned URL。
+- object private-presigned asset 只保存 `objectKey`、`storageType`、`accessMode`，不保存完整 presigned URL。
+- `task.parameters` / `asset.parameters` 只保存 `sourceHost` / `sourceContainsSignature` 元数据，不保存完整签名 URL。
+- 项目导出包不包含 presigned URL。
+
+### Benchmark 参考素材说明
+
+- 默认 Benchmark Set（`Default Video Model Benchmark v0.1`）不再依赖 `picsum.photos` 外部随机图片服务。
+- I2V/R2V 用例引用本地 seed 图片资产（`sourceImageAssetId` / `referenceAssetId`）。
+- 运行 `npm run db:seed` 自动在 `server/storage/assets/seed/` 创建 3 个 256×256 seed PNG（水滴/产品瓶/仪表盘）。
+- seed 图片在 Asset Library 可见，可作为 I2V/R2V 参考素材。
+- dry-run 不会产生供应商费用；live-run 前可在 Benchmark 页面查看素材来源。
 
 ## 本地文件存储
 

@@ -7,7 +7,7 @@
     "dev": "APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! tsx src/index.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/src/index.js",
-    "test": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyErrors.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyProviderAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyOpenAIAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyWanxiangT2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyWanxiangI2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyWanxiangR2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyHappyHorseT2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyHappyHorseI2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyHappyHorseR2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyKlingT2VAdapter.js",
+    "test": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyErrors.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyProviderAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyOpenAIAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyWanxiangT2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyWanxiangI2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyWanxiangR2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyHappyHorseT2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyHappyHorseI2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyHappyHorseR2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyKlingT2VAdapter.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyDbPersistence.js && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyNoPresignedUrlPersistence.js",
     "verify:openai": "npm run verify:wanwu",
     "verify:wanxiang-t2v": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyWanxiangT2VAdapter.js",
     "verify:wanxiang-i2v": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyWanxiangI2VAdapter.js",
@@ -18,7 +18,10 @@
     "verify:happyhorse-r2v": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyHappyHorseR2VAdapter.js",
     "verify:wanwu": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyOpenAIAdapter.js",
     "db:reset": "npm run build && node dist/scripts/resetDb.js",
-    "db:seed": "npm run build && node dist/scripts/seedDb.js"
+    "db:seed": "npm run build && node dist/scripts/seedDb.js",
+    "verify:db-persistence": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyDbPersistence.js",
+    "verify:no-presigned-persistence": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyNoPresignedUrlPersistence.js",
+    "db:repair-hygiene": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/repairDataHygiene.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1045.0",

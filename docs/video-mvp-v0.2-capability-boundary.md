@@ -155,6 +155,37 @@ v8.2 阶段完成了多供应商对比看板（Provider Benchmark），提供数
   - 失败信息的 errorCode / errorReason 永久保留，不因后续同步而丢失。
 - **安全约束**：live-run 必须二次确认，不保存 API Key 或 presigned URL 到 Run/Item，Benchmark Set 可提交 seed 但真实 Run 结果不应提交。
 
+### 2.8 数据卫生与安全 (Data Hygiene)
+
+第 8.3.5 阶段新增了数据卫生与持久化安全机制：
+
+- **DB 持久化安全**：
+  - `readDb()` 不再写回 DB（避免并发覆盖导致数据丢失）。
+  - `writeDb()` 使用原子写入（先写 temp 文件再 rename）。
+  - `updateDb()` 始终从磁盘重读最新数据后再更新，避免脏写。
+  - 解析失败时自动备份损坏的 `db.json`（`.corrupted.` 后缀），再回退到示例结构。
+  - 仅 `db:reset` 允许清空数据；`db:seed` 不覆盖已有真实数据。
+- **URL 安全策略**：
+  - **local storage asset**：`asset.url` 使用本地可访问 URL（`http://127.0.0.1:{port}/storage/assets/{filename}`），不保存供应商临时 OSS presigned URL。
+  - **object public asset**：`asset.url` / `asset.publicUrl` 可保存对象存储 public URL。
+  - **object private-presigned asset**：只保存 `objectKey`、`storageType`、`accessMode`、`mimeType`、`sizeBytes`，不保存完整 presigned URL。
+  - **task.parameters / asset.parameters**：不保存完整供应商 presigned URL。可保存 `sourceHost`、`sourceContainsSignature` 等元数据。
+  - URL 安全检测工具：`server/src/utils/urlSecurity.ts`（`isPresignedUrl()` / `sanitizeExternalUrlForStorage()` / `assertNoPresignedUrlInDb()`）。
+- **Benchmark 参考素材稳定化**：
+  - 默认 Benchmark Set 不再依赖 `picsum.photos` 等外部随机图片服务。
+  - I2V 用例使用 `sourceImageAssetId` 引用本地 seed 图片资产。
+  - R2V 用例使用 `referenceAssetId` 引用本地 seed 图片资产。
+  - `seedDb()` 自动创建 3 个本地 256×256 PNG seed 图片（水滴/产品瓶/仪表盘），存储在 `server/storage/assets/seed/`。
+- **RunItem 状态严谨化**：
+  - dry-run 的 items 标记为 `skipped`（DRY_RUN），不保留 `pending` 残留。
+  - 未确认的 live-run 不持久化 items（避免孤儿 pending）。
+  - 重复 start 已完成的 Run 被拒绝。
+  - 无 taskId 的 pending items 由 `db:repair-hygiene` 脚本统一修复为 skipped。
+- **验证与修复脚本**：
+  - `npm run verify:db-persistence` — 验证 DB 持久化逻辑（写入/读取/原子写入/不写回）。
+  - `npm run verify:no-presigned-persistence` — 验证 db.json 无 presigned URL 残留。
+  - `npm run db:repair-hygiene` — 修复历史脏数据（清理 presigned URL、修复 pending 残留）。
+
 ## 5. 结论
 
 v0.2 版本达成了以文本和参考素材驱动的**完整"生成 → 统计 → 评价 → 对比"闭环**，可作为核心基础进入下一阶段。是否扩展 Kling I2V 建议在 Provider Benchmark 有足够数据支撑后决策。

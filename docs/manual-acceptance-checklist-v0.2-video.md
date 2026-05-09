@@ -4,6 +4,45 @@
 
 ## 7.6.1 Presigned URL 安全验收补充检查项
 
+以下为第 8.3.5 阶段新增的数据卫生验收项：
+
+### DB 持久化安全验收
+
+- [ ] `cd server && npm run verify:db-persistence` 全部通过。
+- [ ] 启动服务器不会覆盖已有 `db.json`（provider/task/asset 数据保留）。
+- [ ] `db:reset` 是唯一清空入口；`db:seed` 不覆盖已有真实数据。
+- [ ] 损坏的 `db.json` 会自动备份（`.corrupted.*` 文件），不会静默丢失。
+
+### Presigned URL 不持久化验收
+
+- [ ] `cd server && npm run verify:no-presigned-persistence` 全部通过。
+- [ ] `db.json` 不包含 DashScope OSS presigned URL。
+- [ ] `db.json` 不包含 X-Amz 签名 URL。
+- [ ] `task.parameters` 不包含完整签名 URL（只有 `sourceHost` 和 `sourceContainsSignature` 元数据）。
+- [ ] `asset.parameters` 不包含完整签名 URL。
+
+### Benchmark 参考素材验收
+
+- [ ] 默认 Benchmark Set 不依赖 `picsum.photos`。
+- [ ] I2V/R2V 用例使用 `sourceImageAssetId` / `referenceAssetId` 引用稳定 seed 资产。
+- [ ] `cd server && npm run db:seed` 后 `server/storage/assets/seed/` 包含 3 个 PNG。
+- [ ] seed 图片资产在 Asset Library 可见。
+- [ ] dry-run 正常（所有 items 标记为 skipped/DRY_RUN）。
+
+### RunItem 状态验收
+
+- [ ] dry-run 不产生 `pending` 状态 items（全部 skipped）。
+- [ ] 不支持的 provider/mode 标记 `skipped`（MODE_UNSUPPORTED）。
+- [ ] 未确认的 live-run 不创建 items（无孤儿 pending）。
+- [ ] 重复 start 已完成的 Run 被拒绝并提示错误。
+
+### 历史数据修复验收
+
+- [ ] `cd server && npm run db:repair-hygiene` 可正常运行。
+- [ ] 修复后 `verify:no-presigned-persistence` 通过。
+
+### 基础 Presigned URL 安全约束
+
 除以下完整清单外，还应确认以下安全约束：
 
 - [ ] `GET /api/assets/:id/access-url` 只返回临时 URL，不写 DB；
