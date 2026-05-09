@@ -81,7 +81,7 @@ export function mapWanxiangError(error: unknown, providerName: string): never {
   const code = String(item.code ?? '').toLowerCase();
   const message = String(item.message ?? '').toLowerCase();
   const name = String(item.name ?? '').toLowerCase();
-  if (status === 401 || status === 403 || code.includes('invalid') || message.includes('api key')) throw invalidApiKey('百炼 API Key 无效，请检查 Provider 配置');
+  if (status === 401 || status === 403 || code.includes('invalidapikey') || code.includes('unauthorized') || message.includes('api key') || message.includes('apikey')) throw invalidApiKey('百炼 API Key 无效，请检查 Provider 配置');
   if (status === 429 || code.includes('throttl') || code.includes('rate')) throw rateLimited(providerName, item.code);
   if (code.includes('quota') || message.includes('quota') || message.includes('balance') || message.includes('余额') || message.includes('额度')) throw insufficientBalance(providerName, '百炼账户余额或额度不足');
   if (code.includes('content') || code.includes('safety') || message.includes('审核') || message.includes('policy')) throw contentRejected(providerName, item.code);

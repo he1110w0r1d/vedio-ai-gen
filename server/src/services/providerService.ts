@@ -58,6 +58,6 @@ export async function testProvider(providerId: string) {
   const provider = await getProviderRecord(providerId);
   const result = await getProviderAdapter(provider.providerType).testConnection(provider);
   const status = result.ok ? 'connected' : 'failed';
-  await updateProvider(providerId, { status });
+  await updateProvider(providerId, { status, capabilities: result.capabilities });
   return { status, message: result.message, capabilities: result.capabilities };
 }
