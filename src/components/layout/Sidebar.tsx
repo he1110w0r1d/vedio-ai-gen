@@ -8,6 +8,8 @@ export const navItems: { id: ViewId; label: string; icon: string }[] = [
   { id: 'video-studio', label: '视频生成', icon: 'movie' },
   { id: 'assets', label: '资产库', icon: 'inventory_2' },
   { id: 'tasks', label: '任务中心', icon: 'task' },
+  { id: 'usage', label: '用量统计', icon: 'bar_chart' },
+  { id: 'provider-benchmark', label: '供应商对比', icon: 'analytics' },
   { id: 'providers', label: '供应商与 API', icon: 'api' },
   { id: 'templates', label: '模板库', icon: 'description' },
   { id: 'settings', label: '设置', icon: 'settings' },

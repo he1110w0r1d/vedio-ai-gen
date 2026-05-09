@@ -7,6 +7,8 @@ export type ViewId =
   | 'tasks'
   | 'providers'
   | 'templates'
+  | 'usage'
+  | 'provider-benchmark'
   | 'settings';
 
 export type ProviderCapability =
@@ -71,7 +73,9 @@ export type AssetBase = {
   thumbnail: string;
   thumbnailUrl?: string;
   url?: string;
-  storageType?: 'mock' | 'local' | 'remote';
+  storageType?: 'mock' | 'local' | 'remote' | 'object';
+  objectKey?: string;
+  publicUrl?: string;
   localPath?: string;
   mimeType?: string;
   sizeBytes?: number;
@@ -79,6 +83,8 @@ export type AssetBase = {
   height?: number;
   providerId: string;
   providerName: string;
+  providerTaskId?: string;
+  providerTaskStatus?: string;
   model: string;
   projectId: string;
   createdAt: string;
@@ -102,7 +108,7 @@ export type VideoAsset = AssetBase & {
 
 export type Asset = ImageAsset | VideoAsset;
 
-export type TaskStatus = 'queued' | 'running' | 'completed' | 'failed' | 'canceled';
+export type TaskStatus = 'queued' | 'running' | 'polling' | 'completed' | 'failed' | 'canceled' | 'timeout';
 export type TaskType = 'image' | 'video';
 
 export type GenerationTask = {
@@ -120,6 +126,8 @@ export type GenerationTask = {
   projectId: string;
   projectName: string;
   createdAt: string;
+  updatedAt?: string;
+  completedAt?: string;
   errorCode?: string;
   errorReason?: string;
   params: Record<string, string | number | boolean | undefined>;
@@ -161,4 +169,236 @@ export type AppStateSnapshot = {
   currentProjectId: string;
   selectedVideoInput?: VideoSeed;
   workspace?: WorkspaceProfile;
+};
+
+export type CostConfidence = 'none' | 'low' | 'medium';
+
+export type UsageRecord = {
+  id: string;
+  taskId: string;
+  assetIds?: string[];
+  projectId?: string;
+  providerId?: string;
+  providerName?: string;
+  providerType?: string;
+  model?: string;
+  mode: 'image' | 't2v' | 'i2v' | 'r2v' | 'mock';
+  status: 'estimated' | 'completed' | 'failed' | 'canceled';
+  quantity?: number;
+  durationSeconds?: number;
+  width?: number;
+  height?: number;
+  fileSizeBytes?: number;
+  inputAssetIds?: string[];
+  promptLength?: number;
+  estimatedCost?: {
+    amount?: number;
+    currency?: string;
+    confidence: CostConfidence;
+    ruleId?: string;
+    note?: string;
+  };
+  actualCost?: {
+    amount?: number;
+    currency?: string;
+    source?: 'manual' | 'provider' | 'unknown';
+    note?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CostRule = {
+  id: string;
+  providerType: string;
+  providerName?: string;
+  model?: string;
+  mode: 'image' | 't2v' | 'i2v' | 'r2v';
+  unit: 'per_image' | 'per_video' | 'per_second' | 'per_task' | 'manual';
+  price: number;
+  currency: 'CNY' | 'USD';
+  enabled: boolean;
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type UsageSummary = {
+  totalTasks: number;
+  completedTasks: number;
+  failedTasks: number;
+  totalAssets: number;
+  totalImages: number;
+  totalVideos: number;
+  totalVideoSeconds?: number;
+  totalFileSizeBytes?: number;
+  estimatedCostTotal?: {
+    amount?: number;
+    currency?: string;
+    confidence: CostConfidence;
+  };
+  byProvider: Array<{
+    providerId?: string;
+    providerName?: string;
+    taskCount: number;
+    estimatedCost?: number;
+  }>;
+  byMode: Array<{
+    mode: string;
+    taskCount: number;
+    assetCount: number;
+    estimatedCost?: number;
+  }>;
+  byProject: Array<{
+    projectId?: string;
+    projectName?: string;
+    taskCount: number;
+    assetCount: number;
+    estimatedCost?: number;
+  }>;
+};
+
+export type QualityRating = 1 | 2 | 3 | 4 | 5;
+export type QualityStatus = 'excellent' | 'usable' | 'needs_fix' | 'unusable';
+export type FailureCategory =
+  | 'prompt_issue'
+  | 'model_issue'
+  | 'provider_error'
+  | 'content_rejected'
+  | 'technical_error'
+  | 'bad_composition'
+  | 'bad_motion'
+  | 'identity_drift'
+  | 'style_mismatch'
+  | 'low_resolution'
+  | 'artifact'
+  | 'other';
+
+export type QualityFeedback = {
+  id: string;
+  targetType: 'asset' | 'task';
+  targetId: string;
+  projectId?: string;
+  providerId?: string;
+  providerName?: string;
+  model?: string;
+  mode?: 'image' | 't2v' | 'i2v' | 'r2v' | 'mock';
+  rating?: QualityRating;
+  qualityStatus?: QualityStatus;
+  failureCategory?: FailureCategory;
+  tags?: string[];
+  note?: string;
+  worthRetry?: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type QualitySummary = {
+  totalFeedback: number;
+  averageRating: number;
+  excellentCount: number;
+  usableCount: number;
+  needsFixCount: number;
+  unusableCount: number;
+  worthRetryCount: number;
+  ratingDistribution: Record<string, number>;
+  totalRated: number;
+  byQualityStatus: Record<string, number>;
+  byMode: Array<{
+    mode: string;
+    averageRating?: number;
+    total: number;
+    unusableCount: number;
+  }>;
+  byProvider: Array<{
+    providerId?: string;
+    providerName?: string;
+    averageRating?: number;
+    total: number;
+    unusableCount: number;
+  }>;
+  byFailureCategory: Array<{
+    category: string;
+    count: number;
+  }>;
+};
+
+export type StorageConfig = {
+  id: string;
+  activeProvider: 'local' | 'object';
+  objectProvider?: 'aliyun-oss' | 's3-compatible' | 'custom';
+  bucket?: string;
+  region?: string;
+  endpoint?: string;
+  publicBaseUrl?: string;
+  accessKeyId?: string;
+  accessKeySecret?: string;
+  maskedAccessKeyId?: string;
+  usePathStyle?: boolean;
+  folderPrefix?: string;
+  deleteLocalAfterUpload?: boolean;
+  accessMode?: 'public' | 'private-presigned';
+  presignedUrlExpiresInSeconds?: number;
+  providerInputUrlExpiresInSeconds?: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ProviderBenchmarkFilters = {
+  projectId?: string;
+  providerId?: string;
+  providerType?: string;
+  mode?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
+
+export type ProviderBenchmarkRow = {
+  providerId?: string;
+  providerName?: string;
+  providerType?: string;
+  model?: string;
+  mode?: 'image' | 't2v' | 'i2v' | 'r2v' | 'mock';
+  totalTasks: number;
+  completedTasks: number;
+  failedTasks: number;
+  successRate: number;
+  failureRate: number;
+  averageTaskDurationSeconds?: number;
+  averageGenerationDurationSeconds?: number;
+  totalAssets: number;
+  totalEstimatedCost?: number;
+  wastedEstimatedCost?: number;
+  averageRating?: number;
+  excellentCount: number;
+  usableCount: number;
+  needsFixCount: number;
+  unusableCount: number;
+  worthRetryCount: number;
+  topFailureCategory?: string;
+};
+
+export type ProviderBenchmarkSummary = {
+  filters: ProviderBenchmarkFilters;
+  overall: {
+    totalTasks: number;
+    completedTasks: number;
+    failedTasks: number;
+    successRate: number;
+    failureRate: number;
+    averageDurationSeconds?: number;
+    totalEstimatedCost?: number;
+    wastedEstimatedCost?: number;
+    averageRating?: number;
+    reviewedCount: number;
+    unreviewedCount: number;
+  };
+  byProvider: ProviderBenchmarkRow[];
+  byModel: ProviderBenchmarkRow[];
+  byMode: ProviderBenchmarkRow[];
+  failureCategories: Array<{
+    category: string;
+    count: number;
+    estimatedCost?: number;
+  }>;
 };

@@ -5,8 +5,8 @@
     "ownerName": "本地创作者",
     "description": "单用户本地工作台配置，用于区分当前开发数据边界。",
     "defaultProjectId": "p1",
-    "createdAt": "2026-05-08T01:49:53.068Z",
-    "updatedAt": "2026-05-08T01:49:53.068Z"
+    "createdAt": "2026-05-09T07:56:43.584Z",
+    "updatedAt": "2026-05-09T07:56:43.584Z"
   },
   "providers": [],
   "projects": [
@@ -17,8 +17,8 @@
       "status": "active",
       "favorite": true,
       "tags": [],
-      "createdAt": "2026-05-08T01:49:53.068Z",
-      "updatedAt": "2026-05-08T01:49:53.068Z"
+      "createdAt": "2026-05-09T07:56:43.584Z",
+      "updatedAt": "2026-05-09T07:56:43.584Z"
     },
     {
       "id": "p2",
@@ -29,8 +29,8 @@
       "tags": [
         "demo"
       ],
-      "createdAt": "2026-05-08T01:49:53.068Z",
-      "updatedAt": "2026-05-08T01:49:53.068Z"
+      "createdAt": "2026-05-09T07:56:43.584Z",
+      "updatedAt": "2026-05-09T07:56:43.584Z"
     }
   ],
   "assets": [
@@ -47,8 +47,8 @@
       "providerName": "Mock Provider",
       "model": "mock-image",
       "projectId": "p1",
-      "createdAt": "2026-05-08T01:49:53.068Z",
-      "updatedAt": "2026-05-08T01:49:53.068Z",
+      "createdAt": "2026-05-09T07:56:43.584Z",
+      "updatedAt": "2026-05-09T07:56:43.584Z",
       "favorite": false,
       "aspectRatio": "4:3",
       "params": {
@@ -73,8 +73,8 @@
       ],
       "favorite": true,
       "usageCount": 0,
-      "createdAt": "2026-05-08T01:49:53.068Z",
-      "updatedAt": "2026-05-08T01:49:53.068Z"
+      "createdAt": "2026-05-09T07:56:43.584Z",
+      "updatedAt": "2026-05-09T07:56:43.584Z"
     },
     {
       "id": "tpl_default_video",
@@ -88,8 +88,8 @@
       ],
       "favorite": false,
       "usageCount": 0,
-      "createdAt": "2026-05-08T01:49:53.068Z",
-      "updatedAt": "2026-05-08T01:49:53.068Z"
+      "createdAt": "2026-05-09T07:56:43.584Z",
+      "updatedAt": "2026-05-09T07:56:43.584Z"
     },
     {
       "id": "tpl_default_character",
@@ -103,9 +103,107 @@
       ],
       "favorite": false,
       "usageCount": 0,
-      "createdAt": "2026-05-08T01:49:53.068Z",
-      "updatedAt": "2026-05-08T01:49:53.068Z"
+      "createdAt": "2026-05-09T07:56:43.584Z",
+      "updatedAt": "2026-05-09T07:56:43.584Z"
     }
   ],
-  "auditLogs": []
+  "auditLogs": [],
+  "usageRecords": [],
+  "costRules": [
+    {
+      "id": "rule_1",
+      "providerType": "wanwuhuanxin-images",
+      "model": "gpt-image-2",
+      "mode": "image",
+      "unit": "per_image",
+      "price": 0.05,
+      "currency": "CNY",
+      "enabled": false,
+      "note": "参考价格，实际以万物焕新控制台为准",
+      "createdAt": "2026-05-09T07:56:43.584Z",
+      "updatedAt": "2026-05-09T07:56:43.584Z"
+    },
+    {
+      "id": "rule_2",
+      "providerType": "aliyun-wanxiang-t2v",
+      "mode": "t2v",
+      "unit": "per_task",
+      "price": 0.5,
+      "currency": "CNY",
+      "enabled": false,
+      "note": "参考价格，实际以阿里云百炼控制台为准",
+      "createdAt": "2026-05-09T07:56:43.584Z",
+      "updatedAt": "2026-05-09T07:56:43.584Z"
+    },
+    {
+      "id": "rule_3",
+      "providerType": "aliyun-wanxiang-i2v",
+      "mode": "i2v",
+      "unit": "per_task",
+      "price": 0.6,
+      "currency": "CNY",
+      "enabled": false,
+      "note": "参考价格，实际以阿里云百炼控制台为准",
+      "createdAt": "2026-05-09T07:56:43.584Z",
+      "updatedAt": "2026-05-09T07:56:43.584Z"
+    },
+    {
+      "id": "rule_4",
+      "providerType": "aliyun-wanxiang-r2v",
+      "mode": "r2v",
+      "unit": "per_task",
+      "price": 0.8,
+      "currency": "CNY",
+      "enabled": false,
+      "note": "参考价格，实际以阿里云百炼控制台为准",
+      "createdAt": "2026-05-09T07:56:43.584Z",
+      "updatedAt": "2026-05-09T07:56:43.584Z"
+    },
+    {
+      "id": "rule_hh_t2v",
+      "providerType": "aliyun-happyhorse-t2v",
+      "mode": "t2v",
+      "unit": "per_task",
+      "price": 0.5,
+      "currency": "CNY",
+      "enabled": false,
+      "note": "参考价格，实际以阿里云百炼控制台为准",
+      "createdAt": "2026-05-09T07:56:48.512Z",
+      "updatedAt": "2026-05-09T07:56:48.512Z"
+    },
+    {
+      "id": "rule_hh_i2v",
+      "providerType": "aliyun-happyhorse-i2v",
+      "mode": "i2v",
+      "unit": "per_task",
+      "price": 0.6,
+      "currency": "CNY",
+      "enabled": false,
+      "note": "参考价格，实际以阿里云百炼控制台为准",
+      "createdAt": "2026-05-09T07:56:48.512Z",
+      "updatedAt": "2026-05-09T07:56:48.512Z"
+    },
+    {
+      "id": "rule_hh_r2v",
+      "providerType": "aliyun-happyhorse-r2v",
+      "mode": "r2v",
+      "unit": "per_task",
+      "price": 0.8,
+      "currency": "CNY",
+      "enabled": false,
+      "note": "参考价格，实际以阿里云百炼控制台为准",
+      "createdAt": "2026-05-09T07:56:48.512Z",
+      "updatedAt": "2026-05-09T07:56:48.512Z"
+    }
+  ],
+  "qualityFeedback": [],
+  "storageConfig": {
+    "id": "storage_config_1",
+    "activeProvider": "local",
+    "accessMode": "public",
+    "presignedUrlExpiresInSeconds": 900,
+    "providerInputUrlExpiresInSeconds": 3600,
+    "createdAt": "2026-05-09T07:56:43.584Z",
+    "updatedAt": "2026-05-09T07:56:43.584Z"
+  }
 }

@@ -39,7 +39,8 @@ const i2v = await mockProviderAdapter.generateVideoI2V(provider, { projectId: 'p
 const r2v = await mockProviderAdapter.generateVideoR2V(provider, { projectId: 'p1', providerId: provider.id, model: 'mock-video', prompt: 'r2v', mode: 'R2V' });
 assert(t2v.task.mode === 'T2V' && i2v.task.mode === 'I2V' && r2v.task.mode === 'R2V', '视频模式应正确');
 
-const status = await mockProviderAdapter.getTaskStatus('task_test');
+const dummyTask = { id: 'task_test', type: 'video' as const, mode: 'T2V' as const, status: 'polling' as const, progress: 50, title: 'test', prompt: 'test', providerId: provider.id, providerName: provider.name, model: 'mock-video', projectId: 'p1', projectName: '默认项目', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), params: {} };
+const status = await mockProviderAdapter.getTaskStatus(provider, dummyTask);
 assert(status.id === 'task_test' && typeof status.progress === 'number' && status.status === 'polling', '任务状态格式应正确');
 
 try {

@@ -18,6 +18,9 @@ export function VideoStudio() {
   const [providerId, setProviderId] = useState(videoProviders[0]?.id ?? '');
   const provider = videoProviders.find((item) => item.id === providerId) ?? videoProviders[0];
   const model = provider?.defaultModel.split('/').at(-1)?.trim() || 'Mock Video';
+  const realT2V = mode === 'T2V' && (provider?.providerType === 'aliyun-wanxiang-t2v' || provider?.providerType === 'aliyun-happyhorse-t2v');
+  const realI2V = mode === 'I2V' && (provider?.providerType === 'aliyun-wanxiang-i2v' || provider?.providerType === 'aliyun-happyhorse-i2v');
+  const realR2V = mode === 'R2V' && (provider?.providerType === 'aliyun-wanxiang-r2v' || provider?.providerType === 'aliyun-happyhorse-r2v');
   const [prompt, setPrompt] = useState('镜头缓慢推进，霓虹光在主体表面流动，电影级质感');
   const [camera, setCamera] = useState('缓慢推进');
   const [duration, setDuration] = useState(6);
@@ -103,9 +106,12 @@ export function VideoStudio() {
       },
       });
       addTask(task);
+      const isReal = realT2V || realI2V || realR2V;
+      showToast(isReal ? `真实 ${mode} 任务已创建，请在任务中心查看进度` : '视频 Mock 任务已创建', 'success');
       setView('tasks');
     } catch {
-      showToast('视频生成请求失败：当前仍为 Mock 接口层', 'error');
+      const isReal = realT2V || realI2V || realR2V;
+      showToast(isReal ? `真实 ${mode} 任务创建失败，请检查百炼 Provider 配置` : '视频生成请求失败：当前仍为 Mock 接口层', 'error');
     }
   };
 
@@ -118,12 +124,15 @@ export function VideoStudio() {
 
   return (
     <div>
-      <SectionHeader title="视频生成 Video Studio" subtitle="T2V、I2V、R2V 三种模式均为 Mock 异步任务。" />
+      <SectionHeader title="视频生成 Video Studio" subtitle="T2V / I2V / R2V 均已支持阿里云百炼万相真实异步任务。" />
       <VideoModeTabs mode={mode} onModeChange={setMode} />
       <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
         <section className="card space-y-4">
           {mode === 'T2V' ? (
             <T2VPanel prompt={prompt} camera={camera} onPromptChange={setPrompt} onCameraChange={setCamera} />
+          ) : null}
+          {mode === 'I2V' && !realI2V ? (
+            <div className="rounded-xl border border-outline-variant/40 bg-surface-container p-3 text-xs text-on-surface-variant">当前选择的供应商是 Mock，不会调用真实 API。</div>
           ) : null}
           {mode === 'I2V' ? (
             <I2VPanel
@@ -137,6 +146,12 @@ export function VideoStudio() {
               onPromptChange={setPrompt}
               onKeepCompositionChange={setKeepComposition}
             />
+          ) : null}
+          {mode === 'R2V' && !realR2V ? (
+            <div className="rounded-xl border border-outline-variant/40 bg-surface-container p-3 text-xs text-on-surface-variant">当前选择的供应商是 Mock，不会调用真实 API。</div>
+          ) : null}
+          {mode === 'R2V' && realR2V ? (
+            <div className="rounded-xl border border-primary-fixed-dim/30 bg-primary-fixed-dim/10 p-3 text-xs text-primary">参考生视频需要在提示词中引用角色标识，例如：character1 正在向镜头微笑并挥手。</div>
           ) : null}
           {mode === 'R2V' ? (
             <R2VPanel assets={assets} refs={refs} prompt={prompt} onRefChange={(key, assetId) => setRefs((item) => ({ ...item, [key]: assetId }))} onPromptChange={setPrompt} />
@@ -160,6 +175,9 @@ export function VideoStudio() {
             onMotionChange={setMotion}
             onReferenceWeightChange={setReferenceWeight}
             onGenerate={generate}
+            realT2V={realT2V}
+            realI2V={realI2V}
+            realR2V={realR2V}
           />
         </section>
         <section>

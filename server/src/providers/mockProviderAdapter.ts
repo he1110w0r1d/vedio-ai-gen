@@ -112,7 +112,7 @@ export const mockProviderAdapter: ProviderAdapter = {
     return { task: makeTask(provider, { ...input, mode: 'R2V' }, 'video') };
   },
 
-  async getTaskStatus(taskId: string) {
-    return { id: taskId, status: 'polling', progress: 50 };
+  async getTaskStatus(_provider, task) {
+    return { id: task.id, status: 'polling', progress: 50 };
   },
 };

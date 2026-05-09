@@ -18,6 +18,7 @@ projectImportsRouter.post('/', upload, asyncHandler(async (req, res) => {
       importFiles: req.query.importFiles !== 'false',
       importTasks: req.query.importTasks !== 'false',
       importTemplates: req.query.importTemplates !== 'false',
+      importQuality: req.query.importQuality !== 'false',
     }),
   });
 }));

@@ -1,6 +1,6 @@
 import type { ViewId } from '../types';
 
-const viewIds: ViewId[] = ['dashboard', 'projects', 'image-studio', 'video-studio', 'assets', 'tasks', 'providers', 'templates', 'settings'];
+const viewIds: ViewId[] = ['dashboard', 'projects', 'image-studio', 'video-studio', 'assets', 'tasks', 'providers', 'templates', 'usage', 'provider-benchmark', 'settings'];
 
 const viewAliases: Record<string, ViewId> = {
   dashboard: 'dashboard',
@@ -17,6 +17,9 @@ const viewAliases: Record<string, ViewId> = {
   providers: 'providers',
   provider: 'providers',
   api: 'providers',
+  benchmark: 'provider-benchmark',
+  'provider-benchmark': 'provider-benchmark',
+  'provider-bm': 'provider-benchmark',
   templates: 'templates',
   'prompt-templates': 'templates',
   settings: 'settings',

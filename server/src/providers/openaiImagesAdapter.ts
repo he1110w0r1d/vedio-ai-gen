@@ -352,7 +352,7 @@ export const openaiImagesAdapter: ProviderAdapter = {
     throw modelNotSupported(providerName, '万物焕新图片 Adapter 不支持 R2V，视频生成仍使用 Mock');
   },
 
-  async getTaskStatus(taskId: string) {
-    return { id: taskId, status: 'completed', progress: 100 };
+  async getTaskStatus(_provider, task) {
+    return { id: task.id, status: 'completed', progress: 100 };
   },
 };

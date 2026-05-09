@@ -45,6 +45,18 @@ export function taskTimeout(provider: string, message = '供应商任务超时�
   return new HttpError(504, { code: 'TASK_TIMEOUT', message, provider, retryable: true });
 }
 
+export function videoTaskFailed(provider: string, message = '视频任务失败', providerCode?: string) {
+  return new HttpError(502, { code: 'VIDEO_TASK_FAILED', message, provider, providerCode, retryable: true });
+}
+
+export function videoResultNotFound(provider: string, message = '视频结果不存在', providerCode?: string) {
+  return new HttpError(502, { code: 'VIDEO_RESULT_NOT_FOUND', message, provider, providerCode, retryable: true });
+}
+
+export function videoDownloadFailed(provider: string, message = '视频生成完成但下载失败', providerCode?: string) {
+  return new HttpError(502, { code: 'VIDEO_DOWNLOAD_FAILED', message, provider, providerCode, retryable: true });
+}
+
 export function unknownProviderError(provider: string, providerCode?: string, detail?: unknown) {
   return new HttpError(502, {
     code: 'UNKNOWN_PROVIDER_ERROR',
@@ -54,6 +66,38 @@ export function unknownProviderError(provider: string, providerCode?: string, de
     retryable: true,
     detail,
   });
+}
+
+export function invalidSourceImage(message = '源图片无效') {
+  return new HttpError(400, { code: 'INVALID_SOURCE_IMAGE', message, retryable: false });
+}
+
+export function sourceImageNotAccessible(message = '供应商无法访问该图片') {
+  return new HttpError(400, { code: 'SOURCE_IMAGE_NOT_ACCESSIBLE', message, retryable: false });
+}
+
+export function sourceImageTooLarge(message = '源图片过大') {
+  return new HttpError(400, { code: 'SOURCE_IMAGE_TOO_LARGE', message, retryable: false });
+}
+
+export function invalidReferenceAsset(message = '参考素材无效') {
+  return new HttpError(400, { code: 'INVALID_REFERENCE_ASSET', message, retryable: false });
+}
+
+export function referenceAssetNotAccessible(message = '供应商无法访问该参考素材') {
+  return new HttpError(400, { code: 'REFERENCE_ASSET_NOT_ACCESSIBLE', message, retryable: false });
+}
+
+export function referenceAssetTooLarge(message = '参考素材过大') {
+  return new HttpError(400, { code: 'REFERENCE_ASSET_TOO_LARGE', message, retryable: false });
+}
+
+export function referenceAssetUnsupportedType(message = '参考素材格式不支持') {
+  return new HttpError(400, { code: 'REFERENCE_ASSET_UNSUPPORTED_TYPE', message, retryable: false });
+}
+
+export function missingCharacterReference(message = '提示词中缺少角色引用') {
+  return new HttpError(400, { code: 'MISSING_CHARACTER_REFERENCE', message, retryable: false });
 }
 
 export function notFound(message: string) {

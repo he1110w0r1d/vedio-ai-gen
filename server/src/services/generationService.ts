@@ -5,6 +5,7 @@ import { createId } from '../utils/id.js';
 import { nowIso } from '../utils/time.js';
 import { getProviderRecord } from './providerService.js';
 import { addTask, addTaskWithAssets } from './taskService.js';
+import { createUsageRecord, failUsageRecord, completeUsageRecord } from './usageService.js';
 
 export async function generateImage(input: ImageGenerationInput) {
   if (!input.projectId || !input.providerId || !input.model || !input.prompt) {
@@ -13,6 +14,8 @@ export async function generateImage(input: ImageGenerationInput) {
   const provider = await getProviderRecord(input.providerId);
   try {
     const result = await getProviderAdapter(provider.providerType).generateImage(provider, input);
+    await createUsageRecord(result.task);
+    await completeUsageRecord(result.task.id, result.assets);
     return addTaskWithAssets(result.task, result.assets);
   } catch (error) {
     if (error instanceof HttpError) {
@@ -41,6 +44,7 @@ export async function generateImage(input: ImageGenerationInput) {
           negativePrompt: input.negativePrompt ?? '',
         },
       });
+      await createUsageRecord({ ...input, type: 'image', status: 'failed', providerId: provider.id, providerName: provider.name, id: 'temp', progress: 0, title: '', prompt: input.prompt, model: input.model ?? '', projectId: input.projectId, createdAt: now, updatedAt: now, params: {} } as any).then(r => failUsageRecord(r.taskId, error.apiError.message));
     }
     throw error;
   }
@@ -58,5 +62,9 @@ export async function generateVideo(input: VideoGenerationInput) {
       : input.mode === 'R2V'
         ? await adapter.generateVideoR2V(provider, input)
         : await adapter.generateVideoT2V(provider, input);
+  
+  const inputAssets = input.mode === 'I2V' && input.params?.sourceImageAssetId ? [String(input.params.sourceImageAssetId)] : input.mode === 'R2V' && input.params?.referenceAssetId ? [String(input.params.referenceAssetId)] : undefined;
+  await createUsageRecord(result.task, inputAssets);
+  
   return { task: await addTask(result.task) };
 }

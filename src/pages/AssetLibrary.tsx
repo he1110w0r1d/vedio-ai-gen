@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { AssetCard } from '../components/AssetCard';
 import { AssetDetailDrawer } from '../components/assets/AssetDetailDrawer';
 import { EmptyState, Icon, SearchInput, SectionHeader } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { generationApi } from '../api/generationApi';
-import type { Asset, AssetType } from '../types';
+import { qualityApi } from '../api/qualityApi';
+import { storageApi } from '../api/storageApi';
+import type { Asset, AssetType, QualityFeedback } from '../types';
 
 type AssetFilter = 'all' | AssetType | 'favorite';
 type SortKey = 'newest' | 'oldest' | 'title';
@@ -48,6 +50,16 @@ export function AssetLibrary() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [batchTargetProjectId, setBatchTargetProjectId] = useState('');
+  const [qualityFilter, setQualityFilter] = useState('all');
+  const [feedbackMap, setFeedbackMap] = useState<Record<string, QualityFeedback>>({});
+
+  useEffect(() => {
+    qualityApi.list({ targetType: 'asset' }).then(list => {
+      const map: Record<string, QualityFeedback> = {};
+      for (const fb of list) map[fb.targetId] = fb;
+      setFeedbackMap(map);
+    }).catch(() => undefined);
+  }, [assets.length]);
 
   const models = useMemo(() => Array.from(new Set(assets.map((asset) => asset.model))).sort(), [assets]);
 
@@ -62,12 +74,23 @@ export function AssetLibrary() {
         const matchSearch = !keyword || `${asset.title} ${asset.prompt} ${asset.model} ${asset.providerName}`.toLowerCase().includes(keyword);
         return matchType && matchProject && matchProvider && matchModel && matchSearch;
       })
+      .filter((asset) => {
+        if (qualityFilter === 'all') return true;
+        const fb = feedbackMap[asset.id];
+        if (qualityFilter === 'unrated') return !fb;
+        if (qualityFilter === 'excellent') return fb?.qualityStatus === 'excellent';
+        if (qualityFilter === 'usable') return fb?.qualityStatus === 'usable';
+        if (qualityFilter === 'needs_fix') return fb?.qualityStatus === 'needs_fix';
+        if (qualityFilter === 'unusable') return fb?.qualityStatus === 'unusable';
+        if (qualityFilter === 'worth_retry') return fb?.worthRetry === true;
+        return true;
+      })
       .sort((a, b) => {
         if (sort === 'oldest') return a.createdAt.localeCompare(b.createdAt);
         if (sort === 'title') return a.title.localeCompare(b.title, 'zh-CN');
         return compareCreatedAt(a, b);
       });
-  }, [assets, globalSearch, query, type, projectId, providerId, model, sort]);
+  }, [assets, globalSearch, query, type, projectId, providerId, model, sort, qualityFilter, feedbackMap]);
 
   const selectedAssetIds = new Set(selectedIds);
   const selectedAssets = assets.filter((asset) => selectedAssetIds.has(asset.id));
@@ -86,6 +109,24 @@ export function AssetLibrary() {
     if (!window.confirm(`确认删除选中的 ${selectedIds.length} 个资产？真实本地资产会同步删除文件。`)) return;
     selectedIds.forEach(deleteAsset);
     setSelectedIds([]);
+  };
+
+  const [migrating, setMigrating] = useState(false);
+  const batchMigrate = async () => {
+    if (migrating) return;
+    try {
+      setMigrating(true);
+      const res = await storageApi.migrateAssets({ assetIds: selectedIds });
+      showToast(`迁移完成: 成功 ${res.successCount} 个, 失败 ${res.failedCount} 个`, res.failedCount > 0 ? 'info' : 'success');
+      if (res.warnings.length > 0) {
+        console.warn('迁移警告:', res.warnings);
+      }
+      setSelectedIds([]);
+    } catch (e: any) {
+      showToast(`迁移失败: ${e.message}`, 'error');
+    } finally {
+      setMigrating(false);
+    }
   };
 
   const batchMoveToProject = async () => {
@@ -183,6 +224,15 @@ export function AssetLibrary() {
             <option value="oldest">创建时间：最早</option>
             <option value="title">名称排序</option>
           </select>
+          <select className="field" value={qualityFilter} onChange={(event) => setQualityFilter(event.target.value)}>
+            <option value="all">全部评价</option>
+            <option value="unrated">未评价</option>
+            <option value="excellent">优秀</option>
+            <option value="usable">可用</option>
+            <option value="needs_fix">需要修复</option>
+            <option value="unusable">不可用</option>
+            <option value="worth_retry">值得重试</option>
+          </select>
           <div className="grid grid-cols-2 gap-2">
             <button className={`btn-ghost ${viewMode === 'grid' ? 'border-primary-fixed-dim text-primary-fixed' : ''}`} onClick={() => setViewMode('grid')}>
               <Icon name="grid_view" />网格
@@ -200,8 +250,9 @@ export function AssetLibrary() {
               <option value="">选择目标项目</option>
               {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
             </select>
-            <button className="btn-ghost" onClick={batchMoveToProject}>批量移动到项目</button>
+            <button className="btn-ghost" onClick={batchMoveToProject}>批量移动</button>
             <button className="btn-ghost" onClick={batchFavorite}>批量收藏</button>
+            <button className="btn-ghost" onClick={batchMigrate} disabled={migrating}>{migrating ? '迁移中...' : '迁移到对象存储'}</button>
             <button className="btn-ghost" onClick={batchDelete}>批量删除</button>
             <button className="btn-ghost" onClick={() => setSelectedIds([])}>取消选择</button>
           </div>
@@ -256,6 +307,7 @@ export function AssetLibrary() {
       {selectedAsset ? (
         <AssetDetailDrawer
           asset={selectedAsset}
+          assets={assets}
           projectName={selectedProjectName}
           variant="drawer"
           onClose={() => setSelectedAsset(undefined)}

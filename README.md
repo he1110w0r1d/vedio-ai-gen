@@ -1,146 +1,150 @@
 # API Asset Studio
 
-API Asset Studio 是一个 BYOK（Bring Your Own Key，自带 API Key）的 AI 图片与视频资产生成工作台。用户可以在统一界面中管理项目、供应商配置、生成任务、图片资产、视频资产和提示词模板。
+API Asset Studio 是一个 BYOK（Bring Your Own Key，自带 API Key）的 AI 图片与视频资产生成工作台。v0.2 Video MVP 已支持通过本地后端代理调用万物焕新 gpt-image-2 做真实文生图，以及阿里云百炼万相做真实 T2V 文生视频、I2V 图生视频和 R2V 参考生视频，并提供项目、任务、资产、模板、导入导出等本地工作台能力。
 
-当前项目由 Google Stitch 导出的静态 UI 演进而来，已整理为 Vite + React + TypeScript + Tailwind 前端应用。
+当前版本：`0.2.0-video-mvp`（第 8.2 阶段：多供应商对比看板）。这是本地单用户 MVP，不是生产环境版本。
 
-## 当前功能
+## 当前真实能力
 
-- Dashboard 总览
-- Projects 项目管理
-- Image Studio 图片生成工作台
-- Video Studio 视频生成工作台，支持 T2V / I2V / R2V 三种模式
-- Asset Library 资产库，支持筛选、搜索、详情抽屉、批量选择
-- Task Center 任务中心
-- Provider & API Keys 供应商与 API Key 管理
-- Prompt Templates 提示词模板库
-- Settings 设置页
-- hash 路由同步与刷新保持
-- localStorage 本地持久化
-- 移动端导航抽屉
-- Mock 图片生成、视频任务、任务进度和资产入库
+- React/Vite 前端与 Node.js/Express 后端；
+- mock / real mode 切换；
+- BYOK Provider 管理；
+- API Key 后端加密保存与脱敏展示；
+- 万物焕新 gpt-image-2 真实文生图；
+- 真实图片保存到 `server/storage/assets/`；
+- 图片资产展示、下载、删除文件、重新生成；
+- providers / assets / tasks / projects / promptTemplates 后端化；
+- Prompt 模板变量替换与一键填入；
+- 项目资产迁移；
+- 项目归档包导出；
+- 项目归档包导入为副本；
+- Workspace 本地工作区；
+- `/health` 系统诊断；
+- **阿里云百炼 万相文生视频 真实 T2V**（第 7.0 新增）；
+- **阿里云百炼 万相图生视频 真实 I2V**（第 7.1 新增）；
+- **阿里云百炼 万相参考生视频 真实 R2V**（第 7.2 新增）；
+- **真实视频保存到 `server/storage/assets/`**（第 7.0 新增）；
+- **视频资产预览、下载、删除**（第 7.0 新增）；
+- **异步视频任务轮询与状态推进**（第 7.0 新增）；
+- **用量记录与成本感知 Usage Ledger**（第 7.3 新增）；
+- **质量评价与失败复盘 Feedback Loop**（第 7.4 新增）；
+- **对象存储适配器**（第 7.5 新增，支持 S3/OSS/MinIO 等标准对象存储）；
+- **Private Bucket + Presigned URL 安全闭环**（第 7.6 新增，支持私有对象存储的动态签名授权）；
+- **第二视频供应商 Kling T2V 接入**（第 8.0 新增，支持 Kling 文生视频）；
+- **多供应商对比看板 Provider Benchmark**（第 8.2 新增，支持按供应商/模型/模式多维度对比成功率、失败率、耗时、成本、评分）。
 
-## Mock 状态说明
+## 尚未实现的功能（Mock）
 
-第一阶段到当前阶段仍然不接真实第三方供应商 API。以下能力均为 Mock：
+本项目目前**没有**以下真实能力（UI 上可能仅为 Mock 或暂不开放）：
 
-- API Key 保存、测试连接和删除；
-- 图片生成；
-- 视频生成；
-- 上传、下载、截取首帧 / 尾帧；
-- 任务轮询和失败重试；
-- 资产文件存储。
+- 图生图（Image-to-Image）；
+- 图片编辑、局部重绘、扩图；
+- 多角色参考生视频（R2V 目前仅支持单角色 character1）；
+- Kling I2V / R2V / 视频编辑（目前仅接入 Kling T2V，是否扩展 I2V 待 Provider Benchmark 数据支撑决策）；
+- 用户登录、团队协作、支付计费体系；
+- 其他视频供应商（当前支持阿里云百炼万相 T2V/I2V/R2V 和 Kling T2V）；
+- 自动 AI 质量分析（当前质量评价为人工主观反馈）。
 
-第四阶段新增了 API Client 和 Provider Adapter 骨架，默认仍走 `mock` 模式。未来真实接入时，前端应调用自有后端 API，由后端代理第三方供应商。
+## 技术栈
 
-第五阶段新增了 `server/` 本地后端代理服务骨架。第 5.5 阶段继续补齐了环境变量校验、统一错误验证脚本、Provider Adapter 验证脚本和本地文件存储目录预留。但当前仍不调用任何真实第三方生成 API。
+- 前端：Vite + React + TypeScript + Tailwind CSS；
+- 后端：Node.js + Express + TypeScript；
+- 存储：本地 JSON `server/data/db.json`；
+- 文件存储：支持 Local Storage（本地目录 `server/storage/assets/`）和 Object Storage（S3 / OSS 兼容，支持 Public / Private-Presigned）；
+- 真实图片供应商：万物焕新 gpt-image-2；
+- 真实视频供应商：阿里云百炼 万相文生视频（T2V）、万相图生视频（I2V）、万相参考生视频（R2V）、Kling 文生视频（T2V）。
 
-第 5.6 阶段完成了 real mode 数据源统一：`VITE_API_MODE=real` 时，前端启动会从本地后端拉取 providers、tasks、assets；任务进行中时会轮询后端并同步资产库。`VITE_API_MODE=mock` 时，仍保持原有 localStorage Mock 数据链路。
+## 目录结构
 
-## 如何运行
+```txt
+src/                         前端应用
+server/                      本地后端代理
+server/data/db.example.json  本地 DB 示例结构
+server/storage/assets/       本地资产文件
+docs/                        架构与验收文档
+```
+
+## 快速启动
+
+安装前端：
 
 ```bash
 npm install
+```
+
+安装后端：
+
+```bash
+cd server
+npm install
+```
+
+## 前端 Mock Mode
+
+默认就是 mock mode：
+
+```bash
 npm run dev
 ```
 
-默认开发地址由 Vite 输出，通常是：
+Mock mode 使用前端 mockData 和 localStorage，不调用本地后端，不支持真实归档导入下载。
 
-```txt
-http://localhost:5173/
-```
+## 前端 Real Mode
 
-## 如何构建
+先启动后端：
 
 ```bash
+cd server
+npm run dev
+```
+
+再启动前端：
+
+```bash
+VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
+```
+
+Real mode 下，providers、assets、tasks、projects、promptTemplates、workspace 都以后端为主数据源。
+
+## 常用命令
+
+根目录：
+
+```bash
+npm run dev
 npm run build
-```
-
-前端和后端也可以分开启动：
-
-```bash
 npm run dev:web
-npm run dev:server
-```
-
-分别构建：
-
-```bash
 npm run build:web
+npm run dev:server
 npm run build:server
 ```
 
-## 后端代理服务
-
-后端位于 `server/`：
+后端：
 
 ```bash
 cd server
-npm install
 npm run dev
+npm run build
+npm test
+npm run verify:wanwu
+npm run verify:wanxiang-t2v
+npm run verify:wanxiang-i2v
+npm run verify:wanxiang-r2v
+npm run db:reset
+npm run db:seed
 ```
 
-默认地址：
+## 环境变量
+
+前端参考 `.env.example`：
 
 ```txt
-http://127.0.0.1:8787
+VITE_API_MODE=mock
+VITE_API_BASE_URL=http://127.0.0.1:8787
+VITE_APP_NAME=API Asset Studio
 ```
 
-当前已实现的后端接口：
-
-- `GET /api/providers`
-- `POST /api/providers`
-- `PATCH /api/providers/:id`
-- `DELETE /api/providers/:id`
-- `POST /api/providers/:id/test`
-- `GET /api/workspace`
-- `PATCH /api/workspace`
-- `POST /api/generations/image`
-- `POST /api/generations/video/t2v`
-- `POST /api/generations/video/i2v`
-- `POST /api/generations/video/r2v`
-- `GET /api/tasks`
-- `GET /api/tasks/:id`
-- `POST /api/tasks/:id/cancel`
-- `POST /api/tasks/:id/retry`
-- `GET /api/assets`
-- `GET /api/assets/:id`
-- `GET /api/assets/:id/download`
-- `DELETE /api/assets/:id`
-- `POST /api/assets/:id/favorite`
-- `GET /api/projects`
-- `GET /api/projects/:id`
-- `POST /api/projects`
-- `PATCH /api/projects/:id`
-- `DELETE /api/projects/:id`
-- `POST /api/projects/:id/archive`
-- `POST /api/projects/:id/favorite`
-- `POST /api/projects/:id/move-assets`
-- `GET /api/projects/:id/export`
-- `POST /api/project-imports/validate`
-- `POST /api/project-imports`
-- `GET /api/prompt-templates`
-- `GET /api/prompt-templates/:id`
-- `POST /api/prompt-templates`
-- `PATCH /api/prompt-templates/:id`
-- `DELETE /api/prompt-templates/:id`
-- `POST /api/prompt-templates/:id/duplicate`
-- `POST /api/prompt-templates/:id/use`
-
-后端当前使用本地 JSON 文件 `server/data/db.json` 存储开发数据。Provider API Key 会加密保存为 `encryptedApiKey`，接口响应只返回 `maskedApiKey`，不会返回明文 API Key。
-
-后端验证脚本：
-
-```bash
-cd server
-npm test
-```
-
-当前测试覆盖统一错误格式和 Mock Provider Adapter 行为。后续真实 Adapter 接入时，应复用同样的验证思路。
-
-## 后端环境变量
-
-后端示例配置位于 `server/.env.example`：
+后端参考 `server/.env.example`：
 
 ```txt
 PORT=8787
@@ -149,13 +153,189 @@ APP_ENCRYPTION_KEY=replace-with-32-byte-secret-value
 CORS_ORIGIN=http://127.0.0.1:5173
 ```
 
-`APP_ENCRYPTION_KEY` 至少需要 32 字节。服务启动时会校验该配置；如果缺失或长度不足，会给出明确错误并停止启动。不要打印、提交或共享真实加密密钥。
+`APP_ENCRYPTION_KEY` 至少 32 字节。不要提交真实 `.env`。
 
-## 本地 JSON 与文件存储
+## Provider / API Key 安全说明
 
-后端当前使用 `server/data/db.json` 作为开发期轻量存储。`server/data/db.example.json` 是干净示例结构，首次运行时如果 `db.json` 不存在，后端会自动创建并补齐缺失字段。
+- 本项目是 BYOK，用户 Key 通过 Provider 页面提交；
+- 前端不应保存明文 API Key；
+- 后端保存加密后的密文和脱敏展示值；
+- 接口响应不返回明文 Key；
+- 不要把真实 Key 写入代码、README、`.env` 或 console；
+- 导出包和导入包不包含 provider credential。
 
-本地 DB 管理脚本：
+## 万物焕新 gpt-image-2
+
+当前真实图片链路：
+
+1. Provider 页面添加万物焕新 gpt-image-2；
+2. 后端加密保存 Key；
+3. Image Studio 发送文生图请求；
+4. 后端调用 `https://api.wanwuhuanxin.cn/v1/chat/completions`；
+5. 从返回文本中解析图片 URL；
+6. 下载图片到 `server/storage/assets/`；
+7. 写入 task 和 asset；
+8. 前端资产库展示真实图片。
+
+生成图片会产生用户自己的供应商账户费用。内容审核、版权归属、商用授权和使用限制以对应供应商服务条款为准。
+
+## 阿里云百炼 万相视频生成（T2V / I2V / R2V）
+
+v0.2 Video MVP 阶段已完成真实 T2V、I2V 和 R2V 的最小闭环。供应商为阿里云百炼 / 万相。
+
+### 使用流程
+
+1. Provider 页面添加“阿里云百炼”相应的供应商（T2V、I2V 或 R2V）；
+2. 填写自己的百炼 API Key（`providerType` 选 `aliyun-wanxiang-t2v`、`aliyun-wanxiang-i2v` 或 `aliyun-wanxiang-r2v`）；
+3. 后端加密保存 Key；
+4. Video Studio 面板选择对应模式与该供应商（I2V 需要从资产库选择已有图片作为首帧，R2V 需要选择参考图片并在 prompt 中使用 character1）；
+5. 输入提示词、参数后点击“创建真实任务”；
+6. 后端调用 `https://dashscope.aliyuncs.com` API；
+7. 创建异步任务，前端 Task Center 显示 running 状态；
+8. 后端在前端轮询时顺便查询供应商任务状态；
+9. 供应商完成后下载视频到 `server/storage/assets/`；
+10. 写入 video asset，Asset Library 展示真实视频。
+
+### 注意事项
+
+- 视频生成耗时较长（通常 2-10 分钟），请在任务中心查看进度；
+- 视频生成会产生用户自己的百炼账户费用；
+- R2V 第一版仅支持单角色参考，需要在 prompt 中使用 `character1` 引用角色；
+- I2V 首帧图片限制最大 20MB（通过 base64 上传）；
+- R2V 参考图片也通过 base64 上传（限制 20MB）；
+- R2V 参考视频需要公网 URL，本地视频无法被供应商访问；
+- 不要提交真实视频文件和真实 `db.json`。
+
+### 验证脚本
+
+dry-run（不产生费用）：
+
+```bash
+cd server
+npm run verify:wanxiang-t2v
+npm run verify:wanxiang-i2v
+npm run verify:wanxiang-r2v
+```
+
+live test（会产生费用）：
+
+```bash
+DASHSCOPE_TEST_API_KEY="your-key" RUN_WANXIANG_T2V_LIVE_TEST=true npm run verify:wanxiang-t2v
+DASHSCOPE_TEST_API_KEY="your-key" RUN_WANXIANG_I2V_LIVE_TEST=true npm run verify:wanxiang-i2v
+DASHSCOPE_TEST_API_KEY="your-key" RUN_WANXIANG_R2V_LIVE_TEST=true WANXIANG_R2V_TEST_REFERENCE_IMAGE_URL="https://..." npm run verify:wanxiang-r2v
+```
+
+live test 成功时会输出：testConnection 结果、本地 task id、providerTaskId（脱敏）、task status、providerTaskStatus、polling 次数、视频 URL host、localPath、sizeBytes、mimeType、public url、asset id。
+
+失败时只输出：errorCode、message、retryable。不会输出 API Key 或敏感 header。
+
+### 页面级 real mode 验收步骤
+
+1. 启动后端：`cd server && npm run dev`；
+2. 启动前端：`VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev`；
+3. Provider 页面添加“阿里云百炼 万相文生视频”供应商，填入百炼 API Key；
+4. 确认 Key 脱敏显示，能力芯片显示 T2V / 异步任务；
+5. 测试连接 —— 不产生视频费用，应显示“已连接”；
+6. Video Studio T2V 面板选择真实 provider，确认显示费用和耗时提示；
+7. 输入提示词，点击“创建真实 T2V 任务”；
+8. 自动跳转 Task Center，确认任务显示“真实任务”“轮询中”；
+9. 等待任务完成（通常 2-10 分钟），确认状态变为“已完成”；
+10. 点击“查看资产”，Asset Library 显示真实视频；
+11. 点击视频资产，确认可用 video 标签播放；
+12. 确认可以下载、可以删除；
+13. 刷新页面后仍可看到资产；
+14. 确认 I2V / R2V 面板显示 Mock 边界说明。
+
+## Kling 文生视频 (T2V)
+
+v8.0 阶段新增第二个视频供应商 Kling T2V 文生视频最小闭环，通过第三方兼容网关 `kling3api.com` 接入。
+
+### 供应商身份说明
+
+**当前接入的是 `kling3api.com` 第三方兼容网关，非 Kling 官方 API。**
+
+- API Endpoint：`https://kling3api.com/api`
+- 认证方式：Bearer API Key（从 kling3api.com 获取）
+- 费用：以 kling3api.com 后台为准，非 Kling 官方计费
+- 状态：非官方接口，功能和稳定性以网关为准
+
+### 使用流程
+
+1. Provider 页面添加【Kling 文生视频】供应商；
+2. 填写自己的 kling3api.com API Key（`providerType` 选 `kling-t2v`）；
+3. 后端加密保存 Key；
+4. Video Studio T2V 面板选择 Kling provider；
+5. 选择模型（pro-text-to-video / std-text-to-video）；
+6. 输入提示词、时长、画幅后点击"创建真实任务"；
+7. 后端调用 `https://kling3api.com/api/generate`；
+8. 创建异步任务，前端 Task Center 显示轮询中；
+9. 供应商完成后下载视频到 `server/storage/assets/`；
+10. 写入 video asset，Asset Library 展示真实视频。
+
+### 注意事项
+
+- 当前接入的是第三方兼容网关，非 Kling 官方 API；
+- Kling 当前仅接入 T2V，I2V / R2V / 视频编辑暂未接入；
+- 视频生成耗时较长（通常 3-15 秒视频，需 1-5 分钟处理），请在任务中心查看进度；
+- 视频生成会产生用户自己的 kling3api.com 账户积分费用；
+- Kling T2V 支持 3-15 秒视频，支持 16:9 / 9:16 / 1:1 画幅；
+- 不要提交真实视频文件和真实 `db.json`。
+
+### 验证脚本
+
+dry-run（不产生费用）：
+
+```bash
+cd server
+npm run verify:kling-t2v
+```
+
+live test（会产生费用）：
+
+```bash
+KLING_TEST_API_KEY="your-key" RUN_KLING_T2V_LIVE_TEST=true npm run verify:kling-t2v
+```
+
+live test 成功时会输出：testConnection 结果、本地 task id、providerTaskId（脱敏）、task status、providerTaskStatus、polling 次数、视频 URL host、localPath、sizeBytes、mimeType、public url、asset id。
+
+失败时只输出：errorCode、message、retryable。不会输出 API Key 或敏感 header。
+
+### Kling 与万相对比
+
+| 维度 | Kling T2V（kling3api.com） | 万相 T2V |
+|------|---------------------------|----------|
+| 接入方式 | 第三方兼容网关 | 阿里云百炼官方 API |
+| 最大时长 | 15 秒 | 15 秒 |
+| 画幅 | 16:9 / 9:16 / 1:1 | 16:9 / 9:16 / 1:1 |
+| 模型 | pro / std | wan2.7-t2v |
+| 价格模型 | kling3api.com 积分制 | 百炼按调用计费 |
+| I2V | 未接入 | 已接入 |
+| R2V | 未接入 | 已接入 |
+
+## 用量记录与成本感知 (Usage Ledger)
+
+项目内置了基于任务的用量记录系统（第 7.3 阶段新增）：
+
+- 任何图片或视频生成任务（包含真实与 Mock）都会在 `server/data/db.json` 记录 `UsageRecord`。
+- 提供了可配置的 **Cost Rules**（成本规则），您可以自由设定某个供应商特定模型的价格估算公式（如：每任务计费、每张图片计费、每秒计费）。
+- 系统会在任务列表、总览大盘与单独的“用量统计”页面展示这些估算结果。
+
+> ⚠️ **成本估算边界警告**：平台不直接向用户收取图片/视频生成费用，实际扣费由您所配置的各供应商账户（如阿里云百炼）承担。本平台的 Usage Ledger 估算费用仅供参考，不保证与真实账单百分百一致。建议定期核对供应商真实账单。
+
+## 质量评价与失败复盘 (Feedback Loop)
+
+项目内置了基于资产和任务的质量反馈系统（第 7.4 阶段新增）：
+
+- 您可以对每个资产和任务进行 1-5 星级评分、质量状态评估（优秀/可用/需要修复/不可用）和失败原因归类。
+- 支持 12 种失败分类（提示词问题、模型能力、角色漂移、构图问题等），有助于识别系统性的质量短板。
+- Asset Library 支持按评价状态筛选； Dashboard 和 Usage 展示质量汇总。
+- 导出包中包含 `quality-feedback.json`，确保反馈数据可移植。
+
+> 注意：这是**用户主观反馈**，而非自动评分。后续可以接入自动质量评估模型。
+
+## 数据管理
+
+`server/data/db.example.json` 是干净示例结构。首次运行缺少 `server/data/db.json` 时会自动创建。
 
 ```bash
 cd server
@@ -163,304 +343,69 @@ npm run db:reset
 npm run db:seed
 ```
 
-- `db:reset` 会把 `server/data/db.json` 重置为干净结构；
-- `db:seed` 会写入默认项目、默认模板和少量 mock 示例资产；
-- seed 数据不包含真实 API Key，不包含真实 provider credential；
-- 真实联调前请备份需要保留的数据；
-- `server/data/db.json` 已加入 `.gitignore`，不要提交包含真实密钥密文、真实任务或真实资产记录的本地 DB。
+- `db:reset` 重置为干净结构；
+- `db:seed` 写入默认项目、默认模板和 Mock 示例资产；
+- `server/data/db.json` 已加入 `.gitignore`；
+- 不要提交真实联调数据；
+- 不要提交真实生成图片。
 
-文件存储目录已预留：
+## 本地文件存储
+
+真实图片和视频保存到：
 
 ```txt
 server/storage/assets/
-server/storage/temp/
 ```
 
-目录内通过 `.gitkeep` 保留结构，真实生成文件会被 `.gitignore` 忽略。文件存储服务骨架位于 `server/src/services/fileStorageService.ts`，已支持将 Buffer 保存为本地文件。
+- 图片扩展名：`.png`、`.jpg`、`.webp`；
+- 视频扩展名：`.mp4`、`.webm`；
+- 文件名格式：`{assetId}.{ext}`；
+- 该目录真实文件已被 `.gitignore` 忽略，`.gitkeep` 仅用于保留目录结构；
+- 删除 asset 时同步删除本地文件。
 
-## 万物焕新 gpt-image-2 真实接入
+## 对象存储与 Presigned URL 机制
 
-第六阶段当前使用万物焕新 `gpt-image-2` 作为真实图片测试端点。当前只实现图片文生图，不支持图生图、图片编辑，也不接入任何真实视频生成 API。
+### Storage Adapter 架构
 
-使用方式：
+系统支持两种存储后端：
 
-1. 启动后端：
+| 模式 | 配置位置 | 适用场景 |
+|------|----------|----------|
+| Local Storage | 默认，本地 `server/storage/assets/` | 开发、单机使用 |
+| Object Storage | Settings 页面配置 | 生产、跨设备访问 |
 
-```bash
-cd server
-npm run dev
-```
+Object Storage 支持 S3 兼容协议（AWS S3、阿里云 OSS、MinIO 等）。
 
-2. 以 real mode 启动前端：
+### Access Mode
 
-```bash
-VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
-```
+| 模式 | 说明 | 安全性 |
+|------|------|--------|
+| Public Read | 资产永久公开，任意 URL 即可访问 | 低（链接泄露即可访问） |
+| Private + Presigned | 资产私有，按需签发带过期时间的临时链接 | 高（链接仅短期有效） |
 
-3. 在 Provider 页面新增供应商，类型选择 `万物焕新 gpt-image-2`，输入用户自己的万物焕新 API Key。
+### Presigned URL 机制
 
-万物焕新图片测试链路当前固定使用 `gpt-image-2`。后端调用 `POST https://api.wanwuhuanxin.cn/v1/chat/completions`，从返回 JSON 的文本内容中提取 `https://...png/jpg/webp` 图片链接，然后下载到本地文件存储。如果账户、模型权限或供应商策略受限，测试连接可能成功，但真实生成仍可能失败。
+- **前端预览**：默认 900 秒过期，可在 Settings 调整；
+- **供应商读取**：默认 3600 秒过期，确保视频生成任务有足够时间抓取素材；
+- **签发时机**：仅在访问时按需签发，不提前生成；
+- **不过 DB**：presigned URL 不保存到 `db.json`、`task.parameters`、`asset.parameters`；
+- **不在日志**：presigned URL 不打印到 server logs；
+- **不在导出**：项目归档包不包含 presigned URL。
 
-当前真实文生图已打通的参数：
+### 安全约束
 
-- `prompt`：作为用户消息主体发送；
-- `model`：固定为 `gpt-image-2`；
-- `aspectRatio`：会映射为期望画幅和参考尺寸，并写入提示词；
-- `count`：后端按数量串行生成，多张图会保存为多个独立 asset；
-- `quality`、`outputFormat`、`background`：万物焕新 chat/completions 当前未声明专用字段，后端作为偏好写入提示词并记录到 task / asset parameters；
-- `size`：当前不直接发送专用尺寸字段，后端记录 `requestedAspectRatio`、`resolvedWidth`、`resolvedHeight`、`resolvedSizeLabel`，4:3 等无法精确确认的画幅会记录 `fallbackReason`。
+- AccessKey / SecretKey 仅在后端加密保存，从不返回前端；
+- `storageConfig` 返回时剔除 `accessKeyIdEncrypted` 和 `accessKeySecretEncrypted`；
+- objectKey 校验禁止 `../`、绝对路径、空路径、Windows 盘符路径；
+- 删除 object asset 后 bucket 中对象同步删除。
 
-安全边界：
+## 项目导入导出
 
-- 万物焕新 API Key 只通过 Provider 页面提交给后端；
-- 后端会加密保存 API Key，只返回 `maskedApiKey`；
-- 前端不会保存明文 API Key；
-- 不要把万物焕新 API Key 写入 `.env`，本项目是 BYOK；
-- 生成图片会产生用户万物焕新账户费用；
-- 图片生成可能较慢，复杂 prompt 可能等待更久；后端图片生成请求当前使用 120 秒超时；
-- 生成内容、内容审核、版权归属、商用授权和使用限制以万物焕新服务条款为准；
-- 视频生成仍是 Mock。
-
-生成结果：
-
-- 万物焕新返回文本中的图片 URL 会被后端提取，并下载保存到 `server/storage/assets/`；
-- 后端资产会记录 `storageType=local`、`localPath`、`mimeType`、`sizeBytes`、`width`、`height`、`parameters` 等字段；
-- 多图生成采用“整批成功才完成”的策略；如果中途失败，已下载的临时文件会被清理，不写入半截 asset；
-- 前端 real mode 会展示后端返回的本地图片 URL；
-- 真实生成文件不会被提交到 Git。
-
-真实图片资产体验：
-
-- Asset Detail 和 Asset Card 的下载按钮在 real mode 下会调用 `GET /api/assets/:id/download` 下载本地文件；
-- 删除本地资产时会同步尝试删除 `server/storage/assets/` 下对应文件，文件不存在时仍会删除 asset 记录；
-- 下载和删除接口只使用数据库里的 asset 记录，不接受前端传入 `localPath`；
-- 后端会校验文件路径必须位于 `server/storage/assets/` 下，避免路径穿越；
-- 图片预览失败时会显示兜底卡片，可复制 URL 或重新加载；
-- Asset Detail 会显示基础信息、生成参数、存储信息和关联任务；
-- 可以从资产详情或任务中心按原参数重新生成，新资产不会覆盖原资产；
-- 真实图片发送到 Video Studio 后仍只作为 I2V/R2V 的 Mock 参考输入，Mock 视频任务参数会记录引用的 assetId。
-
-常见错误排查：
-
-- `INVALID_API_KEY`：检查 Provider 页面中的万物焕新 API Key；
-- `INSUFFICIENT_BALANCE`：检查供应商账户余额或额度；
-- `RATE_LIMITED`：请求过于频繁，稍后重试；
-- `CONTENT_REJECTED`：提示词未通过内容审核，调整描述后重试；
-- `MODEL_NOT_SUPPORTED`：模型不可用，可能与账户权限或模型支持情况有关；
-- `TASK_TIMEOUT`：生成超时，可简化提示词后重试；
-- `PROVIDER_UNAVAILABLE`：供应商服务暂时不可用；
-- `UNKNOWN_PROVIDER_ERROR`：查看后端日志，确认返回 JSON 中是否包含可解析图片 URL。
-- 图片能生成但前端不显示：确认后端服务仍在运行，并检查 `/storage/assets/...` URL 是否可访问；
-- 下载失败：确认 asset 仍是 `storageType=local`，且本地文件未被手动删除；
-- 删除失败：检查后端是否有 `server/storage/assets/` 文件写入/删除权限；
-- provider 被删除后无法重新生成：重新添加 provider 或改用当前可用 provider 重新生成。
-
-万物焕新 Adapter 验证脚本默认只做 dry-run，不会触发真实生成：
-
-```bash
-cd server
-npm test
-npm run verify:wanwu
-```
-
-如需手动执行万物焕新 live test，必须显式开启 `RUN_WANWUHUANXIN_LIVE_TEST=true`，并通过临时环境变量传入测试 Key。live test 会调用 testConnection，并生成 1 张低风险测试图片保存到 `server/storage/assets/`，因此会产生用户万物焕新账户费用。脚本不会打印 API Key。
-
-```bash
-cd server
-WANWUHUANXIN_TEST_API_KEY=你的测试Key RUN_WANWUHUANXIN_LIVE_TEST=true npm run verify:wanwu
-```
-
-Live test 输出会包含连接测试结果、生成任务状态、asset id、localPath、sizeBytes 和 public url；失败时只输出统一错误 code 和 message，不输出敏感 detail。
-
-### 万物焕新 Live 联调步骤
-
-1. 启动后端：`cd server && npm run dev`。
-2. 启动前端 real mode：`VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev`。
-3. 在 Provider 页面添加 `万物焕新 gpt-image-2`，临时输入用户自己的万物焕新 API Key。
-4. 点击测试连接。连接成功只说明 Key 基本可用，具体图片模型权限仍以真实生成为准。
-5. 进入 Image Studio，选择万物焕新 provider。
-6. 使用简单 prompt，例如 `A small watercolor icon of a blue water droplet on a white background.`。
-7. 生成数量先设为 1，确认成功后可尝试 2-4 张多图生成。
-8. 检查 `server/storage/assets/` 是否出现真实图片文件。
-9. 检查 Asset Library 是否展示该图片。
-10. 刷新页面，确认后端 `assets` 数据仍可恢复。
-11. 检查浏览器 localStorage 不包含明文 API Key。
-12. 检查 `server/data/db.json` 不包含明文 API Key，只应包含加密密文和脱敏展示值。
-
-## 环境变量
-
-复制 `.env.example` 后按需配置本地环境。当前不需要真实后端。
-
-```txt
-VITE_API_MODE=mock
-VITE_API_BASE_URL=http://127.0.0.1:8787
-VITE_APP_NAME=API Asset Studio
-```
-
-`VITE_API_MODE` 当前支持：
-
-- `mock`：默认模式，使用前端 Mock service 和 Mock Provider Adapter；
-- `real`：请求本地后端代理服务，可使用 Mock Provider Adapter 或万物焕新 gpt-image-2 Adapter。
-
-第五阶段后，`real` 模式可以请求本地后端代理：
-
-```bash
-VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
-```
-
-注意：只有当用户在 Provider 页面添加 `万物焕新 gpt-image-2` 类型供应商并执行图片生成时，后端才会调用万物焕新端点。视频仍是 Mock。
-
-## 数据源策略
-
-Mock mode：
-
-- providers、assets、tasks、projects、templates 来自前端 mockData 和 localStorage；
-- 页面刷新后由 `api-asset-studio:app-state` 恢复完整 Mock 状态；
-- 适合纯前端演示和 UI 开发。
-
-Real mode：
-
-- providers、assets、tasks、projects、promptTemplates、workspace 来自本地后端；
-- 页面刷新后会重新请求 `GET /api/providers`、`GET /api/assets`、`GET /api/tasks`、`GET /api/projects`、`GET /api/prompt-templates`、`GET /api/workspace`；
-- localStorage 只保存 `api-asset-studio:ui-state` 这类非敏感 UI 状态；
-- `currentProjectId` 仍是前端 UI 状态；如果指向不存在的项目，会回退到后端返回的第一个项目；
-- 进行中的视频任务会由前端每 2.5 秒轮询后端，任务完成后刷新资产库。
-
-第 6.4 阶段后：
-
-- 后端 `GET /api/projects` 会保证至少存在一个“默认项目”；
-- 项目删除采用安全策略：如果项目下已有资产，后端会阻止删除，避免真实资产变成悬空数据；
-- Prompt 模板支持创建、编辑、删除、复制和变量提取；
-- 模板变量格式继续使用 `{{character}}`、`{{scene}}`、`{{action}}`、`{{camera}}`、`{{style}}`、`{{emotion}}`；
-- 删除模板不影响历史生成资产；
-- projects 仍是单用户轻量项目管理，后续可继续做用户、权限和团队化。
-
-第 6.5 阶段后：
-
-- 项目支持资产迁移：`POST /api/projects/:id/move-assets` 可以迁移该项目全部资产，或只迁移指定 `assetIds`；
-- 迁移只更新资产的 `projectId`，不会移动或重写本地文件；
-- Asset Library 支持批量选择资产并移动到目标项目；
-- Prompt 模板“发送到 Image Studio / Video Studio”会真正填入目标工作台的提示词；
-- 模板复制最终 prompt、发送到图片生成、发送到视频生成都会增加 `usageCount`；
-- 模板变量自动识别支持英文、数字、下划线和中文变量名，例如 `{{character}}`、`{{场景}}`；
-- 未填写变量会保留原始 `{{变量名}}`，不会静默删除。
-
-第 6.6 阶段后：
-
-- 新增轻量 Workspace 本地工作区配置；
-- Workspace 存在于 `server/data/db.json`，用于标记当前本地数据边界和未来多用户扩展点；
-- 当前不是正式账号系统，不包含密码、登录、权限或团队协作；
-- Settings 页面可编辑工作区名称、负责人、描述、头像 URL 和默认项目；
-- Projects 页面支持导出项目归档包；
-- 导入功能已完成最小闭环，导入设计文档仍保留用于后续增强。
-
-第 6.7 阶段后：
-
-- 项目归档包导入完成最小闭环；
-- 导入采用“创建副本”策略，不覆盖原项目、原资产或原文件；
-- 导入前可先校验归档包，预览项目名称、资产数量、任务数量、模板数量和文件数量；
-- 导入会重新生成 projectId、assetId、taskId、templateId；
-- 导入会尽量改写任务参数中的旧 assetId 引用；
-- 导入不会恢复 provider credential，不导入任何 API Key 或加密密钥字段。
-
-重置本地开发数据：
-
-```bash
-cd server
-npm run db:reset
-npm run db:seed
-```
-
-重置前请先备份真实联调数据。不要提交包含真实密钥密文、真实任务、真实资产记录的 `server/data/db.json`，也不要提交 `server/storage/assets/` 下的真实生成文件。
-
-## 本地工作区 Workspace
-
-Workspace 是一个轻量本地配置：
-
-```ts
-type WorkspaceProfile = {
-  id: string;
-  name: string;
-  ownerName?: string;
-  description?: string;
-  avatarUrl?: string;
-  defaultProjectId?: string;
-  createdAt: string;
-  updatedAt: string;
-};
-```
-
-接口：
-
-```txt
-GET /api/workspace
-PATCH /api/workspace
-```
-
-`PATCH /api/workspace` 支持更新 `name`、`ownerName`、`description`、`avatarUrl`、`defaultProjectId`。如果 `defaultProjectId` 不存在，后端会返回 `VALIDATION_ERROR`。
-
-说明：
-
-- Workspace 不是正式用户系统；
-- 不涉及密码、登录、权限或团队；
-- 只作为单用户本地工作台的数据边界；
-- 后续可以演进为 user / organization / workspace 模型。
-
-## 项目归档包导出
-
-Projects 页面支持导出项目归档包，后端接口：
+导出接口：
 
 ```txt
 GET /api/projects/:id/export?includeFiles=true&includeTasks=true&includeTemplates=true
 ```
-
-默认导出：
-
-- 项目信息；
-- 项目下资产元数据；
-- 项目下任务元数据；
-- prompt templates；
-- 本地资产文件；
-- `manifest.json`；
-- 包内 `README.md`。
-
-归档包结构：
-
-```txt
-project-export/
-  manifest.json
-  project.json
-  assets.json
-  tasks.json
-  prompt-templates.json
-  files/
-    asset_xxx.png
-  README.md
-```
-
-导出选项：
-
-- `includeFiles=true|false`：是否打包本地图片/视频文件；
-- `includeTasks=true|false`：是否包含任务历史；
-- `includeTemplates=true|false`：是否包含提示词模板。
-
-导出包不会包含：
-
-- 明文 API Key；
-- encryptedApiKey；
-- provider credential；
-- `server/data/db.json` 原文件；
-- 服务器绝对路径；
-- `localPath` 本机路径；
-- 不适合迁移的敏感凭据。
-
-如果 `includeFiles=true` 且某个本地文件不存在，导出会跳过该文件并写入 `manifest.warnings`。导出不会移动、删除或修改原文件。
-
-导入功能已完成最小闭环；更完整的导入增强设计见：
-
-[docs/project-archive-import-design.md](docs/project-archive-import-design.md)
-
-## 项目归档包导入
 
 导入接口：
 
@@ -469,66 +414,123 @@ POST /api/project-imports/validate
 POST /api/project-imports?importFiles=true&importTasks=true&importTemplates=true
 ```
 
-导入流程：
+归档包包含：
 
-1. 在 Projects 页面选择 `.zip` 归档包；
-2. 点击“校验归档包”；
-3. 查看项目名、资产数、任务数、模板数、文件数、warnings 和 errors；
-4. 校验通过后点击“导入为新项目”；
-5. 系统创建一个新的项目副本，名称追加“导入副本”；
-6. 资产、任务和模板会使用新 ID 写入当前工作区。
+- `manifest.json`
+- `project.json`
+- `assets.json`
+- `tasks.json`
+- `prompt-templates.json`
+- `usage-records.json`
+- `quality-feedback.json`
+- `files/`
+- `README.md`
 
-安全策略：
+导入采用“创建副本”策略，会生成新的 projectId、assetId、taskId、templateId，不覆盖现有项目和文件。
 
-- 只接受 zip；
-- 上传大小限制为 100MB；
-- 不信任 zip 内路径；
-- 禁止绝对路径、`../`、Windows 盘符路径；
-- 只读取 `project-export/` 下的预期文件；
-- `files/` 下只允许 `png`、`jpg`、`jpeg`、`webp`、`mp4`、`webm`；
-- 导入文件会重新命名并写入 `server/storage/assets/`；
-- 不覆盖已有本地文件；
-- 不导入明文 API Key；
-- 不导入加密密钥字段；
-- 不导入 provider credential。
+归档包不会包含：
 
-如果文件缺失，资产仍可作为 metadata-only 导入，Asset Library 会显示预览兜底。Mock mode 下不支持真实归档导入，只会显示限制提示。
+- 明文 API Key；
+- 加密密钥字段；
+- provider credential；
+- `server/data/db.json` 原文件；
+- 本机绝对路径。
 
-导入失败排查：
+## Health / Diagnostics
 
-- manifest 缺失：确认归档包来自 API Asset Studio；
-- 不支持压缩格式：当前最小导入器主要支持本应用导出的无压缩 zip；
-- 文件路径风险：检查 zip 内是否包含绝对路径或 `../`；
-- 文件类型不支持：只保留常见图片和视频格式；
-- 结构错误：检查 `project.json`、`assets.json` 是否为合法 JSON。
+```txt
+GET /health
+```
 
-## API 接入架构
+返回：
 
-真实 API 接入架构请阅读：
+- `status`
+- `version`
+- `stage`
+- `storageReady`
+- `dbReady`
+- `providerMode`
+- `timestamp`
 
-[docs/api-integration-architecture.md](docs/api-integration-architecture.md)
+Settings 页面会显示版本与诊断信息。
 
-核心原则：
+## 常见问题
 
-- 前端不能直接调用第三方生成接口；
-- 用户 API Key 不能明文保存在前端或 localStorage；
-- API Key 应由后端加密保存；
-- 第三方供应商差异应封装在 Provider Adapter；
-- 图片、视频生成应统一进入任务系统；
-- 生成结果应由后端转存并写入资产库。
+- 后端未启动：real mode 会显示连接失败；
+- 图片生成失败：检查 Key、余额、模型权限和内容审核；
+- 图片能生成但不显示：确认后端仍在运行，`/storage/assets/...` 可访问；
+- 下载失败：确认本地文件未被手动删除；
+- 删除有资产项目失败：先迁移或删除资产；
+- 导入 zip 失败：确认归档包来自本应用，并且路径安全、结构完整；
+- 视频生成中状态不更新：确认后端仍在运行，前端需有活跃任务轮询；
+- 视频生成超时：百炼视频任务较长，可等待后重试；
+- I2V / R2V 无法真实生成：当前 T2V / I2V / R2V 均支持真实生成。
+- R2V 不工作：请确保添加了 R2V 供应商，在提示词中使用了 character1，并选择了参考图片。
+- Kling T2V 无法真实生成：请确保添加了 Kling provider，使用 kling-t2v providerType，并配置了 API Key。
 
-## 安全提醒
+## 安全注意事项
 
-不要在代码、`.env`、浏览器 localStorage 或 console 中写入 / 打印真实 API Key。当前项目只允许保存脱敏值或 Mock 数据。真实接入必须经过后端代理、加密存储、审计日志和错误标准化。
+- 不提交真实 `.env`；
+- 不提交真实 `server/data/db.json`；
+- 不提交真实生成图片文件；
+- 不提交真实生成视频文件；
+- 不在 localStorage 保存明文 Key；
+- 不在 db.json 保存明文 Key；
+- 不在导出包包含凭据；
+- v0.1 不适合作为生产环境部署。
 
-不要提交真实 `.env` 文件。`server/.env.example` 中的 `APP_ENCRYPTION_KEY` 只是占位示例，本地开发脚本使用 dev-only 临时密钥，生产环境必须替换为安全密钥。
+## 重要文档
 
-不要提交包含真实测试数据的 `server/data/db.json`。本地开发请使用 `server/data/db.example.json`、`npm run db:reset` 和 `npm run db:seed` 管理干净数据。
+- [v0.1 MVP 能力边界](docs/mvp-v0.1-capability-boundary.md)
+- [v0.1 手动验收清单](docs/manual-acceptance-checklist-v0.1.md)
+- [v0.2 Video MVP 能力边界](docs/video-mvp-v0.2-capability-boundary.md)
+- [v0.2 手动验收清单](docs/manual-acceptance-checklist-v0.2-video.md)
+- [API 接入架构](docs/api-integration-architecture.md)
+- [项目归档导入设计](docs/project-archive-import-design.md)
 
-## 下一步
+## 多供应商对比看板 (Provider Benchmark)
 
-下一阶段建议只接入一个图片生成供应商，先跑通：
+第 8.2 阶段新增了专门的多供应商对比看板，帮助用户在 BYOK 模式下进行数据驱动的供应商决策。
 
-`provider credential -> image generation -> task -> asset -> storage`
+### 功能说明
 
-暂时不要先接视频。视频接口异步状态多、失败率高、成本敏感，应该等图片链路稳定后再进入。
+- **供应商对比表**：按 provider 维度汇总成功率、失败率、平均耗时、估算成本、平均评分、质量分布。
+- **模型对比表**：按 provider + model 维度细化对比（如 Kling pro-text-to-video vs Kling std-text-to-video）。
+- **模式统计**：按 image / t2v / i2v / r2v 汇总各模式整体表现。
+- **失败原因分布**：统计各失败分类的数量和估算浪费成本。
+- **质量成本交叉分析**：展示各供应商的优秀/可用/需修复/不可用分布与浪费成本。
+- **智能洞察**：基于数据自动生成提示（样本量不足、Kling 网关提醒、最佳供应商推荐等）。
+
+### 统计口径
+
+| 指标 | 计算方式 | 说明 |
+|------|----------|------|
+| 成功率 | completedTasks / totalTasks | 任务状态为 completed 的比例 |
+| 失败率 | failedTasks / totalTasks | 任务状态为 failed 的比例 |
+| 平均耗时 | completedAt - createdAt | 仅统计有完成时间的任务 |
+| 估算成本 | usageRecords.estimatedCost.amount | confidence=none 不计入，部分任务未配置规则显示为空 |
+| 浪费成本 | failed 任务 + unusable 评价任务 | 避免重复计算同一 task |
+| 平均评分 | qualityFeedback.rating | task 和 asset 评价合并统计，无评价时为空 |
+
+### 重要提醒
+
+- **成本估算不等于实际账单**：成本统计仅供参考，实际费用以供应商控制台为准。
+- **Kling 当前是兼容网关**：Kling 通过 kling3api.com 第三方兼容网关接入，非 Kling 官方 API。
+- **需要足够样本量**：样本量不足时统计结果可能不具代表性，建议先完成万相系列和 Kling live test 后评估。当前万相 T2V/I2V/R2V 和 Kling T2V 均未执行 live test（需分别配置 `DASHSCOPE_TEST_API_KEY` 和 `KLING_TEST_API_KEY`），Provider Benchmark 中数据为 dry-run 接入状态。真实生成会产生供应商费用。
+- **不保存新数据**：Provider Benchmark 仅做只读统计聚合，不修改任何已有数据。
+
+### 入口
+
+- 侧边栏「供应商对比」（analytics 图标）
+- Dashboard「供应商表现」卡片 → 「进入供应商对比」
+- Usage 页面「按供应商统计」区域 → 「查看供应商对比」
+
+## 下一阶段路线
+
+第 8.2 阶段多供应商对比看板已完成。v0.2 Video MVP 达成了完整的"生成 → 统计 → 评价 → 对比"闭环。
+
+下一阶段方向：
+- **方向 A**：Kling I2V 接入（建议在 Provider Benchmark 有足够数据支撑后决策）；
+- **方向 B**：视频编辑、提示词优化；
+- **方向 C**：更多视频供应商（MiniMax、Runway）；
+- **第 10.0**：多用户、团队协作、权限管理。

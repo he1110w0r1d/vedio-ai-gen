@@ -10,7 +10,7 @@ import { ApiClientError, API_MODE } from '../api/client';
 import type { Asset } from '../types';
 
 export function ImageStudio() {
-  const { providers, currentProject, addAssets, addTask, selectedAsset, setSelectedAsset, toggleFavorite, downloadAsset, sendImageToVideo, consumePendingPromptInput, showToast } = useApp();
+  const { providers, assets, currentProject, addAssets, addTask, selectedAsset, setSelectedAsset, toggleFavorite, downloadAsset, sendImageToVideo, consumePendingPromptInput, showToast } = useApp();
   const imageProviders = providers.filter((provider) => provider.capabilities.includes('图片生成'));
   const [providerId, setProviderId] = useState(imageProviders[0]?.id ?? '');
   const provider = imageProviders.find((item) => item.id === providerId) ?? imageProviders[0];
@@ -90,7 +90,7 @@ export function ImageStudio() {
 
   return (
     <div>
-      <SectionHeader title="图片生成 Image Studio" subtitle="使用自己的供应商配置生成图片资产，当前为 Mock 闭环。" />
+      <SectionHeader title="图片生成 Image Studio" subtitle="使用自己的供应商配置生成图片资产。支持接入万物焕新真实能力。" />
       <div className="grid gap-5 xl:grid-cols-[320px_1fr_360px]">
         <aside className="card space-y-4">
           <h3 className="text-lg font-bold">生成参数</h3>
@@ -143,7 +143,7 @@ export function ImageStudio() {
             onSendToVideo={(id) => sendImageToVideo(id, 'i2v-first')}
           />
         </section>
-        <AssetDetailDrawer asset={selected} onFavorite={toggleFavorite} onDownload={downloadAsset} onRegenerate={generate} onSendToVideo={sendImageToVideo} />
+        <AssetDetailDrawer asset={selected} assets={assets} onFavorite={toggleFavorite} onDownload={downloadAsset} onRegenerate={generate} onSendToVideo={sendImageToVideo} />
       </div>
     </div>
   );

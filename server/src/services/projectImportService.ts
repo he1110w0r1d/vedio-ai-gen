@@ -3,6 +3,7 @@ import type { ProjectImportManifest, ProjectImportValidationResult } from '../ty
 import type { ProjectRecord } from '../types/project.js';
 import type { PromptTemplateRecord } from '../types/promptTemplate.js';
 import type { GenerationTaskRecord } from '../types/task.js';
+import type { QualityFeedback } from '../types/quality.js';
 import { createId } from '../utils/id.js';
 import { validationError } from '../utils/errors.js';
 import { saveBufferToLocal } from './fileStorageService.js';
@@ -15,6 +16,7 @@ const allowedFiles = new Set([
   'project-export/assets.json',
   'project-export/tasks.json',
   'project-export/prompt-templates.json',
+  'project-export/quality-feedback.json',
   'project-export/README.md',
   'project-export/files/README.txt',
 ]);
@@ -24,6 +26,7 @@ export type ProjectImportOptions = {
   importFiles: boolean;
   importTasks: boolean;
   importTemplates: boolean;
+  importQuality: boolean;
 };
 
 export async function validateProjectImport(buffer: Buffer): Promise<ProjectImportValidationResult> {
@@ -133,11 +136,23 @@ export async function importProjectArchive(buffer: Buffer, options: ProjectImpor
       }))
     : [];
 
+  const qualityFeedback = options.importQuality
+    ? parsed.qualityFeedback.map((fb) => ({
+        ...fb,
+        id: createId('qf'),
+        projectId,
+        targetId: fb.targetType === 'asset' ? (assetIdMap[fb.targetId] ?? fb.targetId) : (taskIdMap[fb.targetId] ?? fb.targetId),
+        createdAt: now,
+        updatedAt: now,
+      }))
+    : [];
+
   await updateDb((db) => {
     db.projects.unshift(project);
     db.assets.unshift(...assets);
     db.tasks.unshift(...tasks);
     db.promptTemplates.unshift(...promptTemplates);
+    db.qualityFeedback.unshift(...qualityFeedback);
   });
 
   return {
@@ -177,8 +192,9 @@ function parseProjectArchive(buffer: Buffer) {
   const assets = readJson<AssetRecord[]>(entries, 'project-export/assets.json', 'assets.json 必须存在');
   const tasks = readOptionalJson<GenerationTaskRecord[]>(entries, 'project-export/tasks.json') ?? [];
   const templates = readOptionalJson<PromptTemplateRecord[]>(entries, 'project-export/prompt-templates.json') ?? [];
+  const qualityFeedback = readOptionalJson<QualityFeedback[]>(entries, 'project-export/quality-feedback.json') ?? [];
 
-  return { manifest, project, assets, tasks, templates, files, warnings };
+  return { manifest, project, assets, tasks, templates, qualityFeedback, files, warnings };
 }
 
 function buildValidationResult(parsed: ReturnType<typeof parseProjectArchive>): ProjectImportValidationResult {

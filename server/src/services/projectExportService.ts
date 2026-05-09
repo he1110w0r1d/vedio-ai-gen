@@ -11,12 +11,16 @@ export type ProjectExportOptions = {
   includeFiles: boolean;
   includeTasks: boolean;
   includeTemplates: boolean;
+  includeUsage: boolean;
+  includeQuality: boolean;
 };
 
 export async function exportProjectArchive(projectId: string, options: Partial<ProjectExportOptions>) {
   const includeFiles = options.includeFiles ?? true;
   const includeTasks = options.includeTasks ?? true;
   const includeTemplates = options.includeTemplates ?? true;
+  const includeUsage = options.includeUsage ?? true;
+  const includeQuality = options.includeQuality ?? true;
   const db = await readDb();
   const project = db.projects.find((item) => item.id === projectId);
   if (!project) throw notFound('项目不存在');
@@ -28,6 +32,8 @@ export async function exportProjectArchive(projectId: string, options: Partial<P
   const projectAssets = db.assets.filter((asset) => asset.projectId === projectId);
   const projectTasks = includeTasks ? db.tasks.filter((task) => task.projectId === projectId) : [];
   const templates = includeTemplates ? db.promptTemplates : [];
+  const usageRecords = includeUsage ? db.usageRecords.filter((u) => u.projectId === projectId) : [];
+  const qualityFeedback = includeQuality ? db.qualityFeedback.filter((q) => q.projectId === projectId) : [];
   const fileEntries: ZipEntry[] = [];
   const exportedAssets = [];
 
@@ -42,8 +48,10 @@ export async function exportProjectArchive(projectId: string, options: Partial<P
       } else {
         warnings.push(`资产 ${asset.id} 的本地文件不存在，已跳过。`);
       }
+    } else if (includeFiles && asset.storageType === 'object') {
+      warnings.push(`资产 ${asset.id} 存储在对象存储，本次导出仅包含元数据，未打包源文件。`);
     }
-    if (asset.type === 'video') warnings.push(`资产 ${asset.id} 是视频资产，可能为 Mock 生成结果。`);
+    if (asset.providerId === 'mock') warnings.push(`资产 ${asset.id} 是使用 Mock Provider 生成的。`);
     exportedAssets.push(sanitizeAsset(asset, exportedFileName));
   }
 
@@ -56,7 +64,11 @@ export async function exportProjectArchive(projectId: string, options: Partial<P
     assetCount: exportedAssets.length,
     taskCount: projectTasks.length,
     templateCount: templates.length,
+    usageRecordCount: usageRecords.length,
+    qualityFeedbackCount: qualityFeedback.length,
     includeFiles,
+    includeUsage,
+    includeQuality,
     warnings: Array.from(new Set(warnings)),
   };
 
@@ -66,6 +78,8 @@ export async function exportProjectArchive(projectId: string, options: Partial<P
     { path: 'project-export/assets.json', data: json(exportedAssets) },
     { path: 'project-export/tasks.json', data: json(projectTasks.map(sanitizeTask)) },
     { path: 'project-export/prompt-templates.json', data: json(templates.map(sanitizeTemplate)) },
+    ...(includeUsage ? [{ path: 'project-export/usage-records.json', data: json(usageRecords) }] : []),
+    ...(includeQuality ? [{ path: 'project-export/quality-feedback.json', data: json(qualityFeedback) }] : []),
     { path: 'project-export/README.md', data: buildReadme(project.name, manifest.warnings) },
     ...(includeFiles ? [{ path: 'project-export/files/README.txt', data: '本目录存放导出的本地资产文件。若没有本地文件，目录中只保留此说明。\n' }] : []),
     ...fileEntries,

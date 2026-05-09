@@ -14,6 +14,7 @@ export type GenerationTaskRecord = {
   providerId: string;
   providerName: string;
   providerTaskId?: string;
+  providerTaskStatus?: string;
   model: string;
   projectId: string;
   projectName?: string;

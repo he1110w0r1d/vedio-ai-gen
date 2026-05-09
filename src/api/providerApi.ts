@@ -63,6 +63,7 @@ function toFrontendCapability(capability: string) {
     negativePrompt: '负面提示词',
     seed: 'Seed',
     asyncTask: '异步任务',
+    polling: '异步任务',
   };
   return map[capability] ?? capability;
 }

@@ -6,6 +6,9 @@ import type { GenerationTaskRecord } from '../types/task.js';
 import type { ProjectRecord } from '../types/project.js';
 import type { PromptTemplateRecord } from '../types/promptTemplate.js';
 import type { WorkspaceProfile } from '../types/workspace.js';
+import type { UsageRecord, CostRule } from '../types/usage.js';
+import type { QualityFeedback } from '../types/quality.js';
+import type { StorageConfig } from '../types/storage.js';
 
 export type DbShape = {
   workspace: WorkspaceProfile;
@@ -15,6 +18,10 @@ export type DbShape = {
   tasks: GenerationTaskRecord[];
   promptTemplates: PromptTemplateRecord[];
   auditLogs: Array<Record<string, unknown>>;
+  usageRecords: UsageRecord[];
+  costRules: CostRule[];
+  qualityFeedback: QualityFeedback[];
+  storageConfig: StorageConfig;
 };
 
 const serverRoot = process.cwd();
@@ -29,6 +36,10 @@ const emptyDb = (): DbShape => ({
   tasks: [],
   promptTemplates: defaultPromptTemplates(),
   auditLogs: [],
+  usageRecords: [],
+  costRules: defaultCostRules(),
+  qualityFeedback: [],
+  storageConfig: defaultStorageConfig(),
 });
 
 export function defaultWorkspace(): WorkspaceProfile {
@@ -58,12 +69,35 @@ export function defaultProject(): ProjectRecord {
   };
 }
 
+export function defaultStorageConfig(): StorageConfig {
+  const now = new Date().toISOString();
+  return {
+    id: 'storage_config_1',
+    activeProvider: 'local',
+    accessMode: 'public',
+    presignedUrlExpiresInSeconds: 900,
+    providerInputUrlExpiresInSeconds: 3600,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 export function defaultPromptTemplates(): PromptTemplateRecord[] {
   const now = new Date().toISOString();
   return [
     { id: 'tpl_default_image', name: '电影级图片主视觉', category: 'image', content: '{{scene}} 中的 {{character}}，{{style}}，高对比电影光，精细材质', variables: ['scene', 'character', 'style'], favorite: true, usageCount: 0, createdAt: now, updatedAt: now },
     { id: 'tpl_default_video', name: '产品广告片镜头', category: 'advertising', content: '{{camera}} 缓慢靠近产品，{{emotion}} 氛围，背景为 {{scene}}', variables: ['camera', 'emotion', 'scene'], favorite: false, usageCount: 0, createdAt: now, updatedAt: now },
     { id: 'tpl_default_character', name: '角色一致性参考', category: 'character', content: '保持 {{character}} 的脸部、服装与比例一致，在 {{scene}} 中执行 {{action}}', variables: ['character', 'scene', 'action'], favorite: false, usageCount: 0, createdAt: now, updatedAt: now },
+  ];
+}
+
+export function defaultCostRules(): CostRule[] {
+  const now = new Date().toISOString();
+  return [
+    { id: 'rule_1', providerType: 'wanwuhuanxin-images', model: 'gpt-image-2', mode: 'image', unit: 'per_image', price: 0.05, currency: 'CNY', enabled: false, note: '参考价格，实际以万物焕新控制台为准', createdAt: now, updatedAt: now },
+    { id: 'rule_2', providerType: 'aliyun-wanxiang-t2v', mode: 't2v', unit: 'per_task', price: 0.50, currency: 'CNY', enabled: false, note: '参考价格，实际以阿里云百炼控制台为准', createdAt: now, updatedAt: now },
+    { id: 'rule_3', providerType: 'aliyun-wanxiang-i2v', mode: 'i2v', unit: 'per_task', price: 0.60, currency: 'CNY', enabled: false, note: '参考价格，实际以阿里云百炼控制台为准', createdAt: now, updatedAt: now },
+    { id: 'rule_4', providerType: 'aliyun-wanxiang-r2v', mode: 'r2v', unit: 'per_task', price: 0.80, currency: 'CNY', enabled: false, note: '参考价格，实际以阿里云百炼控制台为准', createdAt: now, updatedAt: now },
   ];
 }
 
@@ -80,6 +114,10 @@ function normalizeDb(value: Partial<DbShape> | undefined): DbShape {
     tasks: Array.isArray(value?.tasks) ? value.tasks : [],
     promptTemplates: Array.isArray(value?.promptTemplates) && value.promptTemplates.length ? value.promptTemplates as PromptTemplateRecord[] : defaultPromptTemplates(),
     auditLogs: Array.isArray(value?.auditLogs) ? value.auditLogs : [],
+    usageRecords: Array.isArray(value?.usageRecords) ? value.usageRecords : [],
+    costRules: Array.isArray(value?.costRules) && value.costRules.length ? value.costRules as CostRule[] : defaultCostRules(),
+    qualityFeedback: Array.isArray(value?.qualityFeedback) ? value.qualityFeedback : [],
+    storageConfig: value?.storageConfig ? value.storageConfig : defaultStorageConfig(),
   };
 }
 
@@ -121,6 +159,10 @@ export async function resetDb() {
     tasks: [],
     promptTemplates: [],
     auditLogs: [],
+    usageRecords: [],
+    costRules: [],
+    qualityFeedback: [],
+    storageConfig: defaultStorageConfig(),
   };
   await writeDbFile(db);
   return db;
@@ -130,6 +172,7 @@ export async function seedDb() {
   const now = new Date().toISOString();
   const db: DbShape = {
     workspace: defaultWorkspace(),
+    storageConfig: defaultStorageConfig(),
     providers: [],
     projects: [
       defaultProject(),
@@ -160,6 +203,9 @@ export async function seedDb() {
     tasks: [],
     promptTemplates: defaultPromptTemplates(),
     auditLogs: [],
+    usageRecords: [],
+    costRules: defaultCostRules(),
+    qualityFeedback: [],
   };
   await writeDb(db);
   return db;

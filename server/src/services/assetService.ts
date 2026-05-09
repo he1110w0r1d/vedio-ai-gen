@@ -29,14 +29,15 @@ export async function addAssets(assets: AssetRecord[]) {
 
 export async function deleteAsset(assetId: string) {
   const asset = await getAsset(assetId);
-  if (asset.storageType === 'local' && asset.localPath) {
-    await deleteLocalFile({ localPath: asset.localPath });
-  }
+  await deleteLocalFile({ localPath: asset.localPath, objectKey: asset.objectKey });
   let removed = false;
   await updateDb((db) => {
     const before = db.assets.length;
     db.assets = db.assets.filter((asset) => asset.id !== assetId);
     removed = db.assets.length !== before;
+    if (removed) {
+      db.qualityFeedback = db.qualityFeedback.filter((fb) => fb.targetId !== assetId);
+    }
   });
   if (!removed) throw notFound('资产不存在');
   return { id: assetId, deleted: true };

@@ -1,0 +1,20 @@
+export type StorageConfig = {
+  id: string;
+  activeProvider: 'local' | 'object';
+  objectProvider?: 'aliyun-oss' | 's3-compatible' | 'custom';
+  bucket?: string;
+  region?: string;
+  endpoint?: string;
+  publicBaseUrl?: string;
+  accessKeyIdEncrypted?: string;
+  accessKeySecretEncrypted?: string;
+  maskedAccessKeyId?: string;
+  usePathStyle?: boolean;
+  folderPrefix?: string;
+  deleteLocalAfterUpload?: boolean;
+  accessMode?: 'public' | 'private-presigned';
+  presignedUrlExpiresInSeconds?: number;
+  providerInputUrlExpiresInSeconds?: number;
+  createdAt: string;
+  updatedAt: string;
+};

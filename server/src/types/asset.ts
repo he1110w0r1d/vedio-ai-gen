@@ -11,8 +11,10 @@ export type AssetRecord = {
   thumbnailUrl?: string;
   url?: string;
   fileUrl?: string;
-  storageType?: 'mock' | 'local' | 'remote';
+  storageType?: 'mock' | 'local' | 'remote' | 'object' | 'exported';
   localPath?: string;
+  objectKey?: string;
+  publicUrl?: string;
   mimeType?: string;
   sizeBytes?: number;
   width?: number;

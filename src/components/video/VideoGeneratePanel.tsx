@@ -20,6 +20,9 @@ export function VideoGeneratePanel({
   onMotionChange,
   onReferenceWeightChange,
   onGenerate,
+  realT2V,
+  realI2V,
+  realR2V,
 }: {
   providers: Provider[];
   providerId: string;
@@ -39,6 +42,9 @@ export function VideoGeneratePanel({
   onMotionChange: (value: number) => void;
   onReferenceWeightChange: (value: number) => void;
   onGenerate: () => void;
+  realT2V?: boolean;
+  realI2V?: boolean;
+  realR2V?: boolean;
 }) {
   return (
     <>
@@ -105,11 +111,17 @@ export function VideoGeneratePanel({
         />
       </label>
       <div className="rounded-xl border border-outline-variant/40 bg-surface-container p-3 text-xs leading-5 text-on-surface-variant">
-        视频生成调用、内容审核、版权归属和商用授权均以所选第三方供应商条款为准；当前仅创建 Mock 异步任务。
+        {realT2V
+          ? '真实 T2V 将调用用户自己的百炼 API Key，可能产生费用。视频生成耗时较长，请在任务中心查看进度。'
+          : realI2V
+            ? '真实 I2V 将调用用户自己的百炼 API Key，可能产生费用。图片输入需满足供应商访问要求，生成耗时较长，请在任务中心查看进度。'
+            : realR2V
+              ? '真实 R2V 将调用用户自己的百炼 API Key，可能产生费用。请在提示词中使用 character1 引用参考角色。'
+              : '视频生成调用、内容审核、版权归属和商用授权均以所选第三方供应商条款为准；当前仅创建 Mock 异步任务。'}
       </div>
       <button className="btn-primary w-full py-3" onClick={onGenerate}>
         <Icon name="movie" />
-        生成视频 Mock 任务
+        {realT2V ? '创建真实 T2V 任务' : realI2V ? '创建真实 I2V 任务' : realR2V ? '创建真实 R2V 任务' : '生成视频 Mock 任务'}
       </button>
     </>
   );

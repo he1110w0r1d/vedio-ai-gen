@@ -18,6 +18,13 @@ export type VideoGenerationResult = {
   task: GenerationTaskRecord;
 };
 
+export type ProviderTaskStatusResult = Pick<GenerationTaskRecord, 'id' | 'status' | 'progress'> & {
+  providerTaskStatus?: string;
+  videoUrl?: string;
+  errorCode?: string;
+  errorReason?: string;
+};
+
 export interface ProviderAdapter {
   id: string;
   name: string;
@@ -27,5 +34,5 @@ export interface ProviderAdapter {
   generateVideoT2V(provider: ProviderRecord, input: VideoGenerationInput): Promise<VideoGenerationResult>;
   generateVideoI2V(provider: ProviderRecord, input: VideoGenerationInput): Promise<VideoGenerationResult>;
   generateVideoR2V(provider: ProviderRecord, input: VideoGenerationInput): Promise<VideoGenerationResult>;
-  getTaskStatus(taskId: string): Promise<Pick<GenerationTaskRecord, 'id' | 'status' | 'progress'>>;
+  getTaskStatus(provider: ProviderRecord, task: GenerationTaskRecord): Promise<ProviderTaskStatusResult>;
 }

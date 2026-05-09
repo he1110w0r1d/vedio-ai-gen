@@ -28,7 +28,7 @@ export function Projects() {
   const [exportOptions, setExportOptions] = useState<Record<string, { includeFiles: boolean; includeTasks: boolean; includeTemplates: boolean }>>({});
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importValidation, setImportValidation] = useState<ProjectImportValidationResult | null>(null);
-  const [importOptions, setImportOptions] = useState({ importFiles: true, importTasks: true, importTemplates: true });
+  const [importOptions, setImportOptions] = useState({ importFiles: true, importTasks: true, importTemplates: true, importQuality: true });
   const [importing, setImporting] = useState(false);
 
   const saveProject = () => {
@@ -109,6 +109,7 @@ export function Projects() {
           <label className="chip"><input className="mr-2" type="checkbox" checked={importOptions.importFiles} onChange={(event) => setImportOptions({ ...importOptions, importFiles: event.target.checked })} />导入文件</label>
           <label className="chip"><input className="mr-2" type="checkbox" checked={importOptions.importTasks} onChange={(event) => setImportOptions({ ...importOptions, importTasks: event.target.checked })} />导入任务</label>
           <label className="chip"><input className="mr-2" type="checkbox" checked={importOptions.importTemplates} onChange={(event) => setImportOptions({ ...importOptions, importTemplates: event.target.checked })} />导入模板</label>
+          <label className="chip"><input className="mr-2" type="checkbox" checked={importOptions.importQuality} onChange={(event) => setImportOptions({ ...importOptions, importQuality: event.target.checked })} />导入质量反馈</label>
         </div>
         {importValidation ? (
           <div className={`mt-4 rounded-xl border p-4 text-sm ${importValidation.valid ? 'border-primary-fixed-dim/40 bg-primary-fixed-dim/10' : 'border-error/40 bg-error-container/20'}`}>

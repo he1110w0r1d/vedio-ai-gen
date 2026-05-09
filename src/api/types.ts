@@ -12,6 +12,9 @@ export type ApiErrorCode =
   | 'TASK_TIMEOUT'
   | 'FILE_TOO_LARGE'
   | 'UNSUPPORTED_FILE_TYPE'
+  | 'VIDEO_TASK_FAILED'
+  | 'VIDEO_RESULT_NOT_FOUND'
+  | 'VIDEO_DOWNLOAD_FAILED'
   | 'UNKNOWN_PROVIDER_ERROR';
 
 export type ApiError = {

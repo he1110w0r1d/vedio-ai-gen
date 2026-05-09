@@ -58,6 +58,13 @@ export const assetApi = {
     link.remove();
     URL.revokeObjectURL(url);
   },
+
+  async getAssetAccessUrl(assetId: string): Promise<{ assetId: string; accessType: 'local' | 'public' | 'presigned' | 'mock'; url: string; expiresAt?: string }> {
+    if (shouldUseMockApi()) {
+      return { assetId, accessType: 'mock', url: '' };
+    }
+    return requestJson(`/api/assets/${assetId}/access-url`);
+  },
 };
 
 function parseFileName(disposition: string) {

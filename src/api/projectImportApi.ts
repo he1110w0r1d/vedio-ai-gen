@@ -47,7 +47,7 @@ export const projectImportApi = {
     return requestImport<ProjectImportValidationResult>('/api/project-imports/validate', form);
   },
 
-  async import(file: File, options: { importFiles: boolean; importTasks: boolean; importTemplates: boolean }) {
+  async import(file: File, options: { importFiles: boolean; importTasks: boolean; importTemplates: boolean; importQuality: boolean }) {
     if (shouldUseMockApi()) throw new Error('Mock 模式暂不支持真实归档导入');
     const form = new FormData();
     form.append('file', file);
@@ -55,6 +55,7 @@ export const projectImportApi = {
       importFiles: String(options.importFiles),
       importTasks: String(options.importTasks),
       importTemplates: String(options.importTemplates),
+      importQuality: String(options.importQuality),
     });
     return requestImport<ProjectImportResult>(`/api/project-imports?${params}`, form);
   },

@@ -42,6 +42,9 @@ export function AssetCard({
           <div className="absolute left-3 top-3 flex gap-2">
             <span className="chip bg-black/70 text-primary-fixed">{assetTypeLabel(asset)}</span>
             {asset.favorite ? <span className="chip bg-black/70 text-secondary">收藏</span> : null}
+            {asset.storageType === 'object' && <span className="chip bg-black/70 text-secondary-container" title="已存储在对象存储"><Icon name="cloud" className="text-xs mr-1" />云</span>}
+            {asset.storageType === 'local' && <span className="chip bg-black/70 text-on-surface-variant" title="存储在本地服务器"><Icon name="hard_drive" className="text-xs mr-1" />本</span>}
+            {asset.storageType === 'mock' && <span className="chip bg-black/70 text-on-surface-variant" title="Mock 数据">M</span>}
           </div>
           {asset.type === 'video' ? <span className="chip absolute bottom-3 right-3 bg-black/70">{asset.duration}s</span> : null}
         </div>
