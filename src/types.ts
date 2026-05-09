@@ -9,6 +9,7 @@ export type ViewId =
   | 'templates'
   | 'usage'
   | 'provider-benchmark'
+  | 'benchmarks'
   | 'settings';
 
 export type ProviderCapability =

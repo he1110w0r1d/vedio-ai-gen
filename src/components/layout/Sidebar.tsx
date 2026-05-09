@@ -10,6 +10,7 @@ export const navItems: { id: ViewId; label: string; icon: string }[] = [
   { id: 'tasks', label: '任务中心', icon: 'task' },
   { id: 'usage', label: '用量统计', icon: 'bar_chart' },
   { id: 'provider-benchmark', label: '供应商对比', icon: 'analytics' },
+  { id: 'benchmarks', label: '基准测试', icon: 'science' },
   { id: 'providers', label: '供应商与 API', icon: 'api' },
   { id: 'templates', label: '模板库', icon: 'description' },
   { id: 'settings', label: '设置', icon: 'settings' },

@@ -14,6 +14,7 @@ import { qualityRouter } from './routes/quality.js';
 import { storageRouter } from './routes/storage.js';
 import { workspaceRouter } from './routes/workspace.js';
 import { providerBenchmarkRouter } from './routes/providerBenchmark.js';
+import { benchmarkRouter } from './routes/benchmark.js';
 import { advanceMockTasks } from './services/taskService.js';
 import { ensureStorageDirs } from './services/fileStorageService.js';
 import { readDb } from './services/storageService.js';
@@ -77,6 +78,7 @@ export function createApp() {
   app.use('/api/quality', qualityRouter);
   app.use('/api/storage', storageRouter);
   app.use('/api/provider-benchmark', providerBenchmarkRouter);
+    app.use('/api/benchmarks', benchmarkRouter);
   app.use(errorMiddleware);
 
   windowlessSetInterval(() => {

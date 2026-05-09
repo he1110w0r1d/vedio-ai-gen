@@ -7,6 +7,7 @@ import { getProviderAdapter } from '../providers/providerRegistry.js';
 import { saveRemoteVideoToLocal } from './fileStorageService.js';
 import { readDb, updateDb } from './storageService.js';
 import { completeUsageRecord, failUsageRecord, cancelUsageRecord, createUsageRecord } from './usageService.js';
+import { syncBenchmarkRunItems } from './benchmarkRunnerService.js';
 
 const videoThumb = 'https://images.unsplash.com/photo-1484950763426-56b5bf172dbb?auto=format&fit=crop&w=1200&q=80';
 
@@ -197,6 +198,8 @@ export async function refreshRealVideoTasks(taskId?: string) {
       await failUsageRecord(task.id, status.errorReason);
     }
   }
+  // Sync benchmark run items after task polling
+  syncBenchmarkRunItems().catch(() => undefined);
 }
 
 export async function cancelTask(taskId: string) {

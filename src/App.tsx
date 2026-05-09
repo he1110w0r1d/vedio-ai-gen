@@ -11,6 +11,7 @@ import { Templates } from './pages/Templates';
 import { VideoStudio } from './pages/VideoStudio';
 import { Usage } from './pages/Usage';
 import { ProviderBenchmark } from './pages/ProviderBenchmark';
+import { Benchmarks } from './pages/Benchmarks';
 
 export default function App() {
   const { view, isBootstrapping, bootstrapError, refreshFromServer } = useApp();
@@ -23,6 +24,7 @@ export default function App() {
     tasks: <TaskCenter />,
     usage: <Usage />,
     'provider-benchmark': <ProviderBenchmark />,
+    benchmarks: <Benchmarks />,
     providers: <Providers />,
     templates: <Templates />,
     settings: <Settings />,

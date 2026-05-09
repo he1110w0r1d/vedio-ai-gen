@@ -135,6 +135,26 @@ v8.2 阶段完成了多供应商对比看板（Provider Benchmark），提供数
 
 仅做只读聚合，不保存新数据。不返回 API Key、encrypted 字段或 provider 原始响应。
 
+### 2.7 基准测试集 (Prompt Benchmark Set)
+
+第 8.3 阶段新增了标准化的 Prompt Benchmark Set 系统：
+
+- **核心能力**：提供固定测试集（Benchmark Set）和测试运行（Benchmark Run），用同一 prompt、参考图和参数比较不同模型/供应商表现。
+- **dry-run 模式**（默认）：仅创建测试记录，不调用真实供应商，不产生费用。dry-run 不代表模型真实表现。
+- **live-run 模式**：真实调用供应商生成视频，需要二次确认（confirmLiveRun=true），会产生供应商费用。
+- **默认测试集**：`Default Video Model Benchmark v0.1`，含 T2V×3 + I2V×3 + R2V×3 共 9 个标准化用例。
+- **评价 rubric**：每个用例包含评分标准（主体稳定性、动作自然度、prompt 符合度、伪影程度、画面清晰度），作为人工评分参考。
+- **结果汇入**：真实 Run 完成后，tasks/assets/usageRecords/qualityFeedback 自动写入，可被 Provider Benchmark 消费。
+- **状态同步闭环（第 8.3.1 阶段）**：
+  - `refreshRealVideoTasks()` 轮询后自动调用 `syncBenchmarkRunItems()`。
+  - task completed → RunItem completed，自动回填 assetId。
+  - task failed → RunItem failed，回填 errorCode / errorReason。
+  - 所有 RunItem 终态后，Run 状态自动从 running 变更为 completed。
+  - Benchmark 结果页每 3s 自动刷新，实时展示任务→资产同步结果。
+  - Quality Feedback 填写后，Run Summary 的 averageRating 和 estimatedCost 实时更新。
+  - 失败信息的 errorCode / errorReason 永久保留，不因后续同步而丢失。
+- **安全约束**：live-run 必须二次确认，不保存 API Key 或 presigned URL 到 Run/Item，Benchmark Set 可提交 seed 但真实 Run 结果不应提交。
+
 ## 5. 结论
 
 v0.2 版本达成了以文本和参考素材驱动的**完整"生成 → 统计 → 评价 → 对比"闭环**，可作为核心基础进入下一阶段。是否扩展 Kling I2V 建议在 Provider Benchmark 有足够数据支撑后决策。

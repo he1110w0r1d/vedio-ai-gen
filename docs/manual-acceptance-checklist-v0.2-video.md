@@ -200,3 +200,48 @@ npm run verify:kling-t2v
   npm run verify:wanxiang-r2v
   npm run verify:kling-t2v
   ```
+
+## 附录：基准测试集 (Benchmark Set) 验收（v8.3 阶段）
+
+本节验证 Prompt Benchmark Set 的完整功能。
+
+### Mock Mode 验收
+
+- [ ] 前端 Mock 模式启动：`npm run dev`。
+- [ ] 侧边栏显示「基准测试」入口（science 图标）。
+- [ ] 点击进入 Benchmark 页面，默认 Benchmark Set 可见。
+- [ ] 默认测试集包含 9 个用例（T2V×3 + I2V×3 + R2V×3）。
+- [ ] 展开用例可查看 prompt、parameters、rubric。
+- [ ] 可创建 dry-run，不产生真实调用。
+- [ ] Run 列表正常显示，Run 结果可见。
+- [ ] Mock 模式下现有页面不受影响。
+
+### Real Mode dry-run 验收
+
+- [ ] 后端启动：`cd server && npm run dev`。
+- [ ] 前端 Real 模式启动。
+- [ ] Benchmark Set 可访问。
+- [ ] 创建 Run 时可选供应商（T2V/I2V/R2V capable providers）。
+- [ ] liveRun=false 时不调用真实供应商。
+- [ ] RunItems 正常创建（status=pending/skipped）。
+- [ ] Run 结果页可见，不产生真实费用。
+- [ ] Provider Benchmark 页面显示「查看基准测试」按钮，可跳转。
+
+### Real Mode live-run 验收（手动可选）
+
+- [ ] 创建 Run 时勾选 liveRun。
+- [ ] 必须 confirmLiveRun=true 才能执行。
+- [ ] 费用提示明确。
+- [ ] 创建真实 tasks，assets/usageRecords 正常写入。
+- [ ] task completed 后 RunItem 自动变 completed，回填 assetId。
+- [ ] task failed 后 RunItem 自动变 failed，回填 errorCode / errorReason。
+- [ ] 所有 RunItem 终态后，Run 状态自动从 running 变为 completed。
+- [ ] Run 结果页展示：用例、模式、供应商、模型、状态、任务/资产链接、错误信息。
+- [ ] 点击「任务」按钮可跳转 Task Center。
+- [ ] 点击「资产」按钮可跳转 Asset Library。
+- [ ] Run Summary 显示 averageRating（评价后）和 estimatedCost（生成后）。
+- [ ] 后续可人工填写 quality。
+- [ ] Quality Feedback 填写后 Run Summary 的 averageRating 更新。
+- [ ] Provider Benchmark 可统计结果。
+- [ ] Usage 页面可见 Benchmark 产生任务的成本。
+- [ ] db:reset + db:seed 正常，默认 Benchmark Set 可见。

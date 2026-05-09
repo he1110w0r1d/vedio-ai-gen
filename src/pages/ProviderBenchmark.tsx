@@ -283,6 +283,9 @@ export function ProviderBenchmark() {
               本页基于本地任务、用量台账和人工质量评价，对不同供应商和模型进行对比。成本为估算值，实际费用以供应商控制台为准。
               <strong className="text-primary-fixed-dim"> Kling 当前通过兼容网关接入，非官方 Kling API。</strong>
             </p>
+            <button className="btn-secondary mt-2 text-xs" onClick={() => setView('benchmarks')}>
+              <Icon name="science" /> 查看基准测试
+            </button>
           </div>
         </div>
       </div>

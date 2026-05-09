@@ -529,6 +529,60 @@ Settings 页面会显示版本与诊断信息。
 
 第 8.2 阶段多供应商对比看板已完成。v0.2 Video MVP 达成了完整的"生成 → 统计 → 评价 → 对比"闭环。
 
+## 基准测试集 Prompt Benchmark Set
+
+第 8.3 阶段新增了标准化的 Prompt Benchmark Set 系统，将临时测试脚本升级为产品能力：
+
+- **Benchmark Set**：标准测试集，包含固定 prompt、参数、参考素材和评价 rubric 的用例集合
+- **Benchmark Run**：一次测试运行，选择测试集和供应商列表，执行 dry-run 或 live-run
+- **dry-run**（默认）：不调用真实供应商，仅创建测试记录，不产生费用
+- **live-run**：真实调用供应商生成视频，**会产生费用**，需要二次确认
+
+### 默认测试集
+
+`Default Video Model Benchmark v0.1` 包含 9 个标准化用例：
+
+| 模式 | 数量 | 主题 |
+|------|------|------|
+| T2V | 3 条 | 水滴 Logo 动效、产品展示、仪表盘推送 |
+| I2V | 3 条 | 水滴悬浮旋转、产品旋转、仪表盘视差 |
+| R2V | 3 条 | 水滴角色前移、产品展示、仪表盘演示 |
+
+每个用例包含：prompt、parameters（时长/分辨率/画幅）、rubric（评价标准，如主体稳定性、动作自然度、prompt 符合度等）、expectedFocus（评价重点）
+
+### 使用流程
+
+1. 进入侧边栏「基准测试」页面
+2. 查看默认 Benchmark Set 及其用例
+3. 点击「创建 Run」，选择供应商
+4. dry-run 不产生费用，live-run 需确认费用
+5. 任务轮询自动同步 RunItem 状态（task completed → item completed + assetId 回填）
+6. 结果自动进入 Task / Asset / Usage / Quality / Provider Benchmark
+
+### 状态同步闭环
+
+- **RunItem ↔ Task**：`refreshRealVideoTasks()` 轮询后自动调用 `syncBenchmarkRunItems()`
+- **task completed → RunItem completed**：自动回填 assetId，关联生成的视频资产
+- **task failed → RunItem failed**：回填 errorCode / errorReason，保留错误信息
+- **Run 状态自动迁移**：running → completed 在所有 item 终态后自动完成
+- **Quality Feedback 联动**：RunItem 关联的 asset/task 可填写评价，评价后 Run Summary 的 averageRating 实时更新，Provider Benchmark 和 Usage 页面同步统计
+- **前端轮询**：Benchmark 页面每 3s 自动刷新 Run 详情，实时显示任务→资产同步结果
+
+### 安全约束
+
+- live-run 必须二次确认（confirmLiveRun=true）
+- 不保存 API Key 到 Run/Item
+- 不保存 presigned URL
+- 不保存供应商原始响应
+- Benchmark Set 可提交 seed，真实 Run 结果不应提交
+- **dry-run 不代表模型真实表现**：dry-run 不调用供应商，仅创建记录用于测试流程
+- **live-run 会产生供应商费用**：成本以供应商控制台为准
+
+### 入口
+
+- 侧边栏「基准测试」（science 图标）
+- Provider Benchmark 页面「查看基准测试」按钮
+
 下一阶段方向：
 - **方向 A**：Kling I2V 接入（建议在 Provider Benchmark 有足够数据支撑后决策）；
 - **方向 B**：视频编辑、提示词优化；
