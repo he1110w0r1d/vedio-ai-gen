@@ -60,7 +60,7 @@ export function createApp() {
         stage: APP_STAGE,
         storageReady,
         dbReady,
-        providerMode: 'wanwuhuanxin-images+aliyun-wanxiang-t2v',
+        providerMode: 'wanwuhuanxin-images+aliyun-wanxiang-t2v-i2v-r2v+happyhorse+kling-t2v(dry-run)',
         timestamp: new Date().toISOString(),
       },
     });

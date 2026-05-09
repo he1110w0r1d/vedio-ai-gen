@@ -1,2 +1,2 @@
-export const APP_VERSION = '0.2.0-video-mvp';
-export const APP_STAGE = 'VIDEO_MVP';
+export const APP_VERSION = '0.3.0-benchmark-mvp';
+export const APP_STAGE = 'BENCHMARK_MVP';
