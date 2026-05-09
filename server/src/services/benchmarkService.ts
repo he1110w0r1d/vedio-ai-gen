@@ -99,12 +99,16 @@ export async function listBenchmarkRuns(): Promise<BenchmarkRun[]> {
   return db.benchmarkRuns;
 }
 
-export async function getBenchmarkRun(id: string): Promise<{ run: BenchmarkRun; items: BenchmarkRunItem[] }> {
+export async function getBenchmarkRun(id: string): Promise<{ run: BenchmarkRun; items: BenchmarkRunItem[]; qualityFeedbacks: import('../types/quality.js').QualityFeedback[] }> {
   const db = await readDb();
   const run = db.benchmarkRuns.find(r => r.id === id);
   if (!run) throw notFound('Benchmark Run 不存在');
   const items = db.benchmarkRunItems.filter(i => i.runId === id);
-  return { run, items };
+  const taskIds = items.filter(i => i.taskId).map(i => i.taskId!) as string[];
+  const assetIds = items.filter(i => i.assetId).map(i => i.assetId!) as string[];
+  const allTargetIds = new Set([...taskIds, ...assetIds]);
+  const qualityFeedbacks = db.qualityFeedback.filter(fb => allTargetIds.has(fb.targetId));
+  return { run, items, qualityFeedbacks };
 }
 
 export async function createBenchmarkRun(data: {
@@ -228,6 +232,24 @@ export async function getBenchmarkRunSummary(id: string): Promise<BenchmarkRunSu
     ...data,
   }));
 
+  // Review progress (reuse allFeedback from above for review computation)
+  const reviewableItems = items.filter(i =>
+    (i.status === 'completed' || i.status === 'failed') &&
+    (i.taskId || i.assetId) &&
+    !i.errorCode?.includes('DRY_RUN')
+  );
+  const totalReviewableItems = reviewableItems.length;
+  const reviewedItemIds = new Set(allFeedback.map(fb => fb.targetId));
+  const reviewedItemsCount = reviewableItems.filter(i =>
+    (i.assetId && reviewedItemIds.has(i.assetId)) ||
+    (i.taskId && reviewedItemIds.has(i.taskId))
+  ).length;
+  const failedReviewedItemsCount = reviewableItems.filter(i =>
+    i.status === 'failed' &&
+    ((i.assetId && reviewedItemIds.has(i.assetId)) ||
+     (i.taskId && reviewedItemIds.has(i.taskId)))
+  ).length;
+
   return {
     run,
     totalCases,
@@ -245,5 +267,14 @@ export async function getBenchmarkRunSummary(id: string): Promise<BenchmarkRunSu
     byProvider,
     byMode,
     failureCategories,
+    review: {
+      totalReviewableItems,
+      reviewedItems: reviewedItemsCount,
+      unreviewedItems: totalReviewableItems - reviewedItemsCount,
+      failedReviewedItems: failedReviewedItemsCount,
+      reviewProgress: totalReviewableItems > 0
+        ? Math.round(reviewedItemsCount / totalReviewableItems * 10000) / 100
+        : 0,
+    },
   };
 }

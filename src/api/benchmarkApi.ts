@@ -115,6 +115,13 @@ export type BenchmarkRunSummary = {
     category: string;
     count: number;
   }>;
+  review: {
+    totalReviewableItems: number;
+    reviewedItems: number;
+    unreviewedItems: number;
+    failedReviewedItems: number;
+    reviewProgress: number;
+  };
 };
 
 // Mock seed data
@@ -271,12 +278,12 @@ export const benchmarkApi = {
     return [];
   },
 
-  async getBenchmarkRun(id: string): Promise<{ run: BenchmarkRun; items: BenchmarkRunItem[] }> {
+  async getBenchmarkRun(id: string): Promise<{ run: BenchmarkRun; items: BenchmarkRunItem[]; qualityFeedbacks: any[] }> {
     if (!shouldUseMockApi()) {
-      const res = await requestJson<{ run: BenchmarkRun; items: BenchmarkRunItem[] }>(`/api/benchmarks/runs/${id}`);
+      const res = await requestJson<{ run: BenchmarkRun; items: BenchmarkRunItem[]; qualityFeedbacks: any[] }>(`/api/benchmarks/runs/${id}`);
       return res;
     }
-    return { run: {} as BenchmarkRun, items: [] };
+    return { run: {} as BenchmarkRun, items: [], qualityFeedbacks: [] };
   },
 
   async createBenchmarkRun(data: { setId: string; name: string; providerIds: string[]; liveRun?: boolean }): Promise<BenchmarkRun> {
@@ -314,6 +321,7 @@ export const benchmarkApi = {
       completedItems: 0, createdItems: 0, failedItems: 0, skippedItems: 0, pendingItems: 0,
       totalTasks: 0, totalAssets: 0,
       byProvider: [], byMode: [], failureCategories: [],
+      review: { totalReviewableItems: 0, reviewedItems: 0, unreviewedItems: 0, failedReviewedItems: 0, reviewProgress: 0 },
     };
   },
 };

@@ -186,6 +186,29 @@ v8.2 阶段完成了多供应商对比看板（Provider Benchmark），提供数
   - `npm run verify:no-presigned-persistence` — 验证 db.json 无 presigned URL 残留。
   - `npm run db:repair-hygiene` — 修复历史脏数据（清理 presigned URL、修复 pending 残留）。
 
+### 2.9 Benchmark 人工评审工作流 (Manual Review Workflow)
+
+第 8.3.6 阶段新增了 Benchmark Run 结果页内嵌的人工评审工作流：
+
+- **核心原则**：Benchmark 不能只看任务成功和文件大小，必须有人看过视频后再给质量评分。
+- **RunItem 评审状态**：基于 qualityFeedback 动态计算，不新增冗余 DB 字段。
+  - `reviewed`：已评审（有 qualityFeedback 记录，含 rating/qualityStatus/note）。
+  - `unreviewed`：未评审（completed 且有 assetId/taskId，但无 qualityFeedback）。
+  - `failed_reviewed`：已复盘（failed item 已有 failureCategory/note）。
+  - `failed_pending`：待复盘（failed item 尚未复盘）。
+  - `not_applicable`：不适用（skipped / dry-run / 无 taskId）。
+- **Run Summary 评审字段**：`review.totalReviewableItems`、`reviewedItems`、`unreviewedItems`、`failedReviewedItems`、`reviewProgress`（百分比，精度 0.01%）。
+  - 口径：completed/failed 且有 assetId/taskId 的 item = reviewable；dry-run 和 skipped 不计入；有 qualityFeedback 记录 = reviewed。
+- **视频预览**：复用 AssetPreview 组件，支持 video controls、private object presigned URL 动态签发、资产缺失友好空状态。
+- **内嵌评审表单**：复用 QualityFeedbackForm，自动填入 providerId/providerName/model/mode/projectId 上下文。
+- **Rubric 展示**：评审面板中展示 Benchmark Case 的评价维度（criteria label、description、weight）。提示文案："请先观看视频，再根据以下维度填写评分。"
+- **下一条待评审**：找到 Run 中第一条未评审或待复盘的 item，点击后选中并切换详情。全部完成后显示"本 Run 已全部评审"。
+- **失败任务复盘**：对 failed RunItem 展示 task.errorCode/errorReason，允许填写 failureCategory/note/worthRetry，不要求 rating。保存为 task-level qualityFeedback。
+- **防误导评分**：评审面板显示警示："请先观看视频后再评分。未观看视频的评分只应用于链路验证，不应作为模型质量结论。"
+- **筛选增强**：支持按 全部/未评审/已评审/失败 筛选 Run 结果。
+- **数据联动**：保存评价后 Run Summary averageRating 更新、Provider Benchmark averageRating 更新、failureCategories 更新、wastedCost 更新、Usage 页面质量信息更新。
+- **约束**：不新增生成能力、不接新供应商、不接新模型、不做 AI 自动评分、不伪造人工评分。
+
 ## 5. 结论
 
 v0.2 版本达成了以文本和参考素材驱动的**完整"生成 → 统计 → 评价 → 对比"闭环**，可作为核心基础进入下一阶段。是否扩展 Kling I2V 建议在 Provider Benchmark 有足够数据支撑后决策。

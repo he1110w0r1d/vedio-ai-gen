@@ -284,3 +284,60 @@ npm run verify:kling-t2v
 - [ ] Provider Benchmark 可统计结果。
 - [ ] Usage 页面可见 Benchmark 产生任务的成本。
 - [ ] db:reset + db:seed 正常，默认 Benchmark Set 可见。
+
+## 十一、 Benchmark 人工评审工作流验收（v8.3.6 阶段）
+
+本节验证 Benchmark Run 结果页内嵌的人工评审功能。
+
+### Mock Mode 验收
+
+- [ ] 前端 Mock 模式启动：`npm run dev`。
+- [ ] Benchmark 页面可访问，不崩溃。
+- [ ] Run 结果页不崩溃。
+- [ ] 无 asset 时有友好空状态（"资产不存在或已删除"）。
+- [ ] 评审面板可打开（通过"评价"按钮）。
+- [ ] Rubric 显示正常（评价维度 label、description、weight）。
+- [ ] 失败任务可打开复盘面板。
+
+### Real Mode dry-run 验收
+
+- [ ] Benchmark Set 可见。
+- [ ] dry-run 可创建。
+- [ ] dry-run item 显示"不适用"评审状态（不要求评审）。
+- [ ] 页面提示 dry-run 不代表模型表现。
+- [ ] dry-run items 不显示"评价"按钮（或无操作入口）。
+
+### Real Mode 已有 live-run 数据验收
+
+如果当前 `db.json` 中已有 live-run 数据：
+
+- [ ] completed item 可预览视频（利用 AssetPreview 组件）。
+- [ ] completed item 可填写 asset-level quality（评分、质量状态、失败分类、备注）。
+- [ ] failed item 可填写 task-level failure review（失败分类、备注、值得重试）。
+- [ ] 失败复盘不要求填写 rating。
+- [ ] 保存后 Run Summary reviewedItems 增加。
+- [ ] 保存后 Run Summary averageRating 更新。
+- [ ] 保存后 Provider Benchmark 数据更新（评分、失败分类）。
+- [ ] 保存后 Usage 页面质量信息更新。
+- [ ] 「下一条待评审」可跳转到下一条未评审/待复盘 item。
+- [ ] 全部评审后显示"本 Run 已全部评审"完成提示。
+- [ ] 评审面板显示"请先观看视频后再评分"警示。
+- [ ] 筛选功能正常：全部/未评审/已评审/失败。
+- [ ] 评审进度条正常显示（百分比）。
+
+### 构建验收
+
+- [ ] 前端 `npm run build` 通过。
+- [ ] 后端 `cd server && npm run build` 通过。
+- [ ] 后端 `cd server && npm test` 全部通过。
+- [ ] `cd server && npm run verify:db-persistence` 全部通过。
+- [ ] `cd server && npm run verify:no-presigned-persistence` 全部通过。
+- [ ] `cd server && npm run db:reset && npm run db:seed` 正常。
+
+### 安全验收
+
+- [ ] 不保存明文 API Key。
+- [ ] 不保存完整 presigned URL。
+- [ ] 不新增生成能力。
+- [ ] 不做 AI 自动评分。
+- [ ] 不伪造人工评分。

@@ -608,7 +608,14 @@ Settings 页面会显示版本与诊断信息。
 - **task completed → RunItem completed**：自动回填 assetId，关联生成的视频资产
 - **task failed → RunItem failed**：回填 errorCode / errorReason，保留错误信息
 - **Run 状态自动迁移**：running → completed 在所有 item 终态后自动完成
-- **Quality Feedback 联动**：RunItem 关联的 asset/task 可填写评价，评价后 Run Summary 的 averageRating 实时更新，Provider Benchmark 和 Usage 页面同步统计
+ **Quality Feedback 联动**：RunItem 关联的 asset/task 可填写评价，评价后 Run Summary 的 averageRating 实时更新，Provider Benchmark 和 Usage 页面同步统计
+  - **Benchmark 人工评审工作流（第 8.3.6 阶段）**：Run 结果页内置评审面板，可直接预览视频、填写评分、查看 rubric、一键跳转下一条待评审
+  - **评审状态**：每个 RunItem 基于 qualityFeedback 动态计算评审状态（已评审/未评审/已复盘/待复盘/不适用）
+  - **Run Summary 评审进度**：显示 totalReviewableItems、reviewedItems、unreviewedItems、failedReviewedItems、reviewProgress
+  - **评审面板**：左侧视频预览 + 用例信息 + Rubric 评价维度，右侧 QualityFeedbackForm。支持成功任务评分和失败任务复盘
+  - **下一条待评审**：一键跳转到当前 Run 中第一条未评审/待复盘的 item，全部完成后显示完成提示
+  - **防误导评分提示**：评审面板显示"请先观看视频后再评分，未观看视频的评分只应用于链路验证"
+  - **评分联动**：保存评价后 Run Summary averageRating 更新、Provider Benchmark 同步更新、failureCategories 更新
 - **前端轮询**：Benchmark 页面每 3s 自动刷新 Run 详情，实时显示任务→资产同步结果
 
 ### 安全约束

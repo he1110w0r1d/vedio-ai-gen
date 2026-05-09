@@ -112,4 +112,11 @@ export type BenchmarkRunSummary = {
     category: string;
     count: number;
   }>;
+  review: {
+    totalReviewableItems: number;
+    reviewedItems: number;
+    unreviewedItems: number;
+    failedReviewedItems: number;
+    reviewProgress: number;
+  };
 };
