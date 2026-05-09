@@ -354,6 +354,84 @@ npm run db:repair-hygiene
 - Kling 说明 → 当前为 kling3api.com 第三方兼容网关，非 Kling 官方 API
 - 数据丢失 → 运行 `npm run db:repair-hygiene` 修复，损坏的 db.json 有 `.corrupted.*` 备份
 
+## 预发部署
+
+### Docker 单镜像部署
+
+```bash
+# 构建镜像
+docker build -t video-ai-gen:v0.3 .
+
+# 准备数据目录
+mkdir -p data storage
+
+# 启动容器
+docker run -d \
+  --name video-ai-gen \
+  -p 8787:8787 \
+  -e APP_ENCRYPTION_KEY=$(openssl rand -hex 32) \
+  -e CORS_ORIGIN=http://localhost:8787 \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/storage:/app/storage \
+  video-ai-gen:v0.3
+
+# 初始化数据
+docker exec video-ai-gen node dist/scripts/seedDb.js
+
+# 检查健康
+curl http://localhost:8787/health
+```
+
+### docker-compose 部署
+
+```bash
+# 复制模板
+cp docker-compose.example.yml docker-compose.yml
+
+# 编辑环境变量（重点是 APP_ENCRYPTION_KEY）
+vim docker-compose.yml
+
+# 启动
+docker compose up -d
+
+# 初始化数据
+docker compose exec app node dist/scripts/seedDb.js
+```
+
+### 环境变量
+
+见 [`.env.production.example`](.env.production.example)，关键变量：
+
+- `APP_ENCRYPTION_KEY`：至少 32 字节，用于加密 Provider API Key
+- `CORS_ORIGIN`：生产环境设置为实际域名
+- `STORAGE_MODE`：`local` / `object-public` / `object-private-presigned`
+
+### 生产注意事项
+
+- Provider API Key 通过应用内「供应商」页面添加，**不写入 .env**
+- `APP_ENCRYPTION_KEY` 必须安全备份，丢失则已保存的 Provider Key 无法解密
+- 生产建议配置反向代理 (Caddy/Nginx) + HTTPS
+- 生产建议使用对象存储 (Private-Presigned 模式) 替代本地文件存储
+- `data/` 和 `storage/` 目录需映射为持久卷
+- 当前版本无用户认证，预发/生产必须配置 Basic Auth 或类似保护
+
+### 为何当前仍不是正式生产版本
+
+- 无用户认证与权限系统
+- JSON 文件存储（非 SQL 数据库）
+- 无审计日志
+- 无自动化备份
+- 估算成本不保证与供应商账单一致
+
+详细部署文档：
+- [Docker 部署](Dockerfile) / [docker-compose](docker-compose.example.yml)
+- [反向代理与 HTTPS](docs/deployment-reverse-proxy-v0.3.md)
+- [对象存储生产配置](docs/object-storage-production-v0.3.md)
+- [备份与恢复](docs/backup-restore-v0.3.md)
+- [SQL 迁移计划](docs/sql-migration-plan-v0.3.md)
+- [最小登录保护](docs/auth-minimum-plan-v0.3.md)
+- [部署前检查清单](docs/pre-release-checklist-v0.3.md)
+
 ## 重要文档
 
 - [v0.3 能力边界](docs/benchmark-mvp-v0.3-capability-boundary.md)

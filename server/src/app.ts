@@ -38,6 +38,16 @@ export function createApp() {
   app.use('/storage', express.static(path.resolve(process.cwd(), 'storage')));
   ensureStorageDirs().catch(() => undefined);
 
+  // 生产模式：托管前端静态文件
+  if (env.nodeEnv === 'production') {
+    const publicDir = path.resolve(process.cwd(), 'public');
+    app.use(express.static(publicDir));
+    // SPA fallback：所有非 /api 非 /storage 非 /health 请求返回 index.html
+    app.get(/^(?!\/(api|storage|health)).*/, (_req, res) => {
+      res.sendFile(path.join(publicDir, 'index.html'));
+    });
+  }
+
   app.get('/health', async (_req, res) => {
     let storageReady = false;
     let dbReady = false;
