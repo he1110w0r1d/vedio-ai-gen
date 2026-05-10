@@ -19,6 +19,7 @@ import { advanceMockTasks } from './services/taskService.js';
 import { ensureStorageDirs } from './services/fileStorageService.js';
 import { readDb } from './services/storageService.js';
 import { errorMiddleware } from './utils/errors.js';
+import { basicAuth } from './middleware/basicAuth.js';
 import { APP_STAGE, APP_VERSION } from './version.js';
 
 export function createApp() {
@@ -37,6 +38,9 @@ export function createApp() {
   app.use(express.json({ limit: '10mb' }));
   app.use('/storage', express.static(path.resolve(process.cwd(), 'storage')));
   ensureStorageDirs().catch(() => undefined);
+
+  // 访问控制：默认关闭，仅当 APP_ACCESS_CONTROL=basic 时启用
+  app.use(basicAuth());
 
   // 生产模式：托管前端静态文件
   if (env.nodeEnv === 'production') {
