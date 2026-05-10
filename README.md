@@ -388,14 +388,35 @@ curl http://localhost:8787/health
 # 复制模板
 cp docker-compose.example.yml docker-compose.yml
 
-# 编辑环境变量（重点是 APP_ENCRYPTION_KEY）
-vim docker-compose.yml
+# 创建 .env 文件（docker compose 自动读取）
+# ⚠️ 至少 32 字节
+cat > .env << 'EOF'
+APP_ENCRYPTION_KEY=$(openssl rand -hex 32)
+CORS_ORIGIN=http://localhost:8787
+STORAGE_MODE=local
+EOF
+
+# 编辑其他环境变量（如对象存储配置）
+vim .env
 
 # 启动
 docker compose up -d
 
 # 初始化数据
 docker compose exec app node dist/scripts/seedDb.js
+
+# 检查
+curl http://localhost:8787/health
+```
+
+**注意**：`docker-compose.yml` 中的 `${APP_ENCRYPTION_KEY}` 从项目根目录的 `.env` 文件读取。此 `.env` 与前端/后端的 `.env` 不同，专供 docker compose 变量替换使用。
+
+**注意**：如果运行时 Docker 镜像不包含 scripts（当前 `npm ci --omit=dev` 不含 `tsx`），`db:seed` 可在宿主机执行后挂载 volume：
+
+```bash
+# 宿主机先 seed：
+cd server && npm run db:seed
+# 然后 compose volume 会自动挂载 ./data/db.json
 ```
 
 ### 环境变量
