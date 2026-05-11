@@ -1,13 +1,37 @@
 # SQL 迁移计划（v0.3 → 生产）
 
-本文档设计从本地 JSON 文件存储（`server/data/db.json`）迁移到关系数据库（PostgreSQL）的完整方案。当前阶段仅做设计，不真正实现 SQL。
+本文档记录从本地 JSON 文件存储迁移到关系数据库的完整路线。第一阶段 SQLite 已落地（v0.3.9），第二阶段目标为 PostgreSQL + 多用户。
 
 ## 一、当前存储现状
+
+### JSON 模式（DATA_BACKEND=json，默认）
 
 - 存储引擎：单文件 JSON (`server/data/db.json`)
 - 读写方式：全量读写，`readDb()` → 修改 → `writeDb()`
 - 优点：零依赖，开发快速
-- 问题：不适合并发（无事务/无锁），大规模数据性能差，无审计日志，单文件故障风险
+- 问题：不适合并发（无事务/无锁），大规模数据性能差，单文件故障风险
+
+### SQLite 模式（DATA_BACKEND=sqlite，v0.3.9+ 推荐预发）
+
+- 存储引擎：better-sqlite3 + WAL 模式
+- 架构：Repository 抽象层，与 JSON 模式共享 `storageService.ts` 接口
+- 表结构：14 张实体表，`id TEXT PK + payload TEXT NOT NULL + created_at/updated_at`
+- 优点：事务支持、WAL 并发读取、Docker volume 友好
+- 当前限制：第一阶段未做列提升，payload 为完整 JSON（后续逐步规范化）
+- 迁移脚本：`npm run db:sqlite:migrate`、`db:sqlite:import-json`、`db:sqlite:export-json`
+- 验证：`npm run verify:sqlite`（28 项全通过）
+
+### 数据流
+
+```
+storageService.ts (兼容层)
+    ↓
+repositoryFactory.ts (DATA_BACKEND 路由)
+    ├── jsonRepository.ts → storageServiceCore.ts → db.json
+    └── sqliteRepository.ts → better-sqlite3 → app.sqlite
+```
+
+所有现有 API 和业务代码无需修改，`readDb()/updateDb()` 签名保持不变。
 
 ## 二、推荐目标数据库
 

@@ -34,6 +34,14 @@ services:
       - OBJECT_STORAGE_REGION=${OBJECT_STORAGE_REGION:-}
       - OBJECT_STORAGE_ACCESS_KEY=${OBJECT_STORAGE_ACCESS_KEY:-}
       - OBJECT_STORAGE_SECRET_KEY=${OBJECT_STORAGE_SECRET_KEY:-}
+      # 访问控制（公网部署必须启用）
+      - APP_ACCESS_CONTROL=${APP_ACCESS_CONTROL:-off}
+      - APP_BASIC_AUTH_USERNAME=${APP_BASIC_AUTH_USERNAME:-admin}
+      - APP_BASIC_AUTH_PASSWORD_HASH=${APP_BASIC_AUTH_PASSWORD_HASH:-}
+      - APP_BASIC_AUTH_HEALTH_PUBLIC=${APP_BASIC_AUTH_HEALTH_PUBLIC:-true}
+      # 数据存储后端: json（默认）| sqlite（推荐预发）
+      - DATA_BACKEND=${DATA_BACKEND:-json}
+      - SQLITE_DB_PATH=/app/data/app.sqlite
     volumes:
       # 数据目录（db.json）
       - ./data:/app/data

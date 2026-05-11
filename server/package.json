@@ -22,17 +22,23 @@
     "verify:db-persistence": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyDbPersistence.js",
     "verify:no-presigned-persistence": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/verifyNoPresignedUrlPersistence.js",
     "db:repair-hygiene": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/repairDataHygiene.js",
-        "auth:hash-password": "npx tsx scripts/hashPassword.ts"
+    "auth:hash-password": "npx tsx scripts/hashPassword.ts",
+    "db:sqlite:migrate": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/migrateSqlite.js",
+    "db:sqlite:import-json": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/importJsonToSqlite.js",
+    "db:sqlite:export-json": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! node dist/scripts/exportSqliteToJson.js",
+    "verify:sqlite": "npm run build && APP_ENCRYPTION_KEY=dev-only-local-secret-32-bytes!! DATA_BACKEND=sqlite node dist/scripts/verifySqliteRepository.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1045.0",
     "@aws-sdk/lib-storage": "^3.1045.0",
     "@aws-sdk/s3-request-presigner": "^3.1045.0",
+    "better-sqlite3": "^12.9.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^5.1.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.0",

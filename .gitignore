@@ -10,6 +10,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 *.tsbuildinfo
+.app_encryption_key
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+server/data/*.sqlite*
+data/*.sqlite*
 server/storage/assets/*
 server/storage/temp/*
 server/data/db.json

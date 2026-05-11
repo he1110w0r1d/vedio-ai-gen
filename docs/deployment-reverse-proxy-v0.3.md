@@ -23,7 +23,7 @@ sudo apt update && sudo apt install caddy
 
 ```caddyfile
 your-domain.com {
-    # Basic Auth（可选）
+    # Basic Auth（推荐，与应用级 APP_ACCESS_CONTROL 可叠加）
     basicauth {
         admin $2a$14$REPLACE_WITH_BCRYPT_HASH
     }
@@ -44,6 +44,17 @@ your-domain.com {
         output file /var/log/caddy/video-ai-gen.log
     }
 }
+```
+
+生成 Caddy hash：
+
+```bash
+caddy hash-password --plaintext "your-password"
+```
+
+> 提示：应用本身也支持 `APP_ACCESS_CONTROL=basic` 的应用级 Basic Auth。
+> 如果反向代理已配置 Basic Auth，可关闭应用级（`APP_ACCESS_CONTROL=off`），避免双重弹窗。
+> 如果反向代理由 Cloudflare Access 保护，同样可关闭应用级。
 ```
 
 ### 启动
@@ -146,3 +157,16 @@ CORS_ORIGIN=https://your-domain.com,https://admin.your-domain.com
 ## 五、WebSocket
 
 **当前不需要 WebSocket。** 视频任务轮询使用标准 HTTP polling（前端定时 GET `/api/tasks/:id`），不依赖 WebSocket。如未来需要实时推送，可使用 SSE 或 WebSocket，届时更新本配置。
+
+## 六、与 app-level Basic Auth 的关系
+
+应用自身支持 `APP_ACCESS_CONTROL=basic` 的应用级 Basic Auth（见 [auth-minimum-plan-v0.3.md](auth-minimum-plan-v0.3.md)）。
+
+| 场景 | app-level | 反向代理 | 效果 |
+|------|-----------|----------|------|
+| 内网单机 | `basic` | 无 | 浏览器弹窗一次 |
+| 公网 + Caddy | `off` | Caddy Basic Auth | 浏览器弹窗一次 |
+| 最高安全 | `basic` | Caddy Basic Auth | 双重弹窗（不推荐，体验差） |
+| Cloudflare | `off` | Cloudflare Access | 无需浏览器弹窗（OTP/SSO） |
+
+推荐：反向代理层做访问控制，应用层关闭（`APP_ACCESS_CONTROL=off`）。

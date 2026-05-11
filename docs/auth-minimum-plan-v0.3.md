@@ -1,47 +1,74 @@
-# 最小登录保护设计（v0.3 → 预发）
+# 最小登录保护设计（v0.3）
 
-本文档设计从"本地单用户无认证"到"预发最小登录保护"的方案。当前阶段仅做设计，不真正实现。
+本文档记录了 API Asset Studio v0.3.0-benchmark-mvp 的访问控制方案。应用级 Basic Auth 已在 9.3 阶段实现。
 
 ## 一、当前状态
 
-- 无用户认证
-- 任何能访问服务的人都可以执行所有操作
-- 适合本地开发（localhost），不适合任何形式的网络暴露
+- ✅ **应用级 Basic Auth 中间件已实现**
+- 默认关闭（`APP_ACCESS_CONTROL=off`），不影响本地开发
+- 启用后保护所有前端页面和 `/api/*` 路由
+- `/health` 端点始终公开（用于监控）
+- 无 session，无用户系统，无权限角色
 
-## 二、方案 A：单用户管理密码（9.1 实现）
+## 二、方案 A：应用级 Basic Auth（已实现）
 
 适合小型团队试用、内部部署。
 
 ### 实现要点
 
-```txt
 环境变量：
-  ADMIN_USERNAME=admin
-  ADMIN_PASSWORD_HASH=<bcrypt hash>
 
-登录流程：
-  1. 用户访问任意页面 → 检查 session cookie
-  2. 无有效 session → 重定向到 /login
-  3. 提交 username + password → 后端验证
-  4. 验证通过 → 设置 httpOnly secure session cookie
-  5. 所有 /api/* 请求验证 session
+```txt
+APP_ACCESS_CONTROL=off | basic
+APP_BASIC_AUTH_USERNAME=admin
+APP_BASIC_AUTH_PASSWORD_HASH=scrypt:...:...
+APP_BASIC_AUTH_HEALTH_PUBLIC=true | false
 ```
 
-### Session 管理
+**默认关闭**。只在 `APP_ACCESS_CONTROL=basic` 时启用中间件。
 
-- 使用 `express-session` + `connect-pg-simple`（如已迁移 SQL）或内存存储（预发阶段）
-- Cookie 属性：`httpOnly=true`, `sameSite=strict`, `secure=true`（HTTPS 下）
-- Session 过期：24 小时无操作
+`APP_BASIC_AUTH_HEALTH_PUBLIC` 默认为 `true`：
+- `true`（默认）：`/health` 端点公开可访问（监控探针友好）
+- `false`：`/health` 也需要 Basic Auth 认证
 
-### CSRF 防护
+### 密码 Hash 生成
 
-- SameSite Cookie 已提供基础防护
-- 可额外使用 `csurf` 或自定义 CSRF token（非必须，预发阶段可省略）
+```bash
+cd server
+npm run auth:hash-password -- "your-password"
+```
+
+输出：
+
+```txt
+APP_BASIC_AUTH_PASSWORD_HASH=scrypt:abc123...:xyz789...
+```
+
+将这个值写入 `.env.production` 的 `APP_BASIC_AUTH_PASSWORD_HASH`。
+
+> 原始密码不会被保存。Hash 格式为 `scrypt:hashHex:saltBase64`，使用 Node.js `crypto.scrypt`（无需安装额外依赖）。
+
+### 保护范围
+
+- 所有 `/api/*` 路由（providers、tasks、assets、usage、quality、benchmark 等）
+- 所有前端页面（生产模式下 `/` 及所有 SPA 路由）
+- `/storage/*` 静态文件
+- `/health` 端点：默认公开（`APP_BASIC_AUTH_HEALTH_PUBLIC=true`），可配置为需认证（`=false`）
+
+### 认证流程
+
+1. 用户访问任意页面 → 中间件检查 `Authorization` header
+2. 无有效凭据 → 返回 401 + `WWW-Authenticate: Basic` header
+3. 浏览器弹出原生登录对话框
+4. 用户输入用户名密码 → `crypto.scrypt` 验证 hash
+5. 验证通过 → 放行请求（不设置 session cookie）
 
 ### 限制
 
+- 无 session / cookie（每次请求都需携带 Authorization header）
+- 浏览器会缓存凭据（关闭标签页前无需重复输入）
 - 单用户，无角色区分
-- 无密码重置流程（需手动重置 db/环境变量）
+- 无密码重置流程（需手动修改环境变量并重启）
 - 不适合多用户场景
 
 ## 三、方案 B：反向代理 Basic Auth（推荐预发）
@@ -103,9 +130,10 @@ caddy hash-password --plaintext "your-password"
 
 ## 五、当前预发建议
 
-采用 **方案 B（Caddy Basic Auth）**：
+推荐采用 **方案 A + B 双层** 或 **方案 B 单层**：
 
-- 零代码改动
-- Caddy 自动 HTTPS
-- 一行配置即可
-- 足够保护预发环境
+- **仅内网/本机**：方案 A 足够（`APP_ACCESS_CONTROL=basic`）
+- **公网演示**：强烈建议方案 A + B 双层（应用层 + 反向代理层）
+- **已有 Cloudflare/反向代理体系**：可仅用方案 B，关闭方案 A（`APP_ACCESS_CONTROL=off`）
+
+无论选择哪种，**绝对不要让应用没有任何访问控制暴露在公网上**。

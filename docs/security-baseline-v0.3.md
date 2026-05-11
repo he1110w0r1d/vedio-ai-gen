@@ -30,10 +30,14 @@
 | 约束 | 说明 |
 |------|------|
 | db.json 已 gitignore | `server/data/db.json` 不会被提交 |
+| SQLite 文件已 gitignore | `*.sqlite`, `*.sqlite-shm`, `*.sqlite-wal` 不会被提交 |
 | storage assets 已 gitignore | `server/storage/assets/*` 不会被提交 |
 | .env 已 gitignore | 环境变量文件不会被提交 |
 | db.example.json 保留 | 示例结构作为参考 |
 | .gitkeep 保留 | 保留目录结构 |
+| SQLite 不保存明文 API Key | payload 中凭据保持 AES-256-GCM 加密 |
+| SQLite 不保存 presigned URL | 同 JSON 模式，仅存 objectKey |
+| DATA_BACKEND 环境变量 | `json`（默认）/ `sqlite`（预发推荐），不暴露数据库类型给前端 |
 
 ## 4. 运行时安全
 
@@ -55,7 +59,19 @@
 | 成本估算仅供参考 | Usage Ledger 估算金额不保证与真实账单一致 |
 | 不提供精确账单 | 系统不对接供应商计费 API |
 
-## 6. 当前不是生产环境
+## 6. 访问控制 (v0.3.9+)
+
+| 约束 | 说明 |
+|------|------|
+| 默认关闭 | `APP_ACCESS_CONTROL=off`，不影响本地开发 |
+| Basic Auth 保护 | `APP_ACCESS_CONTROL=basic` 时保护所有页面和 API |
+| `/health` 可配置 | `APP_BASIC_AUTH_HEALTH_PUBLIC=true`（默认）公开；`=false` 也需认证 |
+| scrypt hash | 使用 Node.js `crypto.scrypt` 存储密码 hash |
+| 无明文密码 | hash 格式 `scrypt:hashHex:saltBase64` |
+| 无 session | 每次请求携带 Authorization header |
+| 反向代理兼容 | 可与 Caddy/Nginx Basic Auth 或 Cloudflare Access 叠加 |
+
+## 7. 当前不是生产环境
 
 | 已知缺口 | 风险 |
 |----------|------|
@@ -66,7 +82,7 @@
 | JSON 文件存储 | 非数据库，不适合高并发 |
 | 无 HTTPS | 本地开发默认 HTTP |
 
-## 7. 生产部署前须补充
+## 8. 生产部署前须补充
 
 如果要将本项目部署到生产环境，至少需要补充：
 
@@ -81,7 +97,7 @@
 9. 输入校验增强
 10. 依赖安全扫描
 
-## 8. 验证命令
+## 9. 验证命令
 
 ```bash
 # 验证 DB 持久化安全

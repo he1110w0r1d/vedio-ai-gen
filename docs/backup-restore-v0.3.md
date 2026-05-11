@@ -1,12 +1,19 @@
 # 备份与恢复指南（v0.3）
 
-本文档说明 API Asset Studio 的备份策略与恢复流程。
+本文档说明 API Asset Studio 的备份策略与恢复流程，覆盖 JSON 和 SQLite 两种存储后端。
 
 ## 一、需要备份的内容
 
-### 1.1 db.json（运行数据）
+### 1.1 运行数据
 
-路径：`<data_dir>/db.json` 或 Docker 映射的 `./data/db.json`
+根据 `DATA_BACKEND` 配置，运行数据文件不同：
+
+| 存储后端 | 数据文件 | 路径（Docker） |
+|----------|----------|----------------|
+| JSON | `db.json` | `<data_dir>/db.json` 或 `./data/db.json` |
+| SQLite | `app.sqlite` + WAL 文件 | `<data_dir>/app.sqlite*` 或 `./data/app.sqlite*` |
+
+⚠️ SQLite 模式需同时备份 `.sqlite`、`.sqlite-shm`、`.sqlite-wal` 三个文件。
 
 包含：
 - Provider 配置（api_key 已加密）
@@ -38,8 +45,12 @@
 ### 手动备份
 
 ```bash
-# 备份 db.json
+# 备份运行数据（JSON 模式）
 cp server/data/db.json backups/db-$(date +%Y%m%d-%H%M%S).json
+
+# 备份运行数据（SQLite 模式）
+cp server/data/app.sqlite* backups/
+# 或打包: tar czf backups/sqlite-$(date +%Y%m%d-%H%M%S).tar.gz server/data/app.sqlite*
 
 # 备份 storage（本地模式）
 tar -czf backups/storage-$(date +%Y%m%d-%H%M%S).tar.gz server/storage/assets/

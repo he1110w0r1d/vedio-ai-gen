@@ -65,7 +65,7 @@ v0.3 与 v0.2 的核心差异：
 
 - 前端：Vite + React 19 + TypeScript + Tailwind CSS 3
 - 后端：Node.js + Express 5 + TypeScript
-- 存储：本地 JSON `server/data/db.json`
+- 存储：本地 JSON `server/data/db.json`（开发）/ SQLite `server/data/app.sqlite`（预发推荐）
 - 文件存储：Local Storage + Object Storage（S3/OSS 兼容，Public/Private-Presigned）
 
 ## 目录结构
@@ -230,6 +230,66 @@ npm run db:repair-hygiene       # 修复历史脏数据
 - `server/storage/assets/*` 已 gitignore
 - 不提交真实视频文件和 db.json
 
+### 存储后端切换（v0.3.9+）
+
+项目支持两种存储后端，通过 `DATA_BACKEND` 环境变量切换：
+
+| 模式 | 环境变量 | 适用场景 |
+|------|----------|----------|
+| JSON（默认） | `DATA_BACKEND=json` | 本地开发、兼容旧数据 |
+| SQLite（推荐预发） | `DATA_BACKEND=sqlite` | 预发部署、更可靠的持久化 |
+
+SQLite 优势：事务支持、WAL 模式并发读取、Docker volume 友好、后续迁 PostgreSQL 更自然。
+
+#### 从 JSON 迁移到 SQLite
+
+```bash
+cd server
+
+# 1. 初始化 SQLite schema
+npm run db:sqlite:migrate
+
+# 2. 导入现有 db.json 数据
+npm run db:sqlite:import-json
+
+# 3. 启动（SQLite 模式）
+DATA_BACKEND=sqlite npm run dev
+```
+
+#### 从 SQLite 回退到 JSON
+
+```bash
+cd server
+
+# 导出 SQLite → JSON
+DATA_BACKEND=sqlite npm run db:sqlite:export-json
+# 输出: server/data/db.exported.json
+
+# 手动替换（如需要）
+cp server/data/db.exported.json server/data/db.json
+```
+
+#### SQLite 验证
+
+```bash
+cd server
+npm run verify:sqlite    # 28 项 SQLite 功能验证
+```
+
+> **说明**：第一阶段 SQLite 采用"实体表 + JSON payload"混合策略，暂未做列提升和业务索引。后续版本会逐步规范化字段。
+
+#### npm test 策略
+
+| 命令 | 验证范围 | 存储后端 |
+|------|----------|----------|
+| `npm test` | 14 个 verify 脚本（adapter、persistence、hygiene） | JSON（默认） |
+| `npm run verify:sqlite` | 28 项 SQLite 功能验证 | SQLite |
+
+- `npm test` 默认验证 JSON 主路径，是所有 PR 和发布前的必须检查
+- `npm run verify:sqlite` 用于 SQLite 数据后端专项验证，使用临时 SQLite 文件，不污染现有数据
+- **release 前必须额外跑 `verify:sqlite`**（已在 pre-release-checklist 中注明）
+- 暂时不将 verify:sqlite 并入 npm test（避免增加 CI 负担，且两者独立验证目标不同）
+
 ## 测试命令分级
 
 按修改范围选择对应级别，**不要无脑全量测试**：
@@ -311,6 +371,42 @@ npm run db:repair-hygiene
 
 详细安全基线见：[docs/security-baseline-v0.3.md](docs/security-baseline-v0.3.md)
 
+## 访问控制
+
+应用已内置最小 Basic Auth 保护（默认关闭）。
+
+### 启用应用级 Basic Auth
+
+```bash
+# 1. 生成密码 hash
+cd server && npm run auth:hash-password -- "your-password"
+# 输出: APP_BASIC_AUTH_PASSWORD_HASH=scrypt:...:...
+
+# 2. 设置环境变量
+export APP_ACCESS_CONTROL=basic
+export APP_BASIC_AUTH_USERNAME=admin
+export APP_BASIC_AUTH_PASSWORD_HASH=scrypt:...:...
+
+# 3. （可选）保护 /health 端点
+export APP_BASIC_AUTH_HEALTH_PUBLIC=false  # 默认 true（公开）
+
+# 4. 启动后端
+cd server && npm run dev
+```
+
+启用后所有页面和 API 需要认证，`/health` 默认公开（`APP_BASIC_AUTH_HEALTH_PUBLIC=true`）。
+
+### 推荐方案
+
+| 场景 | 方案 |
+|------|------|
+| 本地开发 | `APP_ACCESS_CONTROL=off`（默认） |
+| 内网单机 | `APP_ACCESS_CONTROL=basic` |
+| 公网预发 | 反向代理 Basic Auth（Caddy/Nginx）+ 关闭应用级 |
+| Cloudflare 用户 | Cloudflare Access + 关闭应用级 |
+
+详细说明见：[docs/auth-minimum-plan-v0.3.md](docs/auth-minimum-plan-v0.3.md)
+
 ## 开发脚本说明
 
 ### 正式工具脚本 (`server/scripts/`)
@@ -328,6 +424,11 @@ npm run db:repair-hygiene
 | `verifyHappyHorse*Adapter.ts` | HappyHorse 系列 dry-run 验证 |
 | `verifyKlingT2VAdapter.ts` | Kling T2V dry-run 验证 |
 | `verifyOpenAIAdapter.ts` | 万物焕新 dry-run 验证 |
+| `hashPassword.ts` | 生成 Basic Auth 密码 hash |
+| `migrateSqlite.ts` | 初始化 SQLite schema（14 张表） |
+| `importJsonToSqlite.ts` | db.json → SQLite 数据迁移 |
+| `exportSqliteToJson.ts` | SQLite → db.json 数据回退 |
+| `verifySqliteRepository.ts` | SQLite 功能验证（28 项） |
 
 ### 开发临时脚本 (`server/scripts/dev/`)
 
@@ -356,93 +457,112 @@ npm run db:repair-hygiene
 
 ## 预发部署
 
+> ⚠️ Docker runtime 验收需在稳定 Docker 环境中进行（当前 Docker Desktop 有 VM 不稳定问题）。
+> 镜像 build、compose config、安全排除均已验证通过。
+
 ### Docker 单镜像部署
 
 ```bash
-# 构建镜像
+# 1. 构建镜像
 docker build -t video-ai-gen:v0.3 .
 
-# 准备数据目录
+# 2. 准备数据目录
 mkdir -p data storage
 
-# 启动容器
+# 3. 首次生成并保存加密密钥（⚠️ 后续必须固定使用同一个值）
+openssl rand -hex 32 > .app_encryption_key
+
+# 4. 生成 Basic Auth 密码 hash（如启用访问控制）
+cd server
+npm run auth:hash-password -- "你的登录密码"
+# 输出: APP_BASIC_AUTH_PASSWORD_HASH=scrypt:...:...
+cd ..
+
+# 5. 启动容器
+#    如果不启用访问控制，删除 APP_ACCESS_CONTROL / APP_BASIC_AUTH_* 三行
+#    APP_ENCRYPTION_KEY 每次必须用同一个值，否则已保存的 Provider Key 无法解密
 docker run -d \
   --name video-ai-gen \
   -p 8787:8787 \
-  -e APP_ENCRYPTION_KEY=$(openssl rand -hex 32) \
+  -e APP_ENCRYPTION_KEY=$(cat .app_encryption_key) \
   -e CORS_ORIGIN=http://localhost:8787 \
+  -e APP_ACCESS_CONTROL=basic \
+  -e APP_BASIC_AUTH_USERNAME=admin \
+  -e APP_BASIC_AUTH_PASSWORD_HASH="<上一步生成的完整 hash>" \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/storage:/app/storage \
   video-ai-gen:v0.3
 
-# 初始化数据
+# 6. 初始化数据
 docker exec video-ai-gen node dist/scripts/seedDb.js
 
-# 检查健康
+# 7. 检查健康
 curl http://localhost:8787/health
 ```
 
 ### docker-compose 部署
 
 ```bash
-# 复制模板
+# 1. 复制模板
 cp docker-compose.example.yml docker-compose.yml
 
-# 创建 .env 文件（docker compose 自动读取）
-# ⚠️ 至少 32 字节
+# 2. 首次生成并保存加密密钥
+openssl rand -hex 32 > .app_encryption_key
+
+# 3. 创建 .env 文件（docker compose 自动读取）
 cat > .env << 'EOF'
-APP_ENCRYPTION_KEY=$(openssl rand -hex 32)
+APP_ENCRYPTION_KEY=<粘贴 .app_encryption_key 文件的内容>
 CORS_ORIGIN=http://localhost:8787
 STORAGE_MODE=local
+APP_ACCESS_CONTROL=basic
+APP_BASIC_AUTH_USERNAME=admin
+APP_BASIC_AUTH_PASSWORD_HASH=<通过 auth:hash-password 生成的 hash>
 EOF
 
-# 编辑其他环境变量（如对象存储配置）
+# 4. 编辑其他环境变量（如对象存储配置）
 vim .env
 
-# 启动
+# 5. 启动
 docker compose up -d
 
-# 初始化数据
+# 6. 初始化数据
 docker compose exec app node dist/scripts/seedDb.js
 
-# 检查
+# 7. 检查
 curl http://localhost:8787/health
-```
-
-**注意**：`docker-compose.yml` 中的 `${APP_ENCRYPTION_KEY}` 从项目根目录的 `.env` 文件读取。此 `.env` 与前端/后端的 `.env` 不同，专供 docker compose 变量替换使用。
-
-**注意**：如果运行时 Docker 镜像不包含 scripts（当前 `npm ci --omit=dev` 不含 `tsx`），`db:seed` 可在宿主机执行后挂载 volume：
-
-```bash
-# 宿主机先 seed：
-cd server && npm run db:seed
-# 然后 compose volume 会自动挂载 ./data/db.json
 ```
 
 ### 环境变量
 
 见 [`.env.production.example`](.env.production.example)，关键变量：
 
-- `APP_ENCRYPTION_KEY`：至少 32 字节，用于加密 Provider API Key
+- **`APP_ENCRYPTION_KEY`**：至少 32 字节，用于加密 Provider API Key。**必须持久保存**（`.app_encryption_key`），每次更换会导致所有已保存凭据无法解密
 - `CORS_ORIGIN`：生产环境设置为实际域名
 - `STORAGE_MODE`：`local` / `object-public` / `object-private-presigned`
+- `APP_ACCESS_CONTROL`：`off`（默认）/ `basic`
+- `APP_BASIC_AUTH_PASSWORD_HASH`：通过 `npm run auth:hash-password` 生成
+
+> Provider API Key 通过应用内「供应商」页面添加，**不写入 .env**。
+>
+> docker-compose 的 `.env` 与前端/后端的 `.env` 不同，专供 docker compose 变量替换。如果运行时镜像不含 `tsx`，`db:seed` 可在宿主机执行后靠 volume 挂载。
 
 ### 生产注意事项
 
 - Provider API Key 通过应用内「供应商」页面添加，**不写入 .env**
+- **`APP_ENCRYPTION_KEY` 必须持久保存**（推荐写入 `.app_encryption_key` 并加入 gitignore）。每次更换密钥将导致所有已保存的 Provider Key 无法解密
 - `APP_ENCRYPTION_KEY` 必须安全备份，丢失则已保存的 Provider Key 无法解密
 - 生产建议配置反向代理 (Caddy/Nginx) + HTTPS
 - 生产建议使用对象存储 (Private-Presigned 模式) 替代本地文件存储
 - `data/` 和 `storage/` 目录需映射为持久卷
-- 当前版本无用户认证，预发/生产必须配置 Basic Auth 或类似保护
+- 公网部署必须启用访问控制（`APP_ACCESS_CONTROL=basic` 或反向代理 Basic Auth）
 
 ### 为何当前仍不是正式生产版本
 
 - 无用户认证与权限系统
-- JSON 文件存储（非 SQL 数据库）
 - 无审计日志
 - 无自动化备份
 - 估算成本不保证与供应商账单一致
+- SQLite 为单机存储，适合预发/单机部署，不适合多用户/高并发生产（PostgreSQL 仍是未来 SaaS 推荐目标）
 
 详细部署文档：
 - [Docker 部署](Dockerfile) / [docker-compose](docker-compose.example.yml)

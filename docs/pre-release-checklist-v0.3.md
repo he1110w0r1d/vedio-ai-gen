@@ -16,6 +16,10 @@
 - [ ] Local Storage 读写正常
 - [ ] 如有对象存储，testConnection 成功
 - [ ] 确认 `data/` 和 `storage/` 目录权限正确
+- [ ] SQLite 模式（推荐预发）：`DATA_BACKEND=sqlite npm run verify:sqlite` 28 项全通过
+- [ ] JSON → SQLite 迁移：`npm run db:sqlite:migrate && npm run db:sqlite:import-json` 成功
+- [ ] SQLite → JSON 回退：`npm run db:sqlite:export-json` 可正常导出
+- [ ] SQLite 文件已 gitignore：`*.sqlite`, `*.sqlite-shm`, `*.sqlite-wal`
 
 ## 三、安全
 
@@ -39,8 +43,13 @@
 
 ## 五、访问控制
 
-- [ ] 已配置最小登录保护（Basic Auth 或类似）
+- [ ] 已配置最小登录保护（`APP_ACCESS_CONTROL=basic` 或反向代理 Basic Auth）
 - [ ] 管理密码不是默认值
+- [ ] 密码 hash 已通过 `npm run auth:hash-password` 生成
+- [ ] 明文密码未写入 .env / docker-compose.yml / Git
+- [ ] `APP_BASIC_AUTH_HEALTH_PUBLIC` 已按需配置（默认 true：/health 公开）
+- [ ] `/health` 端点行为符合预期
+- [ ] 浏览器访问受保护页面弹出认证对话框
 
 ## 六、存储
 
@@ -72,6 +81,8 @@
 - [ ] `PORT` 设置正确
 - [ ] `APP_ENCRYPTION_KEY` 已设置且长度 ≥ 32 字节
 - [ ] `CORS_ORIGIN` 已设置
+- [ ] `APP_ACCESS_CONTROL` 已设置（公网必须为 `basic`）
+- [ ] `APP_BASIC_AUTH_PASSWORD_HASH` 已设置（使用 `auth:hash-password` 生成）
 - [ ] Provider API Key 通过应用内添加，不写入 .env
 
 ## 十、文档
@@ -99,6 +110,6 @@
 - [ ] ❌ 多用户登录（未实现）
 - [ ] ❌ 权限控制（未实现）
 - [ ] ❌ 审计日志（未实现）
-- [ ] ❌ SQL 数据库（当前 JSON 文件）
+- [ ] ❌ SQL 数据库（SQLite 第一阶段已可用于预发单机；PostgreSQL 第二阶段用于多用户 SaaS）
 - [ ] ❌ 精确账单对账（估算值仅供参考）
 - [ ] ❌ 自动化大规模 Benchmark（需手动触发）

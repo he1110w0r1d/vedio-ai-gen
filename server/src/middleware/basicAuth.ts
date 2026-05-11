@@ -19,6 +19,12 @@ function readConfig(): AuthConfig {
   };
 }
 
+function isHealthPublic(): boolean {
+  // 默认 true：/health 公开可访问（监控探针友好）
+  // 设为 false 时 /health 也需要 Basic Auth
+  return process.env.APP_BASIC_AUTH_HEALTH_PUBLIC !== 'false';
+}
+
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
   if (!hash || !password) return false;
 
@@ -44,11 +50,9 @@ async function verifyPassword(password: string, hash: string): Promise<boolean> 
   }
 }
 
-// 跳过 Basic Auth 的路径
-const PUBLIC_PATHS = ['/health'];
-
 export function basicAuth() {
   const config = readConfig();
+  const healthPublic = isHealthPublic();
 
   return async (req: Request, res: Response, next: NextFunction) => {
     // off 模式直接放行
@@ -56,8 +60,8 @@ export function basicAuth() {
       return next();
     }
 
-    // 公开路径放行
-    if (PUBLIC_PATHS.some((p) => req.path.startsWith(p))) {
+    // /health 根据 APP_BASIC_AUTH_HEALTH_PUBLIC 决定是否放行（默认公开）
+    if (healthPublic && req.path === '/health') {
       return next();
     }
 
