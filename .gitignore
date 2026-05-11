@@ -22,3 +22,4 @@ server/data/db.json
 !server/storage/assets/.gitkeep
 !server/storage/temp/.gitkeep
 !server/data/db.example.json
+docker-compose.yml

@@ -457,8 +457,9 @@ cd server && npm run dev
 
 ## 预发部署
 
-> ⚠️ Docker runtime 验收需在稳定 Docker 环境中进行（当前 Docker Desktop 有 VM 不稳定问题）。
-> 镜像 build、compose config、安全排除均已验证通过。
+> ✅ Docker + SQLite + Basic Auth 组合预发验证已通过（v0.3 Phase 9.4）。
+> 镜像构建、compose 启动、健康检查、访问控制、volume 持久化、seed 均正常。
+> 如首次构建遇到 SQLite 依赖问题，使用 `docker compose build --no-cache`。
 
 ### Docker 单镜像部署
 
@@ -500,37 +501,39 @@ docker exec video-ai-gen node dist/scripts/seedDb.js
 curl http://localhost:8787/health
 ```
 
-### docker-compose 部署
+### docker-compose 部署（推荐：SQLite + Basic Auth）
 
 ```bash
 # 1. 复制模板
 cp docker-compose.example.yml docker-compose.yml
 
-# 2. 首次生成并保存加密密钥
+# 2. 创建 .env（docker compose 自动读取）
+cp .env.production.example .env
+
+# 3. 生成加密密钥（⚠️ 必须持久保存）
 openssl rand -hex 32 > .app_encryption_key
 
-# 3. 创建 .env 文件（docker compose 自动读取）
-cat > .env << 'EOF'
-APP_ENCRYPTION_KEY=<粘贴 .app_encryption_key 文件的内容>
-CORS_ORIGIN=http://localhost:8787
-STORAGE_MODE=local
-APP_ACCESS_CONTROL=basic
-APP_BASIC_AUTH_USERNAME=admin
-APP_BASIC_AUTH_PASSWORD_HASH=<通过 auth:hash-password 生成的 hash>
-EOF
+# 4. 生成 Basic Auth 密码 hash
+cd server && npm run auth:hash-password -- "你的密码" && cd ..
 
-# 4. 编辑其他环境变量（如对象存储配置）
+# 5. 编辑 .env 填入真实值
+#    关键变量：APP_ENCRYPTION_KEY、APP_BASIC_AUTH_PASSWORD_HASH、DATA_BACKEND=sqlite
 vim .env
 
-# 5. 启动
+# 6. 构建并启动（首次建议 --no-cache 确保依赖完整）
+docker compose build --no-cache
 docker compose up -d
 
-# 6. 初始化数据
+# 7. 初始化数据
 docker compose exec app node dist/scripts/seedDb.js
 
-# 7. 检查
+# 8. 检查
 curl http://localhost:8787/health
 ```
+
+> **注意**：Docker 层缓存可能导致 `better-sqlite3` 未安装。如容器启动后 `/app/data/` 下只有 `db.json` 没有 `app.sqlite`，执行 `docker compose build --no-cache` 重建。
+>
+> `docker-compose.yml` 默认使用 `DATA_BACKEND=sqlite`，可改为 `json` 切换回 JSON 模式。
 
 ### 环境变量
 
@@ -555,6 +558,8 @@ curl http://localhost:8787/health
 - 生产建议使用对象存储 (Private-Presigned 模式) 替代本地文件存储
 - `data/` 和 `storage/` 目录需映射为持久卷
 - 公网部署必须启用访问控制（`APP_ACCESS_CONTROL=basic` 或反向代理 Basic Auth）
+- 预发推荐 `DATA_BACKEND=sqlite`（已在 docker-compose.example.yml 中设为默认）
+- Docker 构建若遇到 SQLite 未安装问题，使用 `docker compose build --no-cache` 重建
 
 ### 为何当前仍不是正式生产版本
 

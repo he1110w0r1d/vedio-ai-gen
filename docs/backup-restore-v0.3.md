@@ -63,8 +63,15 @@ echo "APP_ENCRYPTION_KEY=your-key-here" > backups/app-key-$(date +%Y%m%d).txt
 ### Docker 部署下的备份
 
 ```bash
-# 备份 data volume
+# 备份 data volume（JSON 模式）
 docker cp video-ai-gen:/app/data/db.json backups/db-$(date +%Y%m%d-%H%M%S).json
+
+# 备份 data volume（SQLite 模式）
+docker compose exec app sh -c 'tar czf /tmp/sqlite-backup.tar.gz /app/data/app.sqlite*'
+docker cp video-ai-gen:/tmp/sqlite-backup.tar.gz backups/sqlite-$(date +%Y%m%d-%H%M%S).tar.gz
+
+# 或直接从宿主机备份（volume 挂载后）
+tar czf backups/sqlite-$(date +%Y%m%d-%H%M%S).tar.gz data/app.sqlite*
 
 # 备份 storage volume（本地模式）
 docker run --rm -v video-ai-gen_storage:/data -v $(pwd)/backups:/backup alpine tar czf /backup/storage-$(date +%Y%m%d-%H%M%S).tar.gz -C /data .

@@ -137,3 +137,12 @@ caddy hash-password --plaintext "your-password"
 - **已有 Cloudflare/反向代理体系**：可仅用方案 B，关闭方案 A（`APP_ACCESS_CONTROL=off`）
 
 无论选择哪种，**绝对不要让应用没有任何访问控制暴露在公网上**。
+
+## 六、Docker 组合验证状态
+
+Phase 9.4 已验证 Docker + SQLite + Basic Auth 组合：
+- ✅ `APP_ACCESS_CONTROL=basic` + `DATA_BACKEND=sqlite` 正常运行
+- ✅ `/health` 端点 `APP_BASIC_AUTH_HEALTH_PUBLIC` 可配置
+- ✅ 容器重启后 Basic Auth 配置保持
+- ✅ 前端 SPA 401 后弹出浏览器认证对话框
+- ✅ 未认证 API 返回 401 + `WWW-Authenticate`

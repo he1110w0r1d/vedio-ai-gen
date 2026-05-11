@@ -110,6 +110,27 @@
 - [ ] ❌ 多用户登录（未实现）
 - [ ] ❌ 权限控制（未实现）
 - [ ] ❌ 审计日志（未实现）
-- [ ] ❌ SQL 数据库（SQLite 第一阶段已可用于预发单机；PostgreSQL 第二阶段用于多用户 SaaS）
+- [ ] ❌ PostgreSQL 多用户 SaaS 数据库（SQLite 第一阶段已可用于预发单机；PostgreSQL 第二阶段用于多用户 SaaS）
 - [ ] ❌ 精确账单对账（估算值仅供参考）
 - [ ] ❌ 自动化大规模 Benchmark（需手动触发）
+
+## 十三、Docker 组合预发验收（Phase 9.4）
+
+以下项目已在 Phase 9.4 中通过 Docker + SQLite + Basic Auth 组合验证：
+
+- [x] ✅ Docker 镜像构建
+- [x] ✅ docker compose 启动
+- [x] ✅ DATA_BACKEND=sqlite 正常运行
+- [x] ✅ APP_ACCESS_CONTROL=basic 访问控制
+- [x] ✅ /health + HEALTH_PUBLIC 可配置
+- [x] ✅ 前端 SPA 路由与静态文件
+- [x] ✅ SQLite volume 持久化（重启数据不丢）
+- [x] ✅ Storage volume 持久化（seed 文件保留）
+- [x] ✅ 容器日志无敏感信息泄露
+- [x] ✅ 非 root 用户运行
+- [x] ✅ HEALTHCHECK 正常
+- [x] ✅ db:seed 在 SQLite 模式下正常运行
+
+> **注意**：Docker 层缓存可能导致 `better-sqlite3` 在运行时镜像中缺失。
+> 症状：data/ 目录只有 `db.json` 无 `app.sqlite`。
+> 修复：`docker compose build --no-cache`。
